@@ -7,7 +7,7 @@
     tiktok: [
       ['messages', 'Comments', 'Chat messages from viewers', 'tiktok'],
       ['gifts', 'Gifts', 'With the real gift picture; combos count up live', 'gift'],
-      ['follows', 'New followers', 'A big "NEW FOLLOWER" card', 'follow'],
+      ['follows', 'New followers', 'When someone follows you', 'follow'],
       ['subs', 'Subscriptions', 'When someone subscribes to you', 'tiktoksub'],
       ['joins', 'Viewers joining', 'A small note when someone joins the LIVE', 'join'],
       ['likes', 'Likes', 'Grouped per viewer so it never floods', 'like'],
@@ -35,7 +35,7 @@
     ],
     kick: [
       ['messages', 'Chat messages', 'Everything people type', 'kick'],
-      ['follows', 'New followers', 'A big "NEW FOLLOWER" card', 'kickfollow'],
+      ['follows', 'New followers', 'When someone follows you', 'kickfollow'],
       ['subs', 'Subs', 'New and returning subscribers', 'kicksub'],
       ['giftSubs', 'Gifted subs', 'When someone gifts subs', 'giftsub'],
       ['kicksGifts', 'Kicks', "Kick's own gifts", 'kicks'],
@@ -50,10 +50,67 @@
   };
   const ORDER = ['tiktok', 'twitch', 'youtube', 'kick', 'facebook'];
 
+  /* ---------- where alerts show: in the chat, on their own overlay, or both ---------- */
+  const PLACES = [
+    ['chat', 'In the chat', 'Alerts show between messages in your chat overlay. Nothing else to set up.'],
+    ['overlay', 'Their own overlay', 'A separate browser source you can put anywhere on your scene. The chat stays clean.'],
+    ['both', 'Both', 'A small line in the chat, plus a big alert on its own overlay.'],
+  ];
+  const placeArt = id => h('div', { class: 'pa', 'aria-hidden': 'true' }, h('div', { class: 'scr' }),
+    h('div', { class: 'chatcol' }, h('i'), id === 'overlay' ? h('i') : h('i', { class: 'al' }), h('i')),
+    id === 'chat' ? null : h('div', { class: 'box' }));
+
+  function alertsStatus() {
+    const o = MG.overlays.alerts || {};
+    if (o.obs) return h('div', { class: 'banner ok' }, icon('check'), h('div', {}, h('b', { text: 'The alerts overlay is in OBS' }), h('span', { text: 'Press Try below to see an alert on your stream.' })));
+    if (o.count) return h('div', { class: 'banner warn' }, icon('info'), h('div', {}, h('b', { text: 'The alerts overlay is open, but not in OBS' }), h('span', { text: "It's open in a browser or another streaming app. If that's your streaming app, you're good to go." })));
+    return h('div', { class: 'banner' }, icon('monitor'), h('div', {}, h('b', { text: 'Alerts overlay not added yet' }), h('span', { text: 'Follow the steps below. This box turns green when OBS shows it.' })));
+  }
+
+  /** Steps to add the alerts overlay to OBS (also used on the Add to OBS page). */
+  MG.alertsSetup = () => {
+    const url = MG.st.alertsUrl;
+    return h('section', { class: 'card alerts-setup' }, h('h2', { text: 'Add the alerts overlay to OBS' }),
+      h('div', { class: 'alerts-status' }, alertsStatus()),
+      h('ol', { class: 'big-steps compact' },
+        h('li', {}, h('b', { text: 'Copy the alerts link' }),
+          h('div', { class: 'urlbox' }, h('code', { text: url }), h('button', { class: 'btn primary', onclick: () => MG.copy(url) }, icon('copy'), 'Copy link'))),
+        h('li', {}, h('b', { text: 'Add another Browser source in OBS' }),
+          h('span', {}, 'Name it ', h('i', { text: 'Mergio Alerts' }), ', paste the link and set Width ', h('kbd', { text: '800' }), ' and Height ', h('kbd', { text: '500' }), '.')),
+        h('li', {}, h('b', { text: 'Put it anywhere' }),
+          h('span', { text: 'Drag and resize it like any other source, for example to the top middle of your scene. It is see-through until an alert comes in.' }))));
+  };
+
+  function placement(c) {
+    const cur = MG.st.settings.alerts.placement;
+    const choose = id => { MG.save('alerts', 'placement', id); MG.render(); MG.toast(id === 'chat' ? 'Alerts show in the chat' : id === 'overlay' ? 'Alerts show on their own overlay' : 'Alerts show in the chat and on their own overlay'); };
+    const card = MG.card('Where should alerts show?', 'Subs, gifts, Super Chats, follows and raids. Joins and likes always stay small in the chat.',
+      h('div', { class: 'places', role: 'radiogroup', 'aria-label': 'Where alerts show' }, ...PLACES.map(([id, name, desc]) =>
+        h('button', { class: `place ${cur === id ? 'on' : ''}`, role: 'radio', 'aria-checked': String(cur === id), onclick: () => choose(id) }, placeArt(id), h('b', { text: name }), h('span', { text: desc })))));
+    if (cur === 'chat' && MG.overlays.alerts?.count) card.append(h('p', { class: 'hint', text: 'Your alerts overlay is open. Pick "Their own overlay" or "Both" to use it.' }));
+    c.append(card);
+    if (cur === 'chat') return;
+    c.append(MG.alertsSetup());
+    const A = 'alerts';
+    c.append(MG.card('Alert overlay', 'How the big alerts look and behave. The preview shows them at the top.',
+      h('div', { class: 'fields' },
+        MG.field(A, { key: 'duration', label: 'Each alert stays for', type: 'range', min: 2, max: 20, unit: 's', keywords: 'time seconds' }),
+        MG.field(A, { key: 'size', label: 'Size', type: 'range', min: 0.6, max: 2, step: 0.1, unit: '×', keywords: 'scale bigger smaller' }),
+        MG.field(A, { key: 'position', label: 'Where in its box', hint: 'Within the browser source', type: 'select', options: [['top', 'Top'], ['center', 'Middle'], ['bottom', 'Bottom']] }),
+        MG.field(A, { key: 'animation', label: 'How alerts appear', type: 'select', options: [['pop', 'Pop'], ['slide', 'Slide up'], ['fade', 'Fade in']] }),
+        MG.field(A, { key: 'showAvatar', label: 'Profile picture', type: 'toggle' }),
+        MG.field(A, { key: 'showMessage', label: 'Their message', hint: 'Super Chats, resubs and more', type: 'toggle' })),
+      h('div', { class: 'btn-row' }, h('span', { class: 'lbl', text: 'Try:' }),
+        ...[['gift', 'Gift'], ['sub', 'Sub'], ['superchat', 'Super Chat'], ['follow', 'Follow'], ['raid', 'Raid']].map(([k, t]) => h('button', { class: 'btn ghost sm', onclick: () => MG.test(k) }, icon('play'), t)))));
+  }
+  MG.on('overlays', () => { for (const el of document.querySelectorAll('.alerts-status')) { el.textContent = ''; el.append(alertsStatus()); } });
+
   function render(c) {
     const used = new Set(MG.st.sources.map(s => s.platform));
     const order = [...ORDER].sort((a, b) => used.has(b) - used.has(a));
-    c.append(h('div', { class: 'note' }, icon('info'), h('span', {}, 'Press ', h('b', { text: 'Try' }), ' to see any alert in the preview (and in OBS). Change how alerts look in ', h('a', { href: '#style', onclick: e => { e.preventDefault(); MG.go('style'); } }, 'Style → Alert look'), '.')));
+    placement(c);
+    c.append(h('h2', { class: 'section-h', text: 'Which alerts and messages to show' }));
+    c.append(h('div', { class: 'note' }, icon('info'), h('span', {}, 'Press ', h('b', { text: 'Try' }), ' to see any alert in the preview (and in OBS). Change how alerts look inside the chat in ', h('a', { href: '#style', onclick: e => { e.preventDefault(); MG.go('style'); } }, 'Style → Alert look'), '.')));
     for (const p of order) {
       const sec = MG.st.settings[p];
       const rows = EVENTS[p].map(([key, label, desc, kind]) => {
@@ -79,5 +136,5 @@
     }
   }
 
-  MG.page({ id: 'alerts', order: 40, group: 'custom', label: 'Alerts', icon: 'bell', title: 'Alerts', subtitle: 'Choose which messages and alerts appear for each platform', render });
+  MG.page({ id: 'alerts', order: 40, group: 'custom', label: 'Alerts', icon: 'bell', title: 'Alerts', subtitle: 'Where alerts show, and which ones appear for each platform', render });
 })();

@@ -165,6 +165,7 @@ details.qa p, details.qa li { color: #c8c8d8; }
 .stage { flex: 1; margin: 0 16px; border-radius: 14px; overflow: hidden; position: relative; min-height: 0; border: 1px solid var(--line); }
 /* color-scheme must match the overlay's, otherwise Chromium paints an opaque backdrop behind the iframe */
 .stage iframe { position: absolute; left: 0; top: 0; width: 500px; height: 100%; border: 0; background: transparent; color-scheme: normal; transform-origin: 0 0; }
+.stage #alertsFrame { width: 800px; height: 500px; pointer-events: none; }
 .bg-dark { background: #1b1b22; }
 .bg-light { background: #e9e9f1; }
 .bg-game { background:
@@ -431,3 +432,24 @@ body.quit .offline-bar::after { content: ' (You closed it from Settings.)'; }
 @media (max-width: 760px) { .act span { display: none; } .src { grid-template-columns: 40px 1fr; } .src .acts { grid-column: 1 / -1; justify-content: flex-end; } .hero-top { flex-direction: column; } .todo li { grid-template-columns: 32px 1fr; } .todo li .btn { grid-column: 2; justify-self: start; } .ev-row { grid-template-columns: 1fr auto; } .ev-row .btn { display: none; } .mini-search input { width: 120px; } }
 @media (max-width: 560px) { .connect { flex-direction: column; } .top-actions .btn span { display: none; } .titles p { display: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- Alerts: where alerts show ---------- */
+.places { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.place { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 0 0 12px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--panel-2); color: inherit; font: inherit; cursor: pointer; overflow: hidden; transition: border-color .15s, transform .15s; }
+.place:hover { border-color: #4a4a6a; transform: translateY(-2px); }
+.place.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,92,255,.2); }
+.place b { padding: 4px 12px 0; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+.place.on b::after { content: 'Selected'; margin-left: auto; font-size: 11px; font-weight: 700; color: #c9bcff; background: rgba(124,92,255,.22); padding: 2px 8px; border-radius: 99px; }
+.place > span { padding: 0 12px; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+.pa { position: relative; height: 92px; margin-bottom: 6px; background: linear-gradient(135deg, #2b2440, #19324a); }
+.pa .scr { position: absolute; inset: 10px 12px; border-radius: 8px; border: 1px dashed rgba(255,255,255,.18); }
+.pa .chatcol { position: absolute; left: 18px; bottom: 16px; width: 38%; display: grid; gap: 4px; }
+.pa .chatcol i { display: block; height: 8px; border-radius: 4px; background: rgba(255,255,255,.22); }
+.pa .chatcol i.al { height: 8px; background: linear-gradient(90deg, rgba(254,44,85,.75), rgba(254,44,85,.25)); }
+.pa .box { position: absolute; right: 18px; top: 18px; width: 34%; height: 30px; border-radius: 8px; background: rgba(14,14,22,.9); box-shadow: 0 0 0 1.5px #a78bfa, 0 4px 14px -4px #a78bfa; }
+.pa .box::before { content: ''; position: absolute; left: 50%; top: -9px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: #a78bfa; }
+.alerts-setup .big-steps { margin-top: 12px; }
+@media (max-width: 760px) { .places { grid-template-columns: 1fr; } }
+
+.section-h { font-size: 15px; margin: 26px 2px 10px; color: var(--muted); font-weight: 700; letter-spacing: .02em; }
+.btn-row .lbl { color: var(--faint); font-size: 12px; font-weight: 600; align-self: center; }

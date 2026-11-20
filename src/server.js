@@ -63,6 +63,7 @@ function createServer(manager, { onQuit }) {
     sources: manager.list(),
     dataDir: DATA_DIR,
     overlayUrl: `http://localhost:${settings.get().advanced.port}/overlay`,
+    alertsUrl: `http://localhost:${settings.get().advanced.port}/alerts`,
     testKinds: testdata.KINDS,
     autostart: { supported: autostart.supported(), enabled: autostart.isEnabled() },
     overlays: overlayStatus(),
@@ -131,6 +132,7 @@ function createServer(manager, { onQuit }) {
 
       if (p === '/' ) return send(res, 302, '', 'text/plain', { Location: '/dashboard' });
       const file = p === '/overlay' || p === '/overlay/' ? 'overlay/index.html'
+        : p === '/alerts' || p === '/alerts/' ? 'alerts/index.html'
         : p === '/dashboard' || p === '/dashboard/' ? 'dashboard/index.html'
         : p.slice(1);
       const buf = readAsset(file);
@@ -146,10 +148,11 @@ function createServer(manager, { onQuit }) {
   const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
   // ws re-emits the HTTP server's errors (e.g. port already in use); main.js handles those on the server itself.
   wss.on('error', () => {});
-  /** Open overlays (not previews): how many, and whether one of them runs inside OBS. */
+  /** Open overlays (not previews): how many, and whether one of them runs inside OBS. Same for the alerts overlay. */
   function overlayStatus() {
-    const list = [...wss.clients].filter(c => c.overlay && c.readyState === 1);
-    return { count: list.length, obs: list.some(c => c.overlay.obs) };
+    const open = [...wss.clients].filter(c => c.overlay && c.readyState === 1);
+    const of = kind => { const l = open.filter(c => c.overlay.kind === kind); return { count: l.length, obs: l.some(c => c.overlay.obs) }; };
+    return { ...of('chat'), alerts: of('alerts') };
   }
   const broadcast = obj => {
     const data = JSON.stringify(obj);
@@ -160,10 +163,11 @@ function createServer(manager, { onQuit }) {
     if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) return ws.close();
     // Overlays identify themselves so the control panel can show "Mergio is in OBS".
     const q = new URL(req.url, 'http://localhost').searchParams;
-    if (q.get('client') === 'overlay') {
+    const client = q.get('client');
+    if (client === 'overlay' || client === 'alerts') {
       // OBS browser sources expose window.obsstudio (sent as obs=1); the user agent is a fallback.
-      ws.overlay = { obs: q.get('obs') === '1' || /\bOBS\//.test(req.headers['user-agent'] || '') };
-      if (!settings.get().advanced.overlaySeen) settings.update({ advanced: { overlaySeen: true } });
+      ws.overlay = { kind: client === 'alerts' ? 'alerts' : 'chat', obs: q.get('obs') === '1' || /\bOBS\//.test(req.headers['user-agent'] || '') };
+      if (client === 'overlay' && !settings.get().advanced.overlaySeen) settings.update({ advanced: { overlaySeen: true } });
       ws.on('close', () => broadcast({ op: 'overlays', ...overlayStatus() }));
       broadcast({ op: 'overlays', ...overlayStatus() });
     }
