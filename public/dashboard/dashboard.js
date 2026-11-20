@@ -420,7 +420,7 @@
       { key: 'tiktokSignApiKey', label: 'Euler Stream API key (optional)', hint: 'TikTok works without it. A free key from eulerstream.com raises the connection limits.', type: 'secret', wide: true },
     ]));
     const app = group('App', null, 'advanced', [
-      { key: 'openDashboardOnStart', label: 'Open this control panel when ZUNO-CHAT starts', type: 'toggle' },
+      { key: 'openDashboardOnStart', label: 'Open this control panel when ZUNO-CHAT starts with Windows', hint: 'Opening the app yourself always shows it', type: 'toggle' },
       { key: 'port', label: 'Port', hint: 'Restart ZUNO-CHAT after changing. The overlay link changes too.', type: 'number', min: 1024, max: 65535 },
     ]);
     if (st.autostart?.supported) {

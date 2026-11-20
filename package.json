@@ -11,6 +11,7 @@
     "dev": "node --watch src/main.js --no-open",
     "icons": "node scripts/gen-icons.mjs",
     "build": "node scripts/build.mjs",
+    "package": "node scripts/package.mjs",
     "check": "node scripts/check.mjs"
   },
   "keywords": [
