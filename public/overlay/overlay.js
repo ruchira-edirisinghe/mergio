@@ -365,9 +365,26 @@
     return el;
   }
 
+  /** Likes look like a normal message from that viewer, with a red-pink glow and a beating heart.
+      The count keeps going up in place while they keep tapping. */
+  function renderLike(m) {
+    const ev = m.event || {};
+    const el = h('div', `msg chat like-msg p-${m.platform}`);
+    const bubble = h('div', 'bubble');
+    bubble.appendChild(head(m));
+    const text = h('div', 'body');
+    const heart = h('span', 'lk-ic'); heart.appendChild(mergioIcon('heart'));
+    text.append(heart, h('span', 'lk', ` ${ev.title || 'liked the LIVE'}`));
+    if (ev.amount) text.appendChild(h('span', 'amt', ev.amount));
+    bubble.appendChild(text);
+    el.appendChild(bubble);
+    return el;
+  }
+
   function build(m) {
     const compact = COMPACT.has(m.type) || (m.type === 'follow' && S.appearance.followStyle === 'pill');
-    const el = compact ? renderPill(m)
+    const el = m.type === 'like' ? renderLike(m)
+      : compact ? renderPill(m)
       : m.event && m.type !== 'chat' ? (S.appearance.eventStyle === 'card' ? renderCard(m) : renderLine(m))
       : renderChat(m);
     el.dataset.id = m.id;
@@ -478,6 +495,8 @@
       amount.textContent = m.event.amount.startsWith(' ') ? m.event.amount : (amount.classList.contains('amt') ? ' ' : '') + m.event.amount;
       amount.classList.remove('bump'); void amount.offsetWidth; amount.classList.add('bump');
     }
+    const heart = el.querySelector('.lk-ic');
+    if (heart) { heart.classList.remove('beat'); void heart.offsetWidth; heart.classList.add('beat'); }
     const card = el.querySelector('.card');
     if (card) card.classList.toggle('live-combo', !!m.event?.live);
     if (el.classList.contains('alert-line')) el.classList.toggle('live-combo', !!m.event?.live);
