@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mergio</title>
   <link rel="icon" href="/shared/logo.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/shared/app-192.png">
+  <meta name="theme-color" content="#0b0b10">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="/dashboard/dashboard.css">
@@ -30,6 +33,7 @@
           <p id="pageSub"></p>
         </div>
         <div class="top-actions">
+          <button class="btn ghost" id="btnInstall" title="Open Mergio in its own window instead of a browser tab" hidden></button>
           <button class="btn ghost" id="btnGuide" title="Step-by-step guide"></button>
           <button class="btn ghost" id="btnTest" title="Send sample messages and alerts to the overlay"></button>
           <button class="btn ghost" id="btnPreview" title="Show the live preview" hidden></button>
@@ -66,6 +70,7 @@
   <script src="/shared/icons.js"></script>
   <script src="/shared/glyphs.js"></script>
   <script src="/dashboard/core.js"></script>
+  <script src="/dashboard/install.js"></script>
   <script src="/dashboard/pages/home.js"></script>
   <script src="/dashboard/pages/chats.js"></script>
   <script src="/dashboard/pages/obs.js"></script>
