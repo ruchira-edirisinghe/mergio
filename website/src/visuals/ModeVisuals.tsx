@@ -5,6 +5,7 @@ import { Face } from '../components/Face';
 import { AlertCard, ChatFeed, THEMES, type ThemeId } from '../components/Overlay';
 import { ALERTS, CHATS, SCRIPT, type ChatItem } from '../lib/chat';
 import { useCycle, useFeed, useInterval } from '../lib/hooks';
+import { VideoBackdrop } from './Backdrop';
 
 /** Renders a fixed-width design and scales it down to fit its box (so the mock-ups look the same on phones). */
 export function Scaled({ width, children, className = '' }: { width: number; children: ReactNode; className?: string }) {
@@ -193,8 +194,7 @@ export function ObsDock({ active }: { active: boolean }) {
         <div className="grid grid-cols-[1fr_290px]">
           <div className="p-3">
             <div className="relative aspect-video overflow-hidden rounded-md bg-black">
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(170deg, #160b33, #3d1460 55%, #c2307f 75%, #0d0620 76%)' }} />
-              <div className="absolute inset-x-0 bottom-0 h-[24%] grid-floor opacity-60" style={{ animationPlayState: active ? 'running' : 'paused' }} />
+              <VideoBackdrop clip="live-streamer" active={active} />
               <div className="absolute bottom-[6%] right-[3%] top-[30%] w-[34%] outline outline-[1.5px] outline-[#ff4d4d]/80">
                 <ChatFeed items={overlay} fontSize={10.5} className="absolute inset-0 p-1.5 [mask-image:linear-gradient(180deg,transparent,#000_25%)]" />
               </div>

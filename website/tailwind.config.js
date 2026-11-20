@@ -8,7 +8,8 @@ export default {
       },
       colors: {
         page: '#F5F5F5',
-        ink: '#0b0b10',
+        ink: '#07060c',
+        surface: '#121019',
         plum: '#2B2644',
         night: '#13111f',
         violet: '#7c4dff',

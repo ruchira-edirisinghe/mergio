@@ -82,3 +82,16 @@ export function useLatestVersion() {
   }, []);
   return version;
 }
+
+/** True while the media query matches (false during the first render). */
+export function useMediaQuery(query: string) {
+  const [match, setMatch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const update = () => setMatch(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [query]);
+  return match;
+}

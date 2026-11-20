@@ -1,11 +1,12 @@
 import { ArrowUpRight } from 'lucide-react';
+import type { CSSProperties } from 'react';
 import { GithubIcon, PlatformIcon, PLATFORMS } from '../components/brand';
 import { AlertCard, ChatFeed } from '../components/Overlay';
 import { PillLink } from '../components/ui';
 import { ALERTS, SCRIPT } from '../lib/chat';
 import { useCycle, useFeed, useInView, useLatestVersion } from '../lib/hooks';
 import { RELEASES, REPO } from '../lib/links';
-import { StreamScene } from '../visuals/StreamScene';
+import { LiveHud, VideoBackdrop } from '../visuals/Backdrop';
 
 const ALERT_LIFE = 5.5;
 
@@ -17,32 +18,37 @@ export function Hero() {
 
   return (
     <section className="flex-1 px-4 sm:px-6 pt-20 pb-4 sm:pb-6 flex items-end">
-      <div ref={ref} className="relative w-full rounded-2xl overflow-hidden bg-night lg:h-[calc(100vh-96px)] lg:min-h-[640px]">
-        <StreamScene active={inView} hud="right" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0716]/90 via-[#0a0716]/45 to-[#0a0716]/10 lg:to-transparent" />
+      <div ref={ref} className="relative w-full rounded-2xl overflow-hidden bg-night ring-1 ring-white/10 lg:h-[calc(100vh-96px)] lg:min-h-[660px]">
+        <VideoBackdrop clip="live-streamer" tall="live-streamer-tall" active={inView} />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#07060c]/85 via-[#07060c]/60 to-[#07060c]/85 lg:bg-gradient-to-r lg:from-[#07060c]/95 lg:via-[#07060c]/65 lg:to-[#07060c]/30" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(124,77,255,.25),transparent_55%)]" />
+        <LiveHud active={inView} className="absolute bottom-4 right-4 z-20 justify-end sm:bottom-6 sm:right-6" />
 
         <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] xl:grid-cols-[minmax(0,1fr)_460px]">
           <div className="flex flex-col items-start justify-start p-6 pt-12 sm:p-10 sm:pt-16 lg:p-12 lg:pt-24 xl:pt-32">
             <a href={RELEASES} target="_blank" rel="noopener noreferrer"
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1.5 pl-1.5 pr-3 text-sm text-white/85 backdrop-blur-md hover:bg-white/15 transition-colors">
+              style={{ '--d': '0ms' } as CSSProperties}
+              className="word-in mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1.5 pl-1.5 pr-3 text-sm text-white/85 backdrop-blur-md hover:bg-white/15 transition-colors">
               <span className="rounded-full bg-gradient-to-r from-violet to-pink px-2.5 py-0.5 text-xs font-semibold text-white">{version}</span>
               Free &amp; open source
               <ArrowUpRight className="h-4 w-4" />
             </a>
             <h1 className="text-white text-5xl md:text-6xl xl:text-7xl font-medium leading-[1.02] max-w-xl mb-5" style={{ letterSpacing: '-0.045em' }}>
-              Every live chat.<br /><span className="text-gradient">One overlay.</span>
+              {['Every', 'live', 'chat.'].map((w, k) => <span key={w} className="word-in inline-block mr-[.22em]" style={{ '--d': `${120 + k * 90}ms` } as CSSProperties}>{w}</span>)}
+              <br />
+              {['One', 'overlay.'].map((w, k) => <span key={w} className="word-in inline-block mr-[.22em] text-gradient-live pb-1" style={{ '--d': `${420 + k * 110}ms` } as CSSProperties}>{w}</span>)}
             </h1>
-            <p className="text-white/70 text-base md:text-lg max-w-md mb-8 leading-relaxed">
-              Mergio merges YouTube, Twitch, Kick, TikTok and Facebook chat into one good-looking OBS overlay, with real gift alerts and everyone's profile picture. It runs on your own PC, no accounts needed.
+            <p className="word-in text-white/75 text-base md:text-lg max-w-md mb-8 leading-relaxed" style={{ '--d': '700ms' } as CSSProperties}>
+              YouTube, Twitch, Kick, TikTok and Facebook chat, merged into one beautiful OBS overlay. Free, and no accounts.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <PillLink href={RELEASES} light size="lg" external>Download free</PillLink>
+            <div className="word-in flex flex-wrap items-center gap-3" style={{ '--d': '850ms' } as CSSProperties}>
+              <PillLink href={RELEASES} size="lg" external>Download free</PillLink>
               <a href={REPO} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2.5 rounded-full border border-white/20 px-6 py-3.5 text-base md:text-lg font-medium text-white hover:bg-white/10 transition-colors duration-200">
                 <GithubIcon className="h-5 w-5" />View on GitHub
               </a>
             </div>
-            <p className="mt-4 text-sm text-white/45">Windows · macOS · Linux</p>
+            <p className="word-in mt-4 text-sm text-white/45" style={{ '--d': '950ms' } as CSSProperties}>Windows · macOS · Linux</p>
 
             <div className="mt-12 lg:mt-auto w-full max-w-md overflow-hidden marquee-mask" aria-label="Works with YouTube, Twitch, Kick, TikTok and Facebook">
               <div className="marquee-track">

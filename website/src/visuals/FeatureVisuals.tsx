@@ -4,7 +4,7 @@ import { MergioMark, PlatformIcon, PLATFORMS, platformColor, type PlatformId } f
 import { Face } from '../components/Face';
 import { GiftArt } from '../components/GiftArt';
 import { ChatFeed } from '../components/Overlay';
-import { StreamScene } from './StreamScene';
+import { VideoBackdrop } from './Backdrop';
 import { CHATS, GIFTS, USERS, avatarGradient, initial, type GiftId } from '../lib/chat';
 import { useCycle, useFeed, useInterval } from '../lib/hooks';
 
@@ -33,7 +33,7 @@ export function MergeFlow({ active }: { active: boolean }) {
                 <animateMotion dur="2.2s" begin={`${i * .37 + k * 1.1}s`} repeatCount="indefinite" path={d} keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".45 0 .55 1" />
               </circle>
             ))}
-            <circle cx="58" cy={NODE_Y[i]} r="25" fill="#fff" stroke="rgba(0,0,0,.06)" />
+            <circle cx="58" cy={NODE_Y[i]} r="25" fill="#1b1826" stroke="rgba(255,255,255,.12)" />
             <PlatformIcon id={p.id} colored x={46} y={NODE_Y[i] - 12} width={24} height={24} />
           </g>
         );
@@ -42,13 +42,13 @@ export function MergeFlow({ active }: { active: boolean }) {
         <animate attributeName="stroke-dashoffset" from="24" to="0" dur=".8s" repeatCount="indefinite" />
       </path>
       <circle cx="330" cy="152" r="78" fill="url(#mf-glow)" />
-      <circle cx="330" cy="152" r="48" fill="#13111f" />
+      <circle cx="330" cy="152" r="48" fill="#07060c" />
       <circle cx="330" cy="152" r="48" fill="none" stroke="#7c4dff" strokeWidth="2" opacity=".6">
         <animate attributeName="r" values="48;64" dur="1.8s" repeatCount="indefinite" />
         <animate attributeName="opacity" values=".6;0" dur="1.8s" repeatCount="indefinite" />
       </circle>
       <MergioMark x={302} y={124} width={56} height={56} />
-      <rect x="452" y="48" width="176" height="208" rx="14" fill="#13111f" />
+      <rect x="452" y="48" width="176" height="208" rx="14" fill="#07060c" stroke="rgba(255,255,255,.1)" />
       <text x="466" y="72" fill="#ffffff" fillOpacity=".45" fontSize="10.5" fontWeight="600" letterSpacing=".08em">YOUR OVERLAY</text>
       <foreignObject x="458" y="80" width="166" height="170">
         <ChatFeed items={lines} fontSize={9.5} showAvatar={false} className="h-full" style={{ gap: '.3em' }} />
@@ -150,13 +150,14 @@ export function Placement({ active }: { active: boolean }) {
   ];
   return (
     <div className="w-full" aria-hidden="true">
-      <div className="mb-4 inline-flex rounded-full bg-black/5 p-1">
+      <div className="mb-4 inline-flex max-w-full flex-wrap rounded-full bg-white/[.06] p-1">
         {PLACES.map(([id, label], k) => (
-          <span key={id} className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-300 ${k === i ? 'bg-black text-white' : 'text-black/55'}`}>{label}</span>
+          <span key={id} className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-300 ${k === i ? 'bg-white text-black' : 'text-white/60'}`}>{label}</span>
         ))}
       </div>
       <div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl bg-night">
-        <StreamScene hud={false} ship={false} active={active} />
+        <VideoBackdrop clip="night-gamer" active={active} />
+        <div className="absolute inset-0 bg-black/25" />
         {place !== 'chat' && (
           <div key={`ov-${i}`} className="absolute left-1/2 top-[10%] w-[34%] -translate-x-1/2">
             <div className="anim-pop rounded-lg border border-[#fe2c55] bg-[#1a1530]/95 px-2 pb-2 pt-4 text-center shadow-[0_0_24px_rgba(254,44,85,.45)]">
@@ -190,7 +191,7 @@ export function TidyChat({ active }: { active: boolean }) {
         <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 -rotate-90"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" strokeOpacity=".25" strokeWidth="3" /><circle cx="10" cy="10" r="8" fill="none" stroke="#c9b8ff" strokeWidth="3" strokeDasharray="50.3" style={{ animation: active ? 'tidy-ring 4.5s linear infinite' : 'none' } as CSSProperties} /></svg>
         Fade after 5s
       </span>
-      <ChatFeed items={items} fade={4.5} fontSize={12.5} className="absolute inset-0 pt-8" />
+      <ChatFeed items={items} fade={active ? 4.5 : 0} fontSize={12.5} className="absolute inset-0 pt-8" />
     </div>
   );
 }

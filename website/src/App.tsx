@@ -9,7 +9,7 @@ import { DownloadCta, Footer } from './sections/Closing';
 
 export default function App() {
   return (
-    <div id="top" className="flex flex-col bg-[#F5F5F5]">
+    <div id="top" className="flex flex-col bg-ink">
       <div className="relative flex flex-col lg:h-screen lg:overflow-hidden">
         <Navbar />
         <Hero />
