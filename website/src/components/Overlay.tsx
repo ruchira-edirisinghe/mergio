@@ -120,24 +120,9 @@ export function AlertCard({ item, life = 5, size = 1, children }: { item: Exclud
       <div className="mg-ac-lbl"><PlatformIcon id={item.user.platform} /> {ev.label}</div>
       <div className="mg-ac-ttl">{ev.title}</div>
       <div className="mg-ac-sub">{ev.sub}</div>
-      <div className="mg-ac-shine" />
-      <Burst />
+      <div className="mg-ac-timer" />
       {children}
     </div>
   );
 }
 
-const BURST = Array.from({ length: 16 }, (_, i) => {
-  const a = (i / 16) * Math.PI * 2 + (i % 3) * .2;
-  const d = 4.5 + (i % 4) * 1.4;
-  return { x: `${Math.cos(a) * d}em`, y: `${Math.sin(a) * d * .8 - 1}em`, r: `${i * 47}deg`, c: ['var(--ev)', '#fff', '#ffd36b', '#6bf3ff'][i % 4] };
-});
-
-/** Confetti that flies out when an alert pops in. */
-function Burst() {
-  return (
-    <span className="mg-burst">
-      {BURST.map((p, i) => <i key={i} style={{ '--x': p.x, '--y': p.y, '--r': p.r, '--c': p.c } as CSSProperties} />)}
-    </span>
-  );
-}

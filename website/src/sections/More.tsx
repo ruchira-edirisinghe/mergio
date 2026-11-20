@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AppWindow, Filter, Gift, Info, Layers, Lock, MessageSquare, Palette, Radar, ShieldCheck, Smile, Sparkles, Timer, Volume2, Zap, Plus, type LucideIcon } from 'lucide-react';
+import { AppWindow, Filter, Gift, Info, Layers, Lock, MessageSquare, Palette, Radar, RefreshCw, ShieldCheck, Smile, Sparkles, Timer, Volume2, Zap, Plus, type LucideIcon } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { Eyebrow } from '../components/ui';
 import { readme } from '../lib/links';
@@ -10,7 +10,7 @@ const ROW_A: [LucideIcon, string][] = [
 ];
 const ROW_B: [LucideIcon, string][] = [
   [MessageSquare, 'Name-on-top layout'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
-  [Info, 'Plain-words tips'], [AppWindow, 'Installs as an app'], [Lock, 'Private, no cloud'],
+  [Info, 'Plain-words tips'], [RefreshCw, 'Updates itself'], [AppWindow, 'Installs as an app'], [Lock, 'Private, no cloud'],
 ];
 
 function ChipRow({ items, reverse }: { items: [LucideIcon, string][]; reverse?: boolean }) {
@@ -55,6 +55,7 @@ const FAQ: [string, string][] = [
   ['Do I need API keys?', 'No. Type your username or paste a link. Only Facebook needs a free Page token, and the guide shows how.'],
   ['Does it work with Streamlabs or TikTok LIVE Studio?', 'Yes. Anything that can show a web page works. Paste the same overlay link.'],
   ['Where does my chat go?', 'Nowhere. Mergio runs on your own PC, with no telemetry and no cloud.'],
+  ['How do I update?', 'Mergio tells you when a new version is out. On Windows, one click downloads it, installs it and opens Mergio again.'],
 ];
 
 export function Faq() {

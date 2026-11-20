@@ -12,7 +12,7 @@ const MODES: Mode[] = [
   { id: 'chat', icon: MessageSquare, tab: 'Chat overlay', blurb: 'Every chat in one browser source', title: 'Chat overlay', clip: 'night-gamer', link: readme('step-5--make-it-yours'),
     text: 'Every platform in one browser source. Pick a look in one click.' },
   { id: 'alerts', icon: Bell, tab: 'Alerts overlay', blurb: 'Six animated alert styles', title: 'Alerts overlay', clip: 'celebrate', link: readme('step-6--choose-your-alerts'),
-    text: 'Six styles, from a confetti Spotlight to a quiet pill. Put it anywhere on your scene.' },
+    text: 'Six polished styles, from a TV-style banner to a neon sign. Put it anywhere on your scene.' },
   { id: 'panel', icon: Palette, tab: 'Control panel', blurb: 'Change anything, see it instantly', title: 'Control panel', clip: 'neon-gamer', dim: true, link: readme('step-3--open-mergio'),
     text: 'Friendly settings with plain-words tips. Every change shows in OBS instantly.' },
   { id: 'dock', icon: PanelRight, tab: 'Live chat dock', blurb: 'Read every chat inside OBS', title: 'Live chat dock', clip: 'rgb-desk', dim: true, link: readme('step-8--optional-control-mergio-from-inside-obs'),
