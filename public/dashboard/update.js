@@ -1,0 +1,165 @@
+/* Update popup: when a newer Mergio is out, show what's new and offer to update. On the installed Windows
+   app the update downloads and installs by itself; elsewhere the button opens the download page. */
+(() => {
+  'use strict';
+  const { h, icon, $ } = MG;
+  const SKIP = 'mg-update-later';
+  let dlg = null;
+  let waiting = false;
+
+  const ago = iso => {
+    const d = Math.round((Date.now() - new Date(iso)) / 864e5);
+    return !iso || isNaN(d) ? '' : d <= 0 ? 'Released today' : d === 1 ? 'Released yesterday' : d < 30 ? `Released ${d} days ago` : `Released ${new Date(iso).toLocaleDateString()}`;
+  };
+  const skipped = u => { try { return sessionStorage.getItem(SKIP) === u.latest; } catch { return false; } };
+  const later = u => { try { sessionStorage.setItem(SKIP, u.latest); } catch { /* private mode */ } };
+
+  /* ---------- sidebar pill ---------- */
+  function badge(u) {
+    let b = $('#updPill');
+    if (!u?.available) { b?.remove(); return; }
+    if (!b) {
+      b = h('button', { id: 'updPill', class: 'upd-pill', type: 'button', onclick: () => open(MG.st.update, true) },
+        h('span', { class: 'upd-dot' }), h('span', { class: 'lbl' }));
+      $('.brand').append(b);
+    }
+    b.querySelector('.lbl').textContent = `Update to v${u.latest}`;
+    b.title = `Mergio ${u.latest} is ready. Click to see what's new.`;
+  }
+
+  /* ---------- the popup ---------- */
+  function close(remember = true) {
+    if (!dlg || dlg.classList.contains('out')) return;
+    if (remember) later(MG.st.update);
+    const d = dlg;
+    d.classList.add('out');
+    const done = () => { d.close(); d.remove(); if (dlg === d) dlg = null; };
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) done(); else setTimeout(done, 260);
+  }
+
+  function open(u, force = false) {
+    if (!u?.available || dlg || (!force && skipped(u))) return;
+    const notes = (u.notes || []).slice(0, 6);
+    const list = h('ul', { class: 'upd-list' }, notes.map((n, i) => h('li', { style: `--i:${i}` },
+      h('span', { class: 'ic' }, icon('sparkle')),
+      h('div', {}, n.title ? h('b', { text: n.title }) : null, n.text ? h('p', { text: n.text }) : null))));
+    const more = (u.notes || []).length > notes.length || u.behind > 1;
+
+    const primary = h('button', { class: 'btn primary upd-go', type: 'button', onclick: () => go(u) },
+      icon(u.canInstall ? 'download' : 'external'), h('span', { text: u.canInstall ? 'Download and install' : 'Get the new version' }));
+    const actions = h('div', { class: 'upd-actions' },
+      h('button', { class: 'btn ghost', type: 'button', onclick: () => close() }, 'Not now'), primary);
+    const progress = h('div', { class: 'upd-progress', hidden: true },
+      h('div', { class: 'upd-bar' }, h('i')),
+      h('div', { class: 'upd-ptext' }, h('span', { class: 'st', text: 'Starting the download…' }), h('span', { class: 'pc', text: '' })));
+
+    dlg = h('dialog', { class: 'upd', 'aria-labelledby': 'updTitle' },
+      h('div', { class: 'upd-hero' },
+        h('div', { class: 'upd-glow' }), h('div', { class: 'upd-rings' }, h('i'), h('i'), h('i')),
+        h('div', { class: 'upd-logo' }, h('img', { src: '/shared/logo.svg', alt: '' })),
+        h('button', { class: 'upd-x', type: 'button', 'aria-label': 'Close', onclick: () => close() }, icon('plus'))),
+      h('div', { class: 'upd-body' },
+        h('div', { class: 'upd-vers' },
+          h('span', { class: 'old', text: `v${u.current}` }), h('span', { class: 'arr' }, icon('chevron')), h('span', { class: 'new', text: `v${u.latest}` }),
+          u.publishedAt ? h('span', { class: 'when', text: ago(u.publishedAt) }) : null),
+        h('h2', { id: 'updTitle' }, 'Mergio ', h('span', { class: 'grad', text: u.latest }), ' is here'),
+        h('p', { class: 'upd-sub', text: u.behind > 1 ? `You're ${u.behind} updates behind. Here's what you're missing:` : "Here's what's new:" }),
+        list,
+        more ? h('a', { class: 'upd-all', href: u.url, target: '_blank', rel: 'noopener' }, 'See everything that changed', icon('external')) : null,
+        h('div', { class: 'upd-warn' }, icon('info'),
+          h('p', {}, h('b', { text: 'Updating is highly recommended. ' }),
+            `Many bugs in v${u.current} have been fixed in v${u.latest}. Your chats, style and settings stay as they are.`)),
+        actions, progress));
+    dlg.addEventListener('cancel', e => { e.preventDefault(); if (!waiting) close(); });
+    dlg.addEventListener('click', e => { if (e.target === dlg && !waiting) close(); });
+    document.body.append(dlg);
+    dlg.showModal();
+    primary.focus();
+  }
+
+  async function go(u) {
+    if (!u.canInstall) { window.open(u.url, '_blank', 'noopener'); close(); return; }
+    try {
+      waiting = true;
+      dlg.classList.add('busy');
+      dlg.querySelector('.upd-actions').hidden = true;
+      dlg.querySelector('.upd-progress').hidden = false;
+      MG.st.update = await MG.api('POST', '/api/update/install', {});
+      show(MG.st.update);
+    } catch (e) { waiting = false; fail(e.message); }
+  }
+
+  function fail(msg) {
+    if (!dlg) return MG.toast(msg, true);
+    dlg.classList.remove('busy');
+    dlg.querySelector('.upd-actions').hidden = false;
+    dlg.querySelector('.upd-progress').hidden = true;
+    dlg.querySelector('.upd-go span').textContent = 'Try again';
+    MG.toast(msg, true);
+  }
+
+  /** Mirrors the download/install progress the app reports over the live connection. */
+  function show(u) {
+    const job = u?.job || {};
+    if (job.state === 'error' && waiting) { waiting = false; return fail(job.error || 'The update failed. Please try again.'); }
+    if (!dlg || !['downloading', 'installing'].includes(job.state)) return;
+    const bar = dlg.querySelector('.upd-bar'), st = dlg.querySelector('.upd-progress .st'), pc = dlg.querySelector('.upd-progress .pc');
+    if (job.state === 'downloading') {
+      bar.classList.remove('indet');
+      bar.firstChild.style.transform = `scaleX(${Math.max(0.02, job.progress)})`;
+      st.textContent = `Downloading Mergio ${u.latest}…`;
+      pc.textContent = `${Math.round(job.progress * 100)}%`;
+    } else {
+      bar.classList.add('indet');
+      st.textContent = 'Installing. Mergio will close and open again by itself…';
+      pc.textContent = '';
+      document.body.classList.add('updating');
+      watchRestart(u.latest);
+    }
+  }
+
+  /** Waits for the new version to answer, then reloads the panel. */
+  let watching = false;
+  function watchRestart(version) {
+    if (watching) return;
+    watching = true;
+    const started = Date.now();
+    const tick = async () => {
+      try {
+        const st = await fetch('/api/state', { cache: 'no-store' }).then(r => r.json());
+        if (st.version === version) { try { sessionStorage.setItem('mg-updated', version); } catch { /* ignore */ } location.reload(); return; }
+      } catch { /* still restarting */ }
+      if (Date.now() - started > 120000) { document.body.classList.remove('updating'); waiting = false; fail('The update is taking longer than expected. Open Mergio again from its icon.'); watching = false; return; }
+      setTimeout(tick, 1500);
+    };
+    setTimeout(tick, 2500);
+  }
+
+  /** After the reload: a short "you're up to date" moment. */
+  function celebrate() {
+    let v = null;
+    try { v = sessionStorage.getItem('mg-updated'); sessionStorage.removeItem('mg-updated'); } catch { /* ignore */ }
+    if (!v) return;
+    const t = h('div', { class: 'upd-done', role: 'status' }, h('span', { class: 'ok' }, icon('check')),
+      h('div', {}, h('b', { text: `Updated to v${v}` }), h('span', { text: 'You have the newest Mergio.' })));
+    document.body.append(t);
+    setTimeout(() => t.classList.add('out'), 4200);
+    setTimeout(() => t.remove(), 4800);
+  }
+
+  MG.openUpdate = (force = true) => open(MG.st.update, force);
+  MG.on('ready', () => {
+    celebrate();
+    const u = MG.st.update;
+    badge(u);
+    // Give the opening animation a moment before the popup appears.
+    if (u?.available) setTimeout(() => open(MG.st.update), 900);
+  });
+  MG.on('update', u => {
+    const was = MG.st.update?.available;
+    MG.st.update = u;
+    badge(u);
+    show(u);
+    if (u.available && !was) open(u);
+  });
+})();

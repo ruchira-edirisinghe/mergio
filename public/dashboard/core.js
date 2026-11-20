@@ -351,6 +351,7 @@
       }
       if (d.op === 'clear') { MG.feed = []; emit('feed'); }
       if (d.op === 'settings') syncSettings(d.settings);
+      if (d.op === 'update') emit('update', d.update);
       if (d.op === 'overlays') { MG.overlays = { count: d.count, obs: d.obs, alerts: d.alerts || { count: 0, obs: false } }; if (d.count) MG.st.settings.advanced.overlaySeen = true; emit('overlays'); renderNav(); }
     };
     ws.onclose = () => {
