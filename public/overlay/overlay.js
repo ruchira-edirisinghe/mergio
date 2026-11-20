@@ -446,7 +446,7 @@
     if (animate && S.appearance.animation !== 'none') el.classList.add(`enter-${S.appearance.animation}`);
     insert(el);
     els.set(m.id, el);
-    if (grouped) indentGrouped(el, lastChat.first);
+    if (grouped) indentGrouped(el, lastChat.first); else alignText(el);
     lastChat = m.type === 'chat' ? { key, time: m.time, el, first: grouped ? lastChat.first : el } : null;
     const secs = hideAfter();
     if (secs) scheduleHide(el, m.event && m.type !== 'chat' ? secs * 2 : secs);
@@ -476,8 +476,38 @@
 
   /** Follow-up messages from the same person: a bubble of their own, tucked in under the profile picture
       (or under the name when pictures are off), like the first message's text column. */
+  /** Name on top: the message starts where the badges (or the name) start, right after the profile
+      picture, instead of under the picture. Measured once the message is on screen. */
+  const TEXT_START = '.badges, .shared-tag, .name, .pron';
+  function alignText(el) {
+    const bubble = el.querySelector(':scope > .bubble');
+    if (!bubble) return;
+    bubble.style.removeProperty('--text-x');
+    delete bubble.dataset.textX;
+    if (S.general.inlineChat || S.appearance.align === 'right' || el.classList.contains('grouped')) return;
+    const hd = bubble.querySelector(':scope > .head');
+    const anchor = hd && [...hd.children].find(c => c.matches(TEXT_START));
+    if (!anchor || anchor === hd.firstElementChild) return; // nothing in front of the name: already lined up
+    const cs = getComputedStyle(bubble);
+    const px = anchor.offsetLeft - (parseFloat(cs.paddingLeft) || 0);
+    if (px <= 0) return;
+    bubble.dataset.textX = String(px);
+    const em = `${(px / (parseFloat(cs.fontSize) || 16)).toFixed(3)}em`;
+    bubble.style.setProperty('--text-x', em);
+    // An alert's "gifted 10 subs to the community" can wrap onto its own line: start it there too.
+    const what = hd.querySelector(':scope > .what');
+    if (what) { what.style.marginLeft = ''; if (what.offsetTop > anchor.offsetTop + 2) what.style.marginLeft = em; }
+  }
+  // A web font that finishes loading can change the widths in front of the name.
+  document.fonts?.addEventListener?.('loadingdone', () => { for (const el of chat.querySelectorAll(':scope > .msg:not(.grouped)')) alignText(el); });
+
   function indentGrouped(el, first) {
     const bubble = first?.querySelector('.bubble');
+    // Name on top: follow-ups line up with the first message's text.
+    if (!S.general.inlineChat && S.appearance.align !== 'right' && bubble?.dataset.textX) {
+      el.style.setProperty('margin-left', `${Math.round(Number(bubble.dataset.textX))}px`);
+      return;
+    }
     const anchor = bubble?.querySelector('.av') || bubble?.querySelector('.name');
     if (!anchor) return;
     // offsetLeft ignores the enter animation's transform, so this is right even mid-animation.
