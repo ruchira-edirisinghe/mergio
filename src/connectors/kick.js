@@ -2,6 +2,7 @@
 const WebSocket = require('ws');
 const { Connector, textParts } = require('./base');
 const { curlJson, backoff, log } = require('../util');
+const { kickGiftImage } = require('../gifts');
 
 /* Kick's realtime service is Centrifugo (it replaced Pusher). Guests get a short-lived token from Kick's web API. */
 const WEB_API = 'https://web.kick.com/api/v1/realtime';
@@ -170,7 +171,7 @@ class KickConnector extends Connector {
       case 'App\\Events\\KicksGifted': {
         const g = d.gift || {};
         const amount = Number(g.amount) || 0;
-        return this.push({ type: 'gift', user: { ...this.simpleUser(d.sender?.username), color: d.sender?.username_color || '' }, parts: textParts(d.message || ''), event: { kind: 'kicks', title: `sent ${g.name || 'Kicks'}`, amount: `${amount.toLocaleString()} Kicks`, color: KICK_GREEN, value: amount } });
+        return this.push({ type: 'gift', user: { ...this.simpleUser(d.sender?.username), color: d.sender?.username_color || '' }, parts: textParts(d.message || ''), event: { kind: 'kicks', title: `sent ${g.name || 'Kicks'}`, amount: `${amount.toLocaleString()} Kicks`, image: kickGiftImage(g.gift_id), color: KICK_GREEN, value: amount } });
       }
       case 'App\\Events\\FollowersUpdated':
         if (d.followed && d.username) return this.push({ type: 'follow', user: this.simpleUser(d.username), event: { kind: 'follow', title: 'followed', color: KICK_GREEN } });
