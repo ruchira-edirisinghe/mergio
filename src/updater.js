@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
-const { isSea, fetchJson, log } = require('./util');
+const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
 
 const REPO = 'ruchira-edirisinghe/mergio';
@@ -16,6 +16,10 @@ const CHECK_EVERY = 6 * 60 * 60 * 1000;
 const current = process.env.MERGIO_FAKE_VERSION || pkg.version; // the fake version is only for testing the popup
 let info = { current, latest: null, available: false, notes: [], url: `https://github.com/${REPO}/releases/latest`, checkedAt: 0 };
 let job = { state: 'idle', progress: 0, error: '' };
+// "What's new" after an update: the last version whose notes the user has seen, kept next to the settings.
+const SEEN_FILE = path.join(DATA_DIR, 'version.json');
+let seen = null;
+let installed = { version: current, notes: [], url: `https://github.com/${REPO}/releases/tag/v${current}`, publishedAt: null };
 let listeners = [];
 
 /** 1.10.0 > 1.9.2; ignores a leading "v" and any "-beta" part. */
@@ -53,8 +57,24 @@ function installDir() {
 }
 
 function view() {
-  return { ...info, canInstall: !!(info.available && info.asset && installDir()), job };
+  const whatsNew = { ...installed, show: !!seen && seen !== current };
+  return { ...info, canInstall: !!(info.available && info.asset && installDir()), job, whatsNew };
 }
+
+/** Reads which version's notes were last shown. A brand-new user gets the tour instead, so they start "seen". */
+function loadSeen(isNewUser) {
+  try { seen = JSON.parse(fs.readFileSync(SEEN_FILE, 'utf8')).seen || null; } catch { seen = null; }
+  // Versions before this one never wrote the file: an existing user is coming from one of them.
+  if (!seen) seen = isNewUser ? current : 'unknown';
+  if (seen === current) saveSeen();
+  else log('update', `updated to ${current} (last notes seen: ${seen})`);
+}
+function saveSeen() {
+  seen = current;
+  try { fs.writeFileSync(SEEN_FILE, JSON.stringify({ seen: current }, null, 2)); } catch (e) { log('update', `could not save ${SEEN_FILE}: ${e.message}`); }
+}
+/** The user closed the "What's new" popup. */
+function markSeen() { saveSeen(); emit(); return view(); }
 
 function emit() { for (const fn of listeners) { try { fn(view()); } catch { /* ignore */ } } }
 
@@ -65,6 +85,9 @@ async function check() {
       .sort((a, b) => (newer(a.tag_name, b.tag_name) ? -1 : newer(b.tag_name, a.tag_name) ? 1 : 0));
     const rel = list[0];
     if (!rel) throw new Error('no releases found');
+    // Notes of the version that is running now, for the "What's new" popup after an update.
+    const mine = list.find(r => !newer(r.tag_name, current) && !newer(current, r.tag_name));
+    if (mine) installed = { version: current, notes: parseNotes(mine.body).slice(0, 8), url: mine.html_url || installed.url, publishedAt: mine.published_at };
     const latest = String(rel.tag_name).replace(/^v/i, '');
     const asset = (rel.assets || []).find(a => a.name === WIN_ASSET);
     // Someone a few versions behind sees what's new in all of them, newest first.
@@ -139,9 +162,11 @@ async function install(onQuit) {
   return view();
 }
 
-function start() {
-  setTimeout(check, 4000);
+function start({ isNewUser = false } = {}) {
+  loadSeen(isNewUser);
+  // Fetch the notes straight away when the "What's new" popup is waiting for them.
+  setTimeout(check, seen !== current ? 300 : 4000);
   setInterval(check, CHECK_EVERY).unref();
 }
 
-module.exports = { start, check, install, view, newer, parseNotes, onChange: fn => listeners.push(fn) };
+module.exports = { start, check, install, view, markSeen, newer, parseNotes, onChange: fn => listeners.push(fn) };

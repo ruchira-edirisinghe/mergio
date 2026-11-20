@@ -121,6 +121,7 @@ function createServer(manager, { onQuit }) {
         }
         if (p === '/api/update' && req.method === 'GET') return send(res, 200, updater.view());
         if (p === '/api/update/check' && req.method === 'POST') return send(res, 200, await updater.check());
+        if (p === '/api/update/seen' && req.method === 'POST') return send(res, 200, updater.markSeen());
         if (p === '/api/update/install' && req.method === 'POST') {
           if (!updater.view().canInstall) return send(res, 400, { error: 'This copy of Mergio can’t update itself. Download the new version instead.' });
           // Progress arrives over the live connection; Mergio closes itself once the installer takes over.
