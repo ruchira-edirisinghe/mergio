@@ -1,8 +1,9 @@
 <div align="center">
 
-<img src="assets/icon-256.png" width="96" alt="OmniChat logo">
-
-# OmniChat
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/zuno-chat-logo.svg">
+  <img src="assets/brand/zuno-chat-logo-dark-text.svg" width="520" alt="ZUNO-CHAT">
+</picture>
 
 **Every live chat in one beautiful overlay.**
 YouTube · Twitch · Kick · TikTok · Facebook, merged into a single OBS browser source.
@@ -12,13 +13,13 @@ YouTube · Twitch · Kick · TikTok · Facebook, merged into a single OBS browse
 ![Lightweight](https://img.shields.io/badge/memory-~50--80%20MB-22c55e)
 ![No account needed](https://img.shields.io/badge/login-not%20needed*-ffb341)
 
-<img src="docs/dashboard.png" alt="OmniChat control panel with live preview" width="900">
+<img src="docs/dashboard.png" alt="ZUNO-CHAT control panel with live preview" width="900">
 
 </div>
 
 ---
 
-Multistreaming means your viewers chat in five different places. OmniChat reads all of them at once and shows them as one good-looking chat on your stream, with real-time alerts for subs, gifts, Super Chats, raids, Bits, TikTok gifts and more.
+Multistreaming means your viewers chat in five different places. ZUNO-CHAT reads all of them at once and shows them as one good-looking chat on your stream, with real-time alerts for subs, gifts, Super Chats, raids, Bits, TikTok gifts and more.
 
 **Paste a link. Press Enter. Done.** There are no developer accounts or API keys to set up, and no cloud service between you and your chat. It all runs on your own PC.
 
@@ -39,8 +40,8 @@ Multistreaming means your viewers chat in five different places. OmniChat reads 
 
 ## Features
 
-- 🔗 **Paste-and-go connections.** Paste any stream or channel link. OmniChat detects the platform, connects, and reconnects by itself if the connection drops.
-- ⏳ **Auto-connect when you go live.** Add your YouTube or TikTok channel once. OmniChat waits and connects the moment your stream starts.
+- 🔗 **Paste-and-go connections.** Paste any stream or channel link. ZUNO-CHAT detects the platform, connects, and reconnects by itself if the connection drops.
+- ⏳ **Auto-connect when you go live.** Add your YouTube or TikTok channel once. ZUNO-CHAT waits and connects the moment your stream starts.
 - 🎉 **Subscriber & follower alerts** as big animated cards that name the platform (e.g. **NEW FOLLOWER · on TikTok**, **NEW SUBSCRIBER · on Kick**), with a little celebration burst.
 - 🎁 **Alerts that look the part:**
   - TikTok gifts with the real gift artwork, and combos that count up live (×1 → ×10 → ×50)
@@ -73,9 +74,9 @@ Multistreaming means your viewers chat in five different places. OmniChat reads 
 
 ## Quick start (2 minutes)
 
-1. **Download** the latest `OmniChat` for your system from the [**Releases page**](https://github.com/ruchira-edirisinghe/omnichat/releases/latest):
-   - Windows: `OmniChat-windows-x64.zip`. Unzip it anywhere (for example `D:\Software\OmniChat`) and double-click **OmniChat.exe**.
-   - macOS / Linux: download the matching file, then run `chmod +x omnichat && ./omnichat`.
+1. **Download** the latest `ZUNO-CHAT` for your system from the [**Releases page**](https://github.com/ruchira-edirisinghe/zuno-chat/releases/latest):
+   - Windows: `ZUNO-CHAT-windows-x64.zip`. Unzip it anywhere (for example `D:\Software\ZUNO-CHAT`) and double-click **ZUNO-CHAT.exe**.
+   - macOS / Linux: download the matching file, then run `chmod +x zuno-chat && ./zuno-chat`.
 2. The **control panel** opens in your browser at `http://localhost:8787`.
 3. **Paste the link** of your live stream (or channel) into the big box and press **Enter**. Repeat for each platform.
 4. Go to **Add to OBS**, click **Copy**, and add it to OBS as a Browser Source ([details below](#add-the-overlay-to-obs)).
@@ -83,7 +84,7 @@ Multistreaming means your viewers chat in five different places. OmniChat reads 
 
 > **Windows SmartScreen** may say "Windows protected your PC" because the app isn't code-signed (signing certificates are expensive for free projects). Click **More info → Run anyway**. You can also [build it yourself](#build-the-app-yourself) from this source code.
 
-The app has no window. To close it, use **Advanced → Quit OmniChat**. Starting it again while it's already running just opens the control panel.
+The app has no window. To close it, use **Advanced → Quit ZUNO-CHAT**. Starting it again while it's already running just opens the control panel.
 
 **What links work?**
 
@@ -103,7 +104,7 @@ The app has no window. To close it, use **Advanced → Quit OmniChat**. Starting
 3. Width `500`, Height `800` (any size works; the chat fills the box).
 4. Click **OK**. Done. Works the same in Streamlabs Desktop, Meld, vMix, XSplit and TikTok LIVE Studio (as a browser/web source).
 
-**Control panel inside OBS:** *Docks → Custom Browser Docks…*, name `OmniChat`, URL `http://localhost:8787/dashboard`. Now you can read all chats and change settings without leaving OBS.
+**Control panel inside OBS:** *Docks → Custom Browser Docks…*, name `ZUNO-CHAT`, URL `http://localhost:8787/dashboard`. Now you can read all chats and change settings without leaving OBS.
 
 ## Customize the look
 
@@ -127,7 +128,7 @@ Useful options: `theme` (glass, neon, minimal, soft, retro), `fontSize`, `font`,
 ## Platform notes
 
 ### YouTube
-Uses the same public chat feed as YouTube's pop-out chat, so no API key and no quota. Paste a **video link** to read that stream, or your **channel link** (`youtube.com/@name`) to let OmniChat find your current live stream automatically (it checks every 30 s while you're offline).
+Uses the same public chat feed as YouTube's pop-out chat, so no API key and no quota. Paste a **video link** to read that stream, or your **channel link** (`youtube.com/@name`) to let ZUNO-CHAT find your current live stream automatically (it checks every 30 s while you're offline).
 
 ### Twitch
 Connects to Twitch chat anonymously (read-only), like a logged-out viewer. Badges, emotes (Twitch, 7TV, BTTV, FFZ), Bits with animated cheermotes, subs, gifts, raids, announcements, Hype Chats, Power-ups and watch streaks all work. Turn on **Viewers joining chat** in *Events* if you want join notices (Twitch only sends these for channels with fewer than about 1,000 chatters).
@@ -145,7 +146,7 @@ Facebook only shares live comments with apps that have a **Page access token**. 
 1. Open the [Graph API Explorer](https://developers.facebook.com/tools/explorer/) and log in with the account that manages your Page.
 2. On the right, under **User or Page**, pick **Get Page Access Token** and choose your Page.
 3. Add the permissions `pages_read_engagement` and `pages_show_list`, then click **Generate Access Token**.
-4. Copy the token into **OmniChat → Advanced → Facebook Page access token**.
+4. Copy the token into **ZUNO-CHAT → Advanced → Facebook Page access token**.
 5. Paste your live video link (`…/videos/1234567890`) on the Connections tab.
 
 Tokens from the Explorer expire after about an hour. For one that lasts: open the [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/), paste the token, click **Extend Access Token**, then use that long-lived *user* token in the Explorer again to get a Page token. Page tokens made from a long-lived user token don't expire.
@@ -155,8 +156,8 @@ Tokens from the Explorer expire after about an hour. For one that lasts: open th
 Requires [Node.js](https://nodejs.org) 20 or newer.
 
 ```bash
-git clone https://github.com/ruchira-edirisinghe/omnichat.git
-cd omnichat
+git clone https://github.com/ruchira-edirisinghe/zuno-chat.git
+cd zuno-chat
 npm install
 npm start
 ```
@@ -167,7 +168,7 @@ npm start
 
 ```bash
 npm install
-npm run build        # -> dist/OmniChat.exe (Windows) or dist/omnichat (macOS/Linux)
+npm run build        # -> dist/ZUNO-CHAT.exe (Windows) or dist/zuno-chat (macOS/Linux)
 ```
 
 The build bundles the code with esbuild and packs it, together with the web files, into a single executable using Node's built-in [Single Executable Applications](https://nodejs.org/api/single-executable-applications.html) feature. On Windows it also sets the icon and makes it a windowless app. Pushing a tag like `v1.0.1` builds Windows, macOS and Linux versions with GitHub Actions and attaches them to a release.
@@ -184,27 +185,27 @@ The build bundles the code with esbuild and packs it, together with the web file
 
 - One small Node.js process runs everything: platform connectors, a tiny HTTP + WebSocket server and your settings.
 - The overlay and control panel are plain HTML/CSS/JS pages served by that process; there's no framework and no build step for the UI.
-- Settings are saved to `data/config.json` **next to the app** (portable: copy the folder and your setup comes along). If that folder isn't writable, `%APPDATA%\OmniChat` (Windows) or `~/.config/OmniChat` is used.
+- Settings are saved to `data/config.json` **next to the app** (portable: copy the folder and your setup comes along). If that folder isn't writable, `%APPDATA%\ZUNO-CHAT` (Windows) or `~/.config/ZUNO-CHAT` is used.
 
 **Resource use:** about 45 MB of memory with nothing connected and 70–80 MB with very busy chats (tested with a 20k-viewer Twitch chat plus a TikTok LIVE), and close to 0% CPU. Message lists are capped, avatar lookups are cached and rate-limited, and the overlay animates only `transform`/`opacity`.
 
 ## Privacy & security
 
 - The server listens on **127.0.0.1 only**, so nothing on your network or the internet can reach it, and it rejects requests from other websites.
-- No telemetry and no analytics; OmniChat never phones home.
+- No telemetry and no analytics; ZUNO-CHAT never phones home.
 - Tokens and keys stay in your local `config.json` and are never sent to the overlay.
-- OmniChat only **reads** chat. It never posts, moderates or logs in as you.
+- ZUNO-CHAT only **reads** chat. It never posts, moderates or logs in as you.
 - Third-party services used for display only: profile pictures for Twitch (`decapi.me`) and Kick, Twitch pronouns (`pronouns.alejo.io`, only when enabled), 7TV/BTTV/FFZ emotes, TikTok signing (Euler Stream).
 
 ## Troubleshooting
 
 <details><summary><b>A chat says "Waiting"</b></summary>
-That platform isn't live yet, or the stream ended. OmniChat keeps checking and connects by itself. Twitch and Kick connect even while offline.
+That platform isn't live yet, or the stream ended. ZUNO-CHAT keeps checking and connects by itself. Twitch and Kick connect even while offline.
 </details>
 
 <details><summary><b>The overlay is empty in OBS</b></summary>
 
-- Check OmniChat is running: <code>http://localhost:8787</code> should open the control panel.
+- Check ZUNO-CHAT is running: <code>http://localhost:8787</code> should open the control panel.
 - Make sure the Browser Source URL is exactly the one from **Add to OBS**.
 - Press **Test** in the control panel; if test messages show up, the overlay works and chat will appear when people type.
 - Right-click the source → **Refresh**.
@@ -215,15 +216,15 @@ Make sure you are LIVE and the username is correct. Rate-limit messages go away 
 </details>
 
 <details><summary><b>Facebook says the token is invalid or expired</b></summary>
-Create a new Page token (see <a href="#facebook">Facebook</a>) and paste it in Advanced. OmniChat reconnects automatically.
+Create a new Page token (see <a href="#facebook">Facebook</a>) and paste it in Advanced. ZUNO-CHAT reconnects automatically.
 </details>
 
 <details><summary><b>Port 8787 is already used by another app</b></summary>
-Change the port in <b>Advanced</b>, restart OmniChat and update the URL in OBS. You can also start it with the environment variable <code>OMNICHAT_PORT=9000</code>.
+Change the port in <b>Advanced</b>, restart ZUNO-CHAT and update the URL in OBS. You can also start it with the environment variable <code>ZUNOCHAT_PORT=9000</code>.
 </details>
 
 <details><summary><b>Where are the logs?</b></summary>
-<code>data/omnichat.log</code> next to the app (trimmed automatically at 1 MB).
+<code>data/zuno-chat.log</code> next to the app (trimmed automatically at 1 MB).
 </details>
 
 ## For developers
@@ -265,7 +266,7 @@ scripts/           build.mjs (single executable), gen-icons.mjs
 
 ## Contributing
 
-Bug reports, ideas and pull requests are welcome. Please open an issue first for bigger changes. Platforms change their internals often; if a connector breaks, an issue with the log lines from `data/omnichat.log` helps a lot.
+Bug reports, ideas and pull requests are welcome. Please open an issue first for bigger changes. Platforms change their internals often; if a connector breaks, an issue with the log lines from `data/zuno-chat.log` helps a lot.
 
 ## Credits
 
@@ -275,7 +276,7 @@ Bug reports, ideas and pull requests are welcome. Please open an issue first for
 - [7TV](https://7tv.app), [BetterTTV](https://betterttv.com), [FrankerFaceZ](https://www.frankerfacez.com) for emotes; [pronouns.alejo.io](https://pronouns.alejo.io); [DecAPI](https://decapi.me)
 - Settings inspired by the excellent multichat widgets of the streaming community
 
-OmniChat isn't affiliated with or endorsed by YouTube, Twitch, Kick, TikTok or Meta. All trademarks belong to their owners.
+ZUNO-CHAT isn't affiliated with or endorsed by YouTube, Twitch, Kick, TikTok or Meta. All trademarks belong to their owners.
 
 ## License
 

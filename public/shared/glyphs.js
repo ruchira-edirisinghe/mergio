@@ -1,5 +1,5 @@
-/* OmniChat glyphs: small original line icons (24x24, stroke="currentColor") used for events and badges. MIT. */
-window.OMNI_GLYPHS = {
+/* ZUNO-CHAT glyphs: small original line icons (24x24, stroke="currentColor") used for events and badges. MIT. */
+window.ZUNO_GLYPHS = {
   gift: 'M3 10h18v4H3z M5 14h14v7H5z M12 10v11 M12 10c-2-4-6-4-6-1.5S10 10 12 10z M12 10c2-4 6-4 6-1.5S14 10 12 10z',
   star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z',
   heart: 'M12 20s-7-4.4-9-8.6C1.6 8.3 3.5 5 6.7 5c2 0 3.3 1.2 5.3 3.2C14 6.2 15.3 5 17.3 5c3.2 0 5.1 3.3 3.7 6.4C19 15.6 12 20 12 20z',
@@ -39,19 +39,19 @@ window.OMNI_GLYPHS = {
 };
 
 /** Returns an <svg> element for a glyph name (or a brand mark when the name is a platform). */
-window.omniIcon = function omniIcon(name, opts = {}) {
+window.zunoIcon = function zunoIcon(name, opts = {}) {
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
   svg.setAttribute('aria-hidden', 'true');
   if (opts.cls) svg.setAttribute('class', opts.cls);
-  const brand = window.OMNI_BRANDS && window.OMNI_BRANDS[name];
+  const brand = window.ZUNO_BRANDS && window.ZUNO_BRANDS[name];
   const path = document.createElementNS(NS, 'path');
   if (brand) {
     path.setAttribute('d', brand.path);
     path.setAttribute('fill', 'currentColor');
   } else {
-    path.setAttribute('d', window.OMNI_GLYPHS[name] || window.OMNI_GLYPHS.star);
+    path.setAttribute('d', window.ZUNO_GLYPHS[name] || window.ZUNO_GLYPHS.star);
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke', 'currentColor');
     path.setAttribute('stroke-width', opts.stroke || '2');

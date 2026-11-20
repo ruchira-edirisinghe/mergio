@@ -8,19 +8,27 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 /* ---------- data directory (portable: next to the app when writable) ---------- */
 function resolveDataDir() {
   const candidates = [];
-  if (process.env.OMNICHAT_DATA) candidates.push(process.env.OMNICHAT_DATA);
+  if (process.env.ZUNOCHAT_DATA) candidates.push(process.env.ZUNOCHAT_DATA);
   const exeDir = isSea() ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
   candidates.push(path.join(exeDir, 'data'));
   const home = process.env.APPDATA || process.env.XDG_CONFIG_HOME || path.join(require('node:os').homedir(), '.config');
-  candidates.push(path.join(home, 'OmniChat'));
+  candidates.push(path.join(home, 'ZUNO-CHAT'));
   for (const dir of candidates) {
     try {
       fs.mkdirSync(dir, { recursive: true });
       fs.accessSync(dir, fs.constants.W_OK);
+      migrateLegacy(dir, path.join(home, 'OmniChat'));
       return dir;
     } catch { /* try next */ }
   }
   return process.cwd();
+}
+
+/** Settings from versions released under the old name (OmniChat) are carried over once. */
+function migrateLegacy(dir, legacyDir) {
+  const from = path.join(legacyDir, 'config.json'), to = path.join(dir, 'config.json');
+  if (dir === legacyDir || fs.existsSync(to) || !fs.existsSync(from)) return;
+  try { fs.copyFileSync(from, to); } catch { /* start fresh */ }
 }
 
 function isSea() {
@@ -28,7 +36,7 @@ function isSea() {
 }
 
 const DATA_DIR = resolveDataDir();
-const LOG_FILE = path.join(DATA_DIR, 'omnichat.log');
+const LOG_FILE = path.join(DATA_DIR, 'zuno-chat.log');
 
 /* ---------- tiny logger (file + console, file is trimmed at 1 MB) ---------- */
 function log(scope, ...args) {

@@ -1,4 +1,4 @@
-/* OmniChat dashboard (control panel). Plain JS, no build step. */
+/* ZUNO-CHAT dashboard (control panel). Plain JS, no build step. */
 (() => {
   'use strict';
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -15,7 +15,7 @@
     for (const kid of kids.flat()) if (kid != null && kid !== false) e.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
     return e;
   };
-  const icon = (name, cls) => omniIcon(name, { cls });
+  const icon = (name, cls) => zunoIcon(name, { cls });
 
   let st = null;               // full state from /api/state
   let feed = [];               // live feed messages
@@ -394,11 +394,11 @@
         h('li', {}, 'In OBS, click ', h('kbd', { text: '+' }), ' under Sources and choose ', h('b', { text: 'Browser' }), '.'),
         h('li', {}, 'Paste the overlay link into ', h('b', { text: 'URL' }), '. Set Width ', h('kbd', { text: '500' }), ' and Height ', h('kbd', { text: '800' }), ' (any size works).'),
         h('li', {}, 'Leave ', h('b', { text: 'Custom CSS' }), ' empty and click OK. Move and resize it like any other source.'),
-        h('li', {}, 'Keep OmniChat running while you stream. It uses very little memory.'))));
-    c.append(h('section', { class: 'card' }, h('h2', { text: 'Control OmniChat from inside OBS' }), h('p', { class: 'sub', text: 'Dock this control panel in OBS so you can read every chat without leaving OBS.' }),
+        h('li', {}, 'Keep ZUNO-CHAT running while you stream. It uses very little memory.'))));
+    c.append(h('section', { class: 'card' }, h('h2', { text: 'Control ZUNO-CHAT from inside OBS' }), h('p', { class: 'sub', text: 'Dock this control panel in OBS so you can read every chat without leaving OBS.' }),
       h('ol', { class: 'steps' },
         h('li', {}, 'In OBS open ', h('b', { text: 'Docks → Custom Browser Docks…' }), ' (older versions: View → Docks).'),
-        h('li', {}, 'Name it ', h('b', { text: 'OmniChat' }), ' and use this URL: ', h('code', { text: dash }), ' ', h('button', { class: 'btn sm ghost', onclick: () => copy(dash) }, icon('copy'), 'Copy')),
+        h('li', {}, 'Name it ', h('b', { text: 'ZUNO-CHAT' }), ' and use this URL: ', h('code', { text: dash }), ' ', h('button', { class: 'btn sm ghost', onclick: () => copy(dash) }, icon('copy'), 'Copy')),
         h('li', {}, 'Tip: open the ', h('b', { text: 'Live chat' }), ' tab in the dock to read all chats in one list.'))));
     c.append(h('section', { class: 'card' }, h('h2', { text: 'Different looks per scene' }), h('p', { class: 'sub', text: 'Add settings to the link to override them for one browser source only, for example a bigger chat for your "Just Chatting" scene:' }),
       h('div', { class: 'urlbox' }, h('code', { text: `${url}?fontSize=28&theme=neon&align=right` }), h('button', { class: 'btn sm ghost', onclick: () => copy(`${url}?fontSize=28&theme=neon&align=right`) }, icon('copy'))),
@@ -420,14 +420,14 @@
       { key: 'tiktokSignApiKey', label: 'Euler Stream API key (optional)', hint: 'TikTok works without it. A free key from eulerstream.com raises the connection limits.', type: 'secret', wide: true },
     ]));
     const app = group('App', null, 'advanced', [
-      { key: 'openDashboardOnStart', label: 'Open this control panel when OmniChat starts', type: 'toggle' },
-      { key: 'port', label: 'Port', hint: 'Restart OmniChat after changing. The overlay link changes too.', type: 'number', min: 1024, max: 65535 },
+      { key: 'openDashboardOnStart', label: 'Open this control panel when ZUNO-CHAT starts', type: 'toggle' },
+      { key: 'port', label: 'Port', hint: 'Restart ZUNO-CHAT after changing. The overlay link changes too.', type: 'number', min: 1024, max: 65535 },
     ]);
     if (st.autostart?.supported) {
       app.querySelector('.fields').prepend(h('div', { class: 'f' },
         h('label', { for: 'f-autostart' }, 'Start with Windows', h('span', { class: 'hint', text: 'Runs quietly in the background so the overlay is always ready' })),
         h('span', { class: 'switch' }, h('input', { type: 'checkbox', id: 'f-autostart', checked: st.autostart.enabled, onchange: async e => {
-          try { st = await api('POST', '/api/autostart', { enabled: e.target.checked }); toast(e.target.checked ? 'OmniChat will start with Windows' : 'Removed from Windows startup'); }
+          try { st = await api('POST', '/api/autostart', { enabled: e.target.checked }); toast(e.target.checked ? 'ZUNO-CHAT will start with Windows' : 'Removed from Windows startup'); }
           catch (err) { e.target.checked = !e.target.checked; toast(err.message, true); }
         } }), h('span'))));
     }
@@ -442,12 +442,12 @@
         h('button', { class: 'btn', onclick: exportSettings }, icon('download'), 'Export style'),
         h('button', { class: 'btn', onclick: () => file.click() }, icon('upload'), 'Import style'), file,
         h('button', { class: 'btn danger', onclick: async () => { if (!confirm('Reset ALL overlay settings (your connections stay)?')) return; st = await api('POST', '/api/settings/reset', {}); render(); toast('All settings reset'); } }, icon('refresh'), 'Reset everything'),
-        h('button', { class: 'btn danger', onclick: async () => { if (!confirm('Quit OmniChat? The overlay will stop until you start it again.')) return; await api('POST', '/api/quit', {}); document.body.innerHTML = '<p style="padding:40px;font:16px Inter,sans-serif;color:#ccc">OmniChat has been closed. Start it again from the OmniChat app.</p>'; } }, icon('power'), 'Quit OmniChat'))));
+        h('button', { class: 'btn danger', onclick: async () => { if (!confirm('Quit ZUNO-CHAT? The overlay will stop until you start it again.')) return; await api('POST', '/api/quit', {}); document.body.innerHTML = '<p style="padding:40px;font:16px Inter,sans-serif;color:#ccc">ZUNO-CHAT has been closed. Start it again from the ZUNO-CHAT app.</p>'; } }, icon('power'), 'Quit ZUNO-CHAT'))));
   }
   function exportSettings() {
     const { sources, advanced, ...style } = st.settings;
     const blob = new Blob([JSON.stringify(style, null, 2)], { type: 'application/json' });
-    const a = h('a', { href: URL.createObjectURL(blob), download: 'omnichat-style.json' });
+    const a = h('a', { href: URL.createObjectURL(blob), download: 'zuno-chat-style.json' });
     document.body.append(a); a.click(); a.remove();
   }
 
@@ -459,11 +459,11 @@
       h('button', { class: 'btn primary', onclick: () => openGuide() }, icon('play'), 'Open the guide')));
     c.append(h('section', { class: 'card' }, h('h2', { text: 'Questions & fixes' }),
       qa('What links can I paste?', h('ul', {},
-        h('li', { text: 'YouTube: a live video link (youtube.com/watch?v=…, youtu.be/…, youtube.com/live/…) or your channel (youtube.com/@name). With a channel link OmniChat finds your live stream by itself.' }),
+        h('li', { text: 'YouTube: a live video link (youtube.com/watch?v=…, youtu.be/…, youtube.com/live/…) or your channel (youtube.com/@name). With a channel link ZUNO-CHAT finds your live stream by itself.' }),
         h('li', { text: 'Twitch: twitch.tv/yourname' }), h('li', { text: 'Kick: kick.com/yourname' }), h('li', { text: 'TikTok: tiktok.com/@yourname (or …/live)' }),
         h('li', { text: 'Facebook: the live video link (…/videos/1234567890 or facebook.com/watch/?v=…), plus a token (below).' }),
         h('li', { text: 'Shortcut: type "twitch:name", "kick:name", "tiktok:name" or "yt:@name".' }))),
-      qa('A chat says "Waiting"', h('p', { text: 'That platform is not live yet (or the stream ended). OmniChat keeps checking and connects automatically when you go live. You do not need to do anything.' })),
+      qa('A chat says "Waiting"', h('p', { text: 'That platform is not live yet (or the stream ended). ZUNO-CHAT keeps checking and connects automatically when you go live. You do not need to do anything.' })),
       qa('How do I set up Facebook?', h('ol', {},
         h('li', {}, 'Go to ', h('a', { href: 'https://developers.facebook.com/tools/explorer/', target: '_blank', rel: 'noopener' }, 'Graph API Explorer'), ' and log in.'),
         h('li', { text: 'Under "User or Page" choose your Page, and add the permissions pages_read_engagement and pages_show_list.' }),
@@ -471,8 +471,8 @@
         h('li', { text: 'For a token that does not expire after an hour, follow the "long-lived Page token" steps in the README.' }))),
       qa('TikTok does not connect', h('p', { text: 'Make sure you are LIVE and the username is right. TikTok connections go through the free Euler Stream sign service; if you see a rate-limit message, create a free API key at eulerstream.com and paste it in Advanced.' })),
       qa('Why can\'t I see Twitch follows or Kick joins?', h('p', { text: 'Those platforms only share them with logged-in apps (Twitch follows) or not at all (Kick and YouTube joins). Everything that is public is supported.' })),
-      qa('The overlay is empty in OBS', h('ul', {}, h('li', { text: 'Make sure OmniChat is running (this page loads).' }), h('li', { text: 'Use the exact link from "Add to OBS". Press "Test" to send a sample.' }), h('li', { text: 'Right-click the browser source → Refresh.' }))),
-      qa('Does it slow down my stream?', h('p', { text: 'No. OmniChat is a tiny background app (about 50–80 MB of memory) with no window of its own, and the overlay only animates with GPU-friendly effects.' }))));
+      qa('The overlay is empty in OBS', h('ul', {}, h('li', { text: 'Make sure ZUNO-CHAT is running (this page loads).' }), h('li', { text: 'Use the exact link from "Add to OBS". Press "Test" to send a sample.' }), h('li', { text: 'Right-click the browser source → Refresh.' }))),
+      qa('Does it slow down my stream?', h('p', { text: 'No. ZUNO-CHAT is a tiny background app (about 50–80 MB of memory) with no window of its own, and the overlay only animates with GPU-friendly effects.' }))));
   }
 
   /* ---------------- getting-started guide ---------------- */
@@ -480,9 +480,9 @@
   const mockMsg = (p, name, text) => h('div', { class: 'gm-msg', style: `--pc: var(--${p})` }, h('span', { class: 'gm-p' }, icon(p)), h('b', { text: name }), h('span', { text }));
   const GUIDE = [
     {
-      title: 'Welcome to OmniChat',
-      text: 'OmniChat puts the chats from YouTube, Twitch, Kick, TikTok and Facebook into one overlay for OBS. Gifts, subs, follows and Super Chats show up as alerts. This guide takes about a minute.',
-      art: () => h('div', { class: 'ga-welcome' }, h('img', { src: '/shared/logo.svg', alt: '', width: 64, height: 64 }),
+      title: 'Welcome to ZUNO-CHAT',
+      text: 'ZUNO-CHAT puts the chats from YouTube, Twitch, Kick, TikTok and Facebook into one overlay for OBS. Gifts, subs, follows and Super Chats show up as alerts. This guide takes about a minute.',
+      art: () => h('div', { class: 'ga-welcome' }, h('img', { src: '/shared/logo.svg', alt: '', width: 92, height: 92 }),
         h('div', { class: 'ga-orbit' }, ...PLATS.map((p, i) => h('span', { style: `--pc: var(--${p}); --i: ${i}` }, icon(p))))),
       points: ['Runs quietly in the background and uses very little memory.', 'Everything stays on your computer. No account needed.'],
     },
@@ -504,7 +504,7 @@
       title: '3. Add it to OBS',
       text: 'In OBS, click + under Sources, choose Browser, paste your overlay link and set the size to 500 × 800.',
       art: () => h('div', { class: 'ga-obs' },
-        h('div', { class: 'ga-win' }, h('i'), h('i'), h('i'), h('span', { text: 'Properties for "OmniChat"' })),
+        h('div', { class: 'ga-win' }, h('i'), h('i'), h('i'), h('span', { text: 'Properties for "ZUNO-CHAT"' })),
         h('div', { class: 'ga-row' }, h('span', { text: 'URL' }), h('code', { class: 'hl', text: st.overlayUrl })),
         h('div', { class: 'ga-row' }, h('span', { text: 'Width' }), h('code', { text: '500' }), h('span', { text: 'Height' }), h('code', { text: '800' }))),
       points: ['The link never changes, and style changes reach OBS instantly.', 'Optional: add the control panel as an OBS dock (see Add to OBS).'],
@@ -512,11 +512,11 @@
     },
     {
       title: "4. You're ready to go live",
-      text: 'Keep OmniChat running while you stream. Every alert names the platform it came from.',
+      text: 'Keep ZUNO-CHAT running while you stream. Every alert names the platform it came from.',
       art: () => h('div', { class: 'ga-alert', style: '--pc: var(--tiktok)' },
         h('span', { class: 'ga-label' }, 'NEW FOLLOWER', h('em', {}, icon('tiktok'), 'on TikTok')),
         h('div', { class: 'ga-alert-body' }, h('span', { class: 'ga-av' }, icon('follow')), h('div', {}, h('b', { text: 'mochi_moo' }), h('span', { text: 'followed' })))),
-      points: () => [st.autostart?.supported ? 'Turn on Start with Windows (Advanced) so the overlay is always ready.' : 'Start OmniChat before you go live; the overlay connects by itself.', 'Open this control panel any time from the OmniChat app icon.', 'Need this guide again? Click Guide at the top of any page.'],
+      points: () => [st.autostart?.supported ? 'Turn on Start with Windows (Advanced) so the overlay is always ready.' : 'Start ZUNO-CHAT before you go live; the overlay connects by itself.', 'Open this control panel any time from the ZUNO-CHAT app icon.', 'Need this guide again? Click Guide at the top of any page.'],
     },
   ];
 
@@ -547,7 +547,7 @@
       dots.textContent = '';
       GUIDE.forEach((_, k) => dots.append(h('button', { class: k === i ? 'on' : '', role: 'tab', 'aria-selected': String(k === i), 'aria-label': `Step ${k + 1}`, onclick: () => show(k) })));
       back.style.visibility = i ? 'visible' : 'hidden';
-      next.textContent = i === GUIDE.length - 1 ? 'Start using OmniChat' : i ? 'Next' : "Let's go";
+      next.textContent = i === GUIDE.length - 1 ? 'Start using ZUNO-CHAT' : i ? 'Next' : "Let's go";
       next.focus();
     }
     function finish() {
@@ -577,7 +577,7 @@
       if (d.op === 'msg') addFeed(d.msg);
       if (d.op === 'clear') { feed = []; fillFeed(); }
     };
-    ws.onclose = () => { $('#liveSum').innerHTML = '<span class="dot error"></span><span>OmniChat is not running</span>'; setTimeout(() => { connectWs(); refresh(); }, 2000); };
+    ws.onclose = () => { $('#liveSum').innerHTML = '<span class="dot error"></span><span>ZUNO-CHAT is not running</span>'; setTimeout(() => { connectWs(); refresh(); }, 2000); };
   }
   async function refresh() { try { st = await api('GET', '/api/state'); render(); updateSummary(); } catch { /* app not running */ } }
 
@@ -597,5 +597,5 @@
     render(); updateSummary(); connectWs(); fitPreview();
     if (!st.settings.advanced.welcomeSeen) openGuide();
   }
-  boot().catch(e => { document.body.textContent = `Could not load OmniChat: ${e.message}`; });
+  boot().catch(e => { document.body.textContent = `Could not load ZUNO-CHAT: ${e.message}`; });
 })();
