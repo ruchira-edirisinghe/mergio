@@ -4,7 +4,7 @@
   "installCommand": "cd website && npm ci",
   "buildCommand": "cd website && npm run build",
   "outputDirectory": "website/dist",
-  "ignoreCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]; then exit 0; fi; if [ \"$FORCE_DEPLOY\" = \"1\" ] || [ -z \"$VERCEL_GIT_PREVIOUS_SHA\" ] || ! git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA\" 2>/dev/null; then exit 1; fi; git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- website vercel.json",
+  "ignoreCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]; then exit 0; fi; P=\"$VERCEL_GIT_PREVIOUS_SHA\"; if [ \"$FORCE_DEPLOY\" = \"1\" ] || [ -z \"$P\" ] || ! git cat-file -e \"$P\" 2>/dev/null; then exit 1; fi; git diff --quiet \"$P\" HEAD -- website vercel.json",
   "headers": [
     {
       "source": "/assets/(.*)",
