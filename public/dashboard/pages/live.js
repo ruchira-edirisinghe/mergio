@@ -8,7 +8,7 @@
     const t = h('div', { class: 't' });
     const nm = h('b', { text: m.user.name }); nm.style.color = m.user.color || 'var(--text)';
     t.append(nm);
-    if (m.event && m.type !== 'chat') { const ev = h('span', { class: 'ev', text: `${m.event.title || ''}${m.event.amount ? ` · ${m.event.amount}` : ''}` }); if (m.event.color) ev.style.setProperty('--evc', m.event.color); t.append(ev); }
+    if (m.event && m.type !== 'chat') { const ev = h('span', { class: 'ev', text: `${m.event.title || ''}${m.event.amount ? ` · ${m.event.amount}` : ''}` }); if (m.event.color) ev.style.setProperty('--evc', m.event.color); if (/^https:\/\//.test(m.event.image || '')) ev.prepend(h('img', { class: 'e', src: m.event.image, alt: '', referrerpolicy: 'no-referrer' })); t.append(ev); }
     for (const p of m.parts || []) {
       if ((p.type === 'emote' || p.type === 'cheer') && /^https:\/\//.test(p.url)) t.append(h('img', { class: 'e', src: p.url, alt: p.name, title: p.name, referrerpolicy: 'no-referrer' }));
       else t.append(p.text || p.name || '');
