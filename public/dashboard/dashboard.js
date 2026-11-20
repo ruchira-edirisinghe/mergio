@@ -454,6 +454,9 @@
   /* ---------------- help ---------------- */
   function renderHelp(c) {
     const qa = (q, ...a) => h('details', {}, h('summary', { text: q }), ...a);
+    c.append(h('section', { class: 'card hero guide-cta' },
+      h('div', {}, h('h2', { text: 'New here? Take the quick tour' }), h('p', { class: 'sub', text: 'Five short steps: connect your chats, style the overlay, add it to OBS and go live.' })),
+      h('button', { class: 'btn primary', onclick: () => openGuide() }, icon('play'), 'Open the guide')));
     c.append(h('section', { class: 'card' }, h('h2', { text: 'Questions & fixes' }),
       qa('What links can I paste?', h('ul', {},
         h('li', { text: 'YouTube: a live video link (youtube.com/watch?v=…, youtu.be/…, youtube.com/live/…) or your channel (youtube.com/@name). With a channel link OmniChat finds your live stream by itself.' }),
@@ -470,6 +473,98 @@
       qa('Why can\'t I see Twitch follows or Kick joins?', h('p', { text: 'Those platforms only share them with logged-in apps (Twitch follows) or not at all (Kick and YouTube joins). Everything that is public is supported.' })),
       qa('The overlay is empty in OBS', h('ul', {}, h('li', { text: 'Make sure OmniChat is running (this page loads).' }), h('li', { text: 'Use the exact link from "Add to OBS". Press "Test" to send a sample.' }), h('li', { text: 'Right-click the browser source → Refresh.' }))),
       qa('Does it slow down my stream?', h('p', { text: 'No. OmniChat is a tiny background app (about 50–80 MB of memory) with no window of its own, and the overlay only animates with GPU-friendly effects.' }))));
+  }
+
+  /* ---------------- getting-started guide ---------------- */
+  const PLATS = ['youtube', 'twitch', 'kick', 'tiktok', 'facebook'];
+  const mockMsg = (p, name, text) => h('div', { class: 'gm-msg', style: `--pc: var(--${p})` }, h('span', { class: 'gm-p' }, icon(p)), h('b', { text: name }), h('span', { text }));
+  const GUIDE = [
+    {
+      title: 'Welcome to OmniChat',
+      text: 'OmniChat puts the chats from YouTube, Twitch, Kick, TikTok and Facebook into one overlay for OBS. Gifts, subs, follows and Super Chats show up as alerts. This guide takes about a minute.',
+      art: () => h('div', { class: 'ga-welcome' }, h('img', { src: '/shared/logo.svg', alt: '', width: 64, height: 64 }),
+        h('div', { class: 'ga-orbit' }, ...PLATS.map((p, i) => h('span', { style: `--pc: var(--${p}); --i: ${i}` }, icon(p))))),
+      points: ['Runs quietly in the background and uses very little memory.', 'Everything stays on your computer. No account needed.'],
+    },
+    {
+      title: '1. Connect your chats',
+      text: 'Copy the link of your live stream or channel, paste it in the box on the Connections page and press Enter. Add as many as you like.',
+      art: () => h('div', { class: 'ga-connect' },
+        h('div', { class: 'ga-input' }, icon('twitch'), h('span', { class: 'ga-typed', text: 'twitch.tv/yourname' }), h('kbd', { text: 'Enter' })),
+        h('div', { class: 'ga-src' }, h('span', { class: 'dot live' }), h('b', { text: 'yourname' }), h('span', { text: 'Connected' }))),
+      points: ['A channel link (like youtube.com/@you) waits for you to go live and connects by itself.', 'Facebook needs a Page token; see Advanced and Help.'],
+    },
+    {
+      title: '2. Make it yours',
+      text: 'Pick a style on the Appearance page, then change fonts, colors, bubbles and animations. The preview on the right updates as you go.',
+      art: () => h('div', { class: 'ga-chat' }, mockMsg('twitch', 'PixelPanda', 'this overlay looks clean'), mockMsg('tiktok', 'LunaByte', 'hello from TikTok!'), mockMsg('youtube', 'NovaRider', 'GG that was insane')),
+      points: ['Behavior: hide old messages, filter bots, block words.', 'Events & alerts: choose which gifts, subs and follows to show per platform.', 'Press Test at the top to send sample messages.'],
+    },
+    {
+      title: '3. Add it to OBS',
+      text: 'In OBS, click + under Sources, choose Browser, paste your overlay link and set the size to 500 × 800.',
+      art: () => h('div', { class: 'ga-obs' },
+        h('div', { class: 'ga-win' }, h('i'), h('i'), h('i'), h('span', { text: 'Properties for "OmniChat"' })),
+        h('div', { class: 'ga-row' }, h('span', { text: 'URL' }), h('code', { class: 'hl', text: st.overlayUrl })),
+        h('div', { class: 'ga-row' }, h('span', { text: 'Width' }), h('code', { text: '500' }), h('span', { text: 'Height' }), h('code', { text: '800' }))),
+      points: ['The link never changes, and style changes reach OBS instantly.', 'Optional: add the control panel as an OBS dock (see Add to OBS).'],
+      action: () => h('button', { class: 'btn sm', onclick: () => copy(st.overlayUrl) }, icon('copy'), 'Copy overlay link'),
+    },
+    {
+      title: "4. You're ready to go live",
+      text: 'Keep OmniChat running while you stream. Every alert names the platform it came from.',
+      art: () => h('div', { class: 'ga-alert', style: '--pc: var(--tiktok)' },
+        h('span', { class: 'ga-label' }, 'NEW FOLLOWER', h('em', {}, icon('tiktok'), 'on TikTok')),
+        h('div', { class: 'ga-alert-body' }, h('span', { class: 'ga-av' }, icon('follow')), h('div', {}, h('b', { text: 'mochi_moo' }), h('span', { text: 'followed' })))),
+      points: () => [st.autostart?.supported ? 'Turn on Start with Windows (Advanced) so the overlay is always ready.' : 'Start OmniChat before you go live; the overlay connects by itself.', 'Open this control panel any time from the OmniChat app icon.', 'Need this guide again? Click Guide at the top of any page.'],
+    },
+  ];
+
+  let guideEl = null;
+  function openGuide(start = 0) {
+    guideEl?.remove();
+    let i = start;
+    const art = h('div', { class: 'g-art' });
+    const body = h('div', { class: 'g-body' });
+    const dots = h('div', { class: 'g-dots', role: 'tablist', 'aria-label': 'Guide steps' });
+    const back = h('button', { class: 'btn ghost', onclick: () => show(i - 1) }, 'Back');
+    const next = h('button', { class: 'btn primary', onclick: () => (i < GUIDE.length - 1 ? show(i + 1) : finish()) });
+    const dlg = h('dialog', { class: 'guide', 'aria-labelledby': 'g-title' },
+      h('button', { class: 'icon-btn g-close', title: 'Close guide', 'aria-label': 'Close guide', onclick: () => finish() }, icon('plus')),
+      art, body, h('div', { class: 'g-foot' }, dots, h('span', { style: 'flex:1' }), back, next));
+    guideEl = dlg;
+
+    function show(n) {
+      const dir = n >= i ? 1 : -1;
+      i = Math.max(0, Math.min(GUIDE.length - 1, n));
+      const s = GUIDE[i];
+      art.textContent = ''; art.append(s.art());
+      body.textContent = '';
+      body.append(h('h2', { id: 'g-title', text: s.title }), h('p', { class: 'sub', text: s.text }),
+        h('ul', { class: 'g-points' }, ...(typeof s.points === 'function' ? s.points() : s.points).map(p => h('li', {}, icon('check'), h('span', { text: p })))));
+      if (s.action) body.append(s.action());
+      for (const el of [art, body]) { el.classList.remove('in-l', 'in-r'); void el.offsetWidth; el.classList.add(dir > 0 ? 'in-r' : 'in-l'); }
+      dots.textContent = '';
+      GUIDE.forEach((_, k) => dots.append(h('button', { class: k === i ? 'on' : '', role: 'tab', 'aria-selected': String(k === i), 'aria-label': `Step ${k + 1}`, onclick: () => show(k) })));
+      back.style.visibility = i ? 'visible' : 'hidden';
+      next.textContent = i === GUIDE.length - 1 ? 'Start using OmniChat' : i ? 'Next' : "Let's go";
+      next.focus();
+    }
+    function finish() {
+      dlg.close();
+    }
+    dlg.addEventListener('close', () => {
+      dlg.remove(); guideEl = null;
+      if (!st.settings.advanced.welcomeSeen) { save('advanced', 'welcomeSeen', true); if (page !== 'connections') go('connections'); }
+    });
+    dlg.addEventListener('keydown', e => {
+      if (e.target.closest('input, textarea')) return;
+      if (e.key === 'ArrowRight' && i < GUIDE.length - 1) show(i + 1);
+      if (e.key === 'ArrowLeft' && i > 0) show(i - 1);
+    });
+    document.body.append(dlg);
+    dlg.showModal();
+    show(i);
   }
 
   /* ---------------- live updates ---------------- */
@@ -490,6 +585,7 @@
   async function boot() {
     st = await api('GET', '/api/state');
     $('#version').textContent = `v${st.version}`;
+    const bg = $('#btnGuide'); bg.append(icon('help'), h('span', { text: 'Guide' })); bg.onclick = () => openGuide();
     const bt = $('#btnTest'); bt.append(icon('sparkle'), h('span', { text: 'Test' })); bt.onclick = () => test('burst');
     const bc = $('#btnCopy'); bc.append(icon('copy'), h('span', { text: 'Copy overlay link' })); bc.onclick = () => copy(st.overlayUrl);
     for (const b of document.querySelectorAll('[data-test]')) b.onclick = () => test(b.dataset.test);
@@ -499,6 +595,7 @@
     };
     window.addEventListener('hashchange', () => { page = (location.hash || '#connections').slice(1); render(); });
     render(); updateSummary(); connectWs(); fitPreview();
+    if (!st.settings.advanced.welcomeSeen) openGuide();
   }
   boot().catch(e => { document.body.textContent = `Could not load OmniChat: ${e.message}`; });
 })();

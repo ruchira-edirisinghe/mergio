@@ -60,7 +60,7 @@ const DEFAULTS = {
   kick: { messages: true, subs: true, giftSubs: true, hosts: true, rewards: true, kicksGifts: true, follows: true },
   tiktok: { messages: true, joins: true, gifts: true, likes: true, follows: true, shares: false, subs: true, minGiftDiamonds: 0 },
   facebook: { messages: true },
-  advanced: { port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '' },
+  advanced: { port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', welcomeSeen: false },
   sources: [],
 };
 
