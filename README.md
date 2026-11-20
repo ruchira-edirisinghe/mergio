@@ -45,7 +45,7 @@ Multistreaming means your viewers chat in five different places. Mergio reads al
 ## Features
 
 - 🔗 **Type a name or paste a link.** Pick a platform and type your username, or paste any stream or channel link. Mergio connects, and reconnects by itself if the connection drops.
-- ⏳ **Auto-connect when you go live.** Add your channels once. Mergio waits and connects the moment your stream starts.
+- ⏳ **Auto-connect when you go live.** Add your channels once (YouTube, TikTok and Facebook too). Mergio notices when you go live and connects by itself; no live links to paste.
 - 🖼️ **Real profile pictures for everyone in chat**, even in busy chats (Twitch pictures are looked up 100 at a time and cached).
 - 🎁 **The real gift picture for every gift:** a Rose shows a rose, a Galaxy shows the galaxy, and TikTok combos count up live (×1 → ×10 → ×50). Kick's KICKs gifts show their own pictures too.
 - 🔔 **Alerts where you want them:**
@@ -170,7 +170,7 @@ Each chat shows its status: **Connected**, **Waiting for you to go live** (it co
 | Twitch | `yourname` or `twitch.tv/yourname` |
 | Kick | `yourname` or `kick.com/yourname` |
 | TikTok | `yourname`, `tiktok.com/@yourname` or `tiktok.com/@yourname/live` |
-| Facebook | `facebook.com/yourpage/videos/1234567890` or `facebook.com/watch/?v=1234567890` (needs a free token, see [Facebook](#facebook)) |
+| Facebook | your Page `facebook.com/yourpage` (finds your live video automatically), or one live video `facebook.com/yourpage/videos/1234567890` (needs a free token, see [Facebook](#facebook)) |
 
 **Tip:** add your channels once and leave them there. Every time you go live, Mergio connects on its own.
 
@@ -302,7 +302,7 @@ Facebook only shares live comments with apps that have a **Page access token**. 
 2. On the right, under **User or Page**, pick **Get Page Access Token** and choose your Page.
 3. Add the permissions `pages_read_engagement` and `pages_show_list`, then click **Generate Access Token**.
 4. Copy the token into **Mergio → Settings → Accounts & keys → Facebook Page token**.
-5. Paste your live video link (`…/videos/1234567890`) on the Chats page.
+5. On the Chats page, pick **Facebook** and type your Page name (or paste `facebook.com/yourpage`). Do this once: Mergio checks every 30 seconds whether your Page is live, connects to the live video's comments, and waits again when the stream ends. (You can still paste a single live video link instead.)
 
 Tokens from the Explorer expire after about an hour. For one that lasts: open the [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/), paste the token, click **Extend Access Token**, then use that long-lived *user* token in the Explorer again to get a Page token. Page tokens made from a long-lived user token don't expire.
 
