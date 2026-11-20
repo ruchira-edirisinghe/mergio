@@ -21,6 +21,9 @@
     [A, { key: 'showPlatform', label: 'Platform icons', hint: 'Shows where each message came from', type: 'toggle' }],
     [A, { key: 'useChatBubbles', label: 'Box behind each message', hint: 'Turn off for plain text with no box around it', type: 'toggle', keywords: 'bubble box border background card' }],
     [A, { key: 'align', label: 'Line up messages on the', type: 'select', options: [['left', 'Left'], ['right', 'Right']] }],
+    [G, { key: 'inlineChat', label: 'Layout', type: 'select', options: [[true, 'Name and message on one line'], [false, 'Name on top, messages below']], keywords: 'inline layout stacked name line' }],
+    [G, { key: 'groupConsecutiveMessages', label: 'Group messages from the same person', hint: 'When someone sends several messages in a row', type: 'toggle', keywords: 'group stack merge' }],
+    [G, { key: 'groupStyle', label: 'Grouped messages go', type: 'select', options: [['tuck', 'In their own box, under the picture'], ['merge', 'In the same box, one per line']], keywords: 'group stack merge box', when: s => s.general.groupConsecutiveMessages }],
     [G, { key: 'fadeMessages', label: 'Messages disappear after a while', hint: 'Only the newest messages stay on screen', type: 'toggle', keywords: 'fade disappear hide timeout timer' }],
     [G, { key: 'hideAfter', label: 'Disappear after', hint: 'Alerts stay twice as long', type: 'range', min: 5, max: 300, step: 5, unit: 's', keywords: 'fade disappear hide timeout timer', when: s => s.general.fadeMessages }],
     [G, { key: 'scrollDirection', label: 'New messages appear at the', type: 'select', options: [['normal', 'Bottom'], ['reversed', 'Top']], keywords: 'direction order' }],
@@ -55,8 +58,6 @@
       [A, { key: 'maxMessages', label: 'Most messages on screen', type: 'range', min: 5, max: 80, keywords: 'limit max' }],
       [A, { key: 'emoteScale', label: 'Emote size', type: 'range', min: 0.8, max: 3, step: 0.1, unit: '×' }],
       [A, { key: 'bigEmotes', label: 'Bigger emotes when a message is only emotes', type: 'toggle' }],
-      [G, { key: 'inlineChat', label: 'Name and message on one line', type: 'toggle', keywords: 'inline layout' }],
-      [G, { key: 'groupConsecutiveMessages', label: 'Group messages from the same person', type: 'toggle' }],
     ] },
     { title: 'Alert look', sub: 'Subs, gifts, follows and Super Chats', items: [
       [A, { key: 'eventStyle', label: 'Alerts in chat look like', type: 'select', options: [['compact', 'Chat lines with the gift icon (calm)'], ['card', 'Big highlighted cards']], keywords: 'highlight card compact' }],
