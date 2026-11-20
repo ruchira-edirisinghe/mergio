@@ -1,6 +1,6 @@
 {
   "name": "mergio",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "One lightweight overlay for every live chat: YouTube, Twitch, Kick, TikTok and Facebook in a single OBS browser source.",
   "main": "src/main.js",
   "bin": {
