@@ -494,55 +494,43 @@ body.quit .offline-bar::after { content: ' (You closed it from Settings.)'; }
 .ast { position: relative; height: 86px; border-radius: 10px; overflow: hidden; background: radial-gradient(circle at 30% 20%, #3b2d55, #141a2b 75%); --c: #ff2d8f; }
 .ast i, .ast b { position: absolute; display: block; }
 .ast b { display: none; }
-/* spotlight */
-.ast-spotlight .a1 { left: 50%; top: 34%; width: 110px; height: 110px; margin: -55px; border-radius: 50%; background: repeating-conic-gradient(rgba(255, 45, 143, .45) 0 8deg, transparent 8deg 20deg); -webkit-mask: radial-gradient(circle, #000 15%, transparent 65%); mask: radial-gradient(circle, #000 15%, transparent 65%); animation: ast-spin 8s linear infinite; }
-.ast-spotlight .a2 { left: 50%; top: 34%; width: 26px; height: 26px; margin: -13px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px #fff3, 0 0 16px var(--c); animation: ast-pop 2.4s cubic-bezier(.34, 1.56, .64, 1) infinite; }
-.ast-spotlight .a3 { left: 30%; right: 30%; top: 64%; height: 7px; border-radius: 4px; background: #fff; box-shadow: 0 11px 0 -1px #ffffff80; animation: ast-fade 2.4s infinite; }
-.ast-spotlight b { display: block; top: -6px; width: 4px; height: 6px; border-radius: 1px; animation: ast-fall 2.4s linear infinite; }
-.ast-spotlight b:nth-of-type(1) { left: 12%; background: #ffd166; }
-.ast-spotlight b:nth-of-type(2) { left: 28%; background: #7c4dff; animation-delay: .4s; }
-.ast-spotlight b:nth-of-type(3) { left: 46%; background: #4ade80; animation-delay: .9s; }
-.ast-spotlight b:nth-of-type(4) { left: 63%; background: #fff; animation-delay: .2s; }
-.ast-spotlight b:nth-of-type(5) { left: 79%; background: #38bdf8; animation-delay: 1.2s; }
-.ast-spotlight b:nth-of-type(6) { left: 90%; background: #ff5fa2; animation-delay: .6s; }
-/* banner */
-.ast-banner .a1 { left: 10%; right: 10%; top: 30px; height: 28px; border-radius: 6px; background: linear-gradient(100deg, #e11d74, #4a1a3a); box-shadow: 0 6px 16px -6px #ff2d8f; animation: ast-sweep 2.6s cubic-bezier(.22, 1, .36, 1) infinite; overflow: hidden; }
-.ast-banner .a1::after { content: ''; position: absolute; top: 0; bottom: 0; width: 30%; background: linear-gradient(100deg, transparent, #fff6, transparent); animation: ast-sheen 2.6s infinite; }
-.ast-banner .a2 { left: calc(10% + 6px); top: 35px; width: 18px; height: 18px; border-radius: 50%; background: #fff; animation: ast-sweep 2.6s cubic-bezier(.22, 1, .36, 1) infinite; }
-.ast-banner .a3 { left: calc(10% + 32px); top: 39px; width: 40%; height: 5px; border-radius: 3px; background: #fff; box-shadow: 0 8px 0 #ffffff80; animation: ast-sweep 2.6s cubic-bezier(.22, 1, .36, 1) infinite; }
-/* neon */
-.ast-neon .a1 { left: 18%; right: 18%; top: 22px; bottom: 18px; border-radius: 8px; padding: 2px; background: conic-gradient(from var(--ast-a, 0deg), #ff2d8f, #fff 8%, #ff2d8f 16%, #ff2d8f30 30% 70%, #ff2d8f 84%, #7c4dff 92%, #ff2d8f); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: ast-edge 2.5s linear infinite; }
-.ast-neon .a2 { left: 50%; top: 36px; width: 46%; height: 7px; margin-left: -23%; border-radius: 4px; background: #fff; box-shadow: 0 0 6px #ff2d8f, 0 0 12px #ff2d8f; animation: ast-flicker 2.5s steps(1) infinite; }
-.ast-neon .a3 { left: 50%; top: 50px; width: 30%; height: 5px; margin-left: -15%; border-radius: 3px; background: #ffffff90; }
-@property --ast-a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-/* bubbly */
-.ast-bubble .a1 { left: 20%; right: 20%; top: 24px; height: 40px; border-radius: 16px; background: linear-gradient(#fff, #ffe4f1); box-shadow: 0 4px 0 #ff9cc7; animation: ast-jelly 2.4s cubic-bezier(.34, 1.56, .64, 1) infinite; }
-.ast-bubble .a2 { left: 50%; top: 14px; width: 20px; height: 20px; margin-left: -10px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px #ff7ab8; animation: ast-jelly 2.4s cubic-bezier(.34, 1.56, .64, 1) infinite; }
-.ast-bubble .a3 { left: 36%; right: 36%; top: 44px; height: 6px; border-radius: 3px; background: #ff4f9a; animation: ast-jelly 2.4s cubic-bezier(.34, 1.56, .64, 1) infinite; }
-.ast-bubble b { display: block; bottom: 6px; width: 8px; height: 8px; color: #ff5fa2; animation: ast-rise 2.4s ease-out infinite; }
-.ast-bubble b::before { content: '\2665'; font-size: 11px; line-height: 8px; }
-.ast-bubble b:nth-of-type(1) { left: 22%; }
-.ast-bubble b:nth-of-type(2) { left: 70%; animation-delay: .8s; }
-.ast-bubble b:nth-of-type(3) { left: 45%; animation-delay: 1.5s; }
-/* card */
-.ast-card .a1 { left: 22%; right: 22%; top: 30px; height: 44px; border-radius: 9px; background: linear-gradient(#5a1a3f, #12121bf0 70%); box-shadow: 0 0 0 2px #ff2d8fb0, 0 6px 16px -4px #ff2d8f90; animation: ast-pop 2.6s cubic-bezier(.34, 1.56, .64, 1) infinite; }
-.ast-card .a2 { left: 50%; top: 16px; width: 26px; height: 26px; margin-left: -13px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #a33a6e, #12121b); box-shadow: 0 0 0 2px #ff7ab8; animation: ast-pop 2.6s cubic-bezier(.34, 1.56, .64, 1) infinite; }
-.ast-card .a3 { left: 36%; right: 36%; top: 50px; height: 6px; border-radius: 3px; background: #fff; box-shadow: 0 9px 0 -1px #ffffff80; animation: ast-pop 2.6s cubic-bezier(.34, 1.56, .64, 1) infinite; }
-/* minimal */
-.ast-toast .a1 { left: 18%; right: 18%; top: 31px; height: 26px; border-radius: 99px; background: #0e0e16; box-shadow: 0 0 0 1px #ffffff20, 0 4px 12px #0008; animation: ast-slide 2.6s cubic-bezier(.22, 1, .36, 1) infinite; }
-.ast-toast .a2 { left: calc(18% + 5px); top: 35px; width: 18px; height: 18px; border-radius: 50%; background: var(--c); animation: ast-slide 2.6s cubic-bezier(.22, 1, .36, 1) infinite; }
-.ast-toast .a3 { left: calc(18% + 30px); top: 40px; width: 34%; height: 5px; border-radius: 3px; background: #fff; box-shadow: 0 7px 0 -1px #ffffff70; animation: ast-slide 2.6s cubic-bezier(.22, 1, .36, 1) infinite; }
+/* spotlight: picture with an orbiting light, name rising under it */
+.ast-spotlight .a2 { left: 50%; top: 14px; width: 30px; height: 30px; margin-left: -15px; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #ff5fa8, #3a1030 80%); box-shadow: 0 8px 18px -6px #ff2d8f; animation: m-sp 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+.ast-spotlight .a1 { left: 50%; top: 10px; width: 38px; height: 38px; margin-left: -19px; border-radius: 50%; background: conic-gradient(transparent 0 60%, #ff2d8fb0 82%, #fff 86%, transparent 86.5%); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); animation: ast-spin 1.6s linear infinite, m-fade 2.8s infinite; }
+.ast-spotlight .a3 { left: 32%; right: 32%; top: 56px; height: 8px; border-radius: 4px; background: #fff; box-shadow: 0 11px 0 -2px #ffffff70; animation: m-up 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+/* banner: colour block wipes in, the panel unrolls from it */
+.ast-banner .a1 { left: 12%; top: 26px; width: 30px; height: 36px; border-radius: 5px 0 0 5px; background: linear-gradient(160deg, #ff6aa8, #e11d74); transform-origin: left; animation: m-block 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+.ast-banner .a2 { left: calc(12% + 30px); right: 12%; top: 26px; height: 36px; border-radius: 0 5px 5px 0; background: #14141e; box-shadow: inset 2px 0 0 #ffb3d4, 0 6px 14px -6px #000; animation: m-wipe 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+.ast-banner .a3 { left: calc(12% + 40px); width: 30%; top: 36px; height: 6px; border-radius: 3px; background: #fff; box-shadow: 0 9px 0 -1px #ffffff70; animation: m-text 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+/* neon: the tube draws round the edge, then the name switches on */
+.ast-neon .a1 { left: 18%; right: 18%; top: 16px; bottom: 16px; border-radius: 9px; background: #07060d; box-shadow: inset 0 0 0 1.5px #ff4fa0, 0 0 10px #ff2d8f, inset 0 0 10px #ff2d8f60; animation: m-draw 2.8s cubic-bezier(.65, 0, .35, 1) infinite; }
+.ast-neon .a2 { left: 50%; top: 32px; width: 42%; height: 7px; margin-left: -21%; border-radius: 4px; background: #fff; box-shadow: 0 0 5px #ff2d8f, 0 0 12px #ff2d8f; animation: m-flick 2.8s steps(1) infinite; }
+.ast-neon .a3 { left: 50%; top: 46px; width: 28%; height: 5px; margin-left: -14%; border-radius: 3px; background: #ffffff90; animation: m-flick 2.8s steps(1) infinite; }
+/* bubbly: a sticker slaps on */
+.ast-bubble .a1 { left: 16%; right: 16%; top: 22px; height: 42px; border-radius: 12px; background: linear-gradient(150deg, #ffd6ea, #fff 60%); box-shadow: 0 0 0 3px #fff, 0 8px 14px -6px #000a; rotate: -3deg; animation: m-slap 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+.ast-bubble .a2 { left: calc(16% + 8px); top: 30px; width: 26px; height: 26px; border-radius: 8px; background: #ff2d8f; box-shadow: 0 0 0 2px #fff; rotate: 4deg; animation: m-slap 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+.ast-bubble .a3 { left: calc(16% + 42px); width: 34%; top: 35px; height: 6px; border-radius: 3px; background: #1c1530; box-shadow: 0 9px 0 -1px #1c153080; rotate: -3deg; animation: m-slap 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+/* card: frosted glass tilts up into place */
+.ast-card .a1 { left: 14%; right: 14%; top: 22px; height: 44px; border-radius: 10px; background: radial-gradient(circle at 15% 0%, #ff2d8f70, transparent 55%), linear-gradient(135deg, #ffffff22, #ffffff08), #181826d0; box-shadow: inset 0 0 0 1px #ffffff26, 0 8px 18px -8px #000; transform-origin: 50% 100%; animation: m-glass 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+.ast-card .a2 { left: calc(14% + 8px); top: 30px; width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(150deg, #ff6aa8, #b3125e); animation: m-glass 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+.ast-card .a3 { left: calc(14% + 44px); width: 34%; top: 36px; height: 6px; border-radius: 3px; background: #fff; box-shadow: 0 9px 0 -1px #ffffff70; animation: m-up 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+/* minimal: a black pill grows out of the middle */
+.ast-toast .a1 { left: 20%; right: 20%; top: 29px; height: 28px; border-radius: 99px; background: #050507; box-shadow: 0 0 0 1px #ffffff14, 0 6px 14px #0009; animation: m-island 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
+.ast-toast .a2 { left: calc(20% + 5px); top: 34px; width: 18px; height: 18px; border-radius: 50%; background: #ff2d8f; animation: m-late 2.8s infinite; }
+.ast-toast .a3 { left: calc(20% + 30px); top: 38px; width: 34%; height: 5px; border-radius: 3px; background: #fff; box-shadow: 0 7px 0 -1px #ffffff70; animation: m-late 2.8s infinite; }
 @keyframes ast-spin { to { rotate: 360deg; } }
-@keyframes ast-pop { 0% { opacity: 0; transform: scale(.4); } 18%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; transform: scale(.95); } }
-@keyframes ast-fade { 0%, 15% { opacity: 0; } 30%, 80% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes ast-fall { from { transform: translateY(0) rotate(0); } to { transform: translateY(100px) rotate(300deg); } }
-@keyframes ast-sweep { 0% { opacity: 0; transform: translateX(-70%) skewX(-12deg); } 22%, 78% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateX(40%); } }
-@keyframes ast-sheen { 0%, 30% { left: -40%; } 60%, 100% { left: 130%; } }
-@keyframes ast-edge { to { --ast-a: 360deg; } }
-@keyframes ast-flicker { 0% { opacity: 0; } 8% { opacity: 1; } 12% { opacity: .2; } 18%, 100% { opacity: 1; } }
-@keyframes ast-jelly { 0% { opacity: 0; transform: scale(.3); } 14% { opacity: 1; transform: scale(1.12, .9); } 22% { transform: scale(.95, 1.05); } 30%, 82% { transform: none; opacity: 1; } 100% { opacity: 0; transform: scale(.4); } }
-@keyframes ast-rise { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-50px); } }
-@keyframes ast-slide { 0% { opacity: 0; transform: translateY(14px); } 18%, 82% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-6px); } }
+@keyframes m-fade { 0%, 12% { opacity: 0; } 25%, 82% { opacity: 1; } 95%, 100% { opacity: 0; } }
+@keyframes m-sp { 0% { opacity: 0; transform: scale(.5); filter: blur(4px); } 20%, 82% { opacity: 1; transform: none; filter: none; } 95%, 100% { opacity: 0; transform: translateY(-4px); filter: blur(3px); } }
+@keyframes m-up { 0%, 14% { opacity: 0; transform: translateY(8px); } 30%, 82% { opacity: 1; transform: none; } 95%, 100% { opacity: 0; } }
+@keyframes m-block { 0% { transform: scaleX(0); } 15%, 85% { transform: none; } 100% { transform: scaleX(0); } }
+@keyframes m-wipe { 0%, 8% { clip-path: inset(0 100% 0 0); } 30%, 78% { clip-path: inset(0 0 0 0); } 92%, 100% { clip-path: inset(0 100% 0 0); } }
+@keyframes m-text { 0%, 20% { opacity: 0; transform: translateX(-10px); } 34%, 76% { opacity: 1; transform: none; } 86%, 100% { opacity: 0; } }
+@keyframes m-draw { 0% { clip-path: inset(0 100% 100% 0); } 12% { clip-path: inset(0 0 100% 0); } 22% { clip-path: inset(0 0 0 0); } 85% { clip-path: inset(0 0 0 0); opacity: 1; } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+@keyframes m-flick { 0%, 24% { opacity: 0; } 26% { opacity: 1; } 29% { opacity: .2; } 32%, 85% { opacity: 1; } 86%, 100% { opacity: 0; } }
+@keyframes m-slap { 0% { opacity: 0; transform: scale(1.5) rotate(-10deg); } 12% { opacity: 1; transform: scale(.95); } 18%, 82% { transform: none; opacity: 1; } 95%, 100% { opacity: 0; transform: translate(6px, -8px) rotate(6deg); } }
+@keyframes m-glass { 0% { opacity: 0; transform: perspective(200px) rotateX(30deg) translateY(10px); } 22%, 82% { opacity: 1; transform: none; } 95%, 100% { opacity: 0; transform: translateY(-4px); } }
+@keyframes m-island { 0% { opacity: 0; clip-path: inset(0 calc(50% - 14px) round 99px); transform: scale(.6); } 10% { opacity: 1; transform: none; clip-path: inset(0 calc(50% - 14px) round 99px); } 30%, 76% { clip-path: inset(0 0 round 99px); } 90% { opacity: 1; clip-path: inset(0 calc(50% - 14px) round 99px); transform: none; } 100% { opacity: 0; clip-path: inset(0 calc(50% - 14px) round 99px); transform: scale(.6); } }
+@keyframes m-late { 0%, 22% { opacity: 0; } 32%, 72% { opacity: 1; } 78%, 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .ast *, .ast *::after { animation: none !important; } }
 
 /* =========================== themed controls =========================== */
