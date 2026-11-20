@@ -134,7 +134,7 @@
         ctl = h('span', { class: 'switch' }, h('input', { type: 'checkbox', id, checked: !!v, onchange: e => { MG.save(section, f.key, e.target.checked); f.onchange?.(e.target.checked); } }), h('span'));
         break;
       case 'select':
-        ctl = h('select', { id, onchange: e => MG.save(section, f.key, e.target.value) }, ...f.options.map(([val, txt]) => h('option', { value: val, selected: String(v) === String(val), text: txt })));
+        ctl = h('select', { id, onchange: e => MG.save(section, f.key, typeof v === 'boolean' ? e.target.value === 'true' : typeof v === 'number' ? Number(e.target.value) : e.target.value) }, ...f.options.map(([val, txt]) => h('option', { value: val, selected: String(v) === String(val), text: txt })));
         break;
       case 'range': {
         const out = h('output', { text: fmt(f, v) });
