@@ -61,6 +61,7 @@
   MG.save = (section, key, value) => {
     (pending[section] ||= {})[key] = value;
     MG.st.settings[section][key] = value;
+    MG.refreshDeps();
     if ((section === 'appearance' || section === 'general') && !MG.st.settings.advanced.styleSeen) MG.save('advanced', 'styleSeen', true);
     clearTimeout(saveTimer);
     saveTimer = setTimeout(async () => {
@@ -160,8 +161,12 @@
       default:
         ctl = h('input', { type: 'text', id, value: v, placeholder: f.placeholder || '', onchange: e => MG.save(section, f.key, e.target.value) });
     }
-    return h('div', { class: `f ${f.wide ? 'wide' : ''}`, 'data-search': `${f.label} ${f.hint || ''} ${f.keywords || ''}`.toLowerCase() }, label, ctl);
+    const el = h('div', { class: `f ${f.wide ? 'wide' : ''}`, 'data-search': `${f.label} ${f.hint || ''} ${f.keywords || ''}`.toLowerCase() }, label, ctl);
+    if (f.when) { el._when = f.when; el.classList.add('has-when'); el.classList.toggle('dep-off', !f.when(MG.st.settings)); }
+    return el;
   };
+  /** Shows or hides fields that only apply when another setting is on (f.when). */
+  MG.refreshDeps = () => { for (const el of document.querySelectorAll('.f.has-when')) el.classList.toggle('dep-off', !el._when(MG.st.settings)); };
   MG.fields = (section, list) => h('div', { class: 'fields' }, ...list.map(f => MG.field(section, f)));
   MG.card = (title, sub, ...body) => h('section', { class: 'card' }, title ? h('h2', {}, title) : null, sub ? h('p', { class: 'sub', text: sub }) : null, ...body);
 
