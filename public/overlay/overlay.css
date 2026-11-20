@@ -35,6 +35,8 @@ body.shadow .msg { text-shadow: var(--shadow); }
 
 .bubble { display: inline-block; max-width: 100%; padding: .42em .7em; border-radius: var(--radius); position: relative; overflow-wrap: anywhere; }
 body.bubbles .bubble { background: var(--bubble); }
+/* No box: plain text lined up with the edge, nothing drawn around it. */
+body:not(.bubbles) .bubble { padding-left: 0; padding-right: 0; border: 0; box-shadow: none; background: none; }
 body.bubbles.accent .bubble { box-shadow: inset 3px 0 0 var(--pc); }
 body.bubbles.accent.align-right .bubble { box-shadow: inset -3px 0 0 var(--pc); }
 
@@ -153,11 +155,11 @@ body.inline .alert-line .what > * { margin-right: .28em; }
 .ev-like .pill .gl { color: #ff4d6d; }
 
 /* ---------- themes (decoration only; colors come from settings) ---------- */
-body.theme-glass .bubble { border: 1px solid rgba(255,255,255,.08); background-image: linear-gradient(180deg, rgba(255,255,255,.06), transparent 60%); }
-body.theme-neon .bubble { border: 1px solid var(--pc); box-shadow: 0 0 10px -2px var(--pc), inset 0 0 12px -6px var(--pc) !important; }
+body.bubbles.theme-glass .bubble { border: 1px solid rgba(255,255,255,.08); background-image: linear-gradient(180deg, rgba(255,255,255,.06), transparent 60%); }
+body.bubbles.theme-neon .bubble { border: 1px solid var(--pc); box-shadow: 0 0 10px -2px var(--pc), inset 0 0 12px -6px var(--pc) !important; }
 body.theme-neon .name { text-shadow: 0 0 8px currentColor; }
 body.theme-minimal .bubble { padding: .1em 0; }
-body.theme-retro .bubble { border-radius: 0; box-shadow: 4px 4px 0 rgba(0,0,0,.55), inset 0 0 0 2px var(--pc) !important; }
+body.bubbles.theme-retro .bubble { border-radius: 0; box-shadow: 4px 4px 0 rgba(0,0,0,.55), inset 0 0 0 2px var(--pc) !important; }
 body.theme-retro .card { border-radius: 0; }
 body.theme-soft .bubble { border-radius: 22px; }
 
