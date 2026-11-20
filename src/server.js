@@ -7,6 +7,7 @@ const settings = require('./settings');
 const testdata = require('./testdata');
 const autostart = require('./autostart');
 const avatars = require('./avatars');
+const updater = require('./updater');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
 
@@ -67,6 +68,7 @@ function createServer(manager, { onQuit }) {
     testKinds: testdata.KINDS,
     autostart: { supported: autostart.supported(), enabled: autostart.isEnabled() },
     overlays: overlayStatus(),
+    update: updater.view(),
   });
 
   const server = http.createServer(async (req, res) => {
@@ -116,6 +118,14 @@ function createServer(manager, { onQuit }) {
           const [cmd, args] = process.platform === 'win32' ? ['explorer.exe', [DATA_DIR]] : process.platform === 'darwin' ? ['open', [DATA_DIR]] : ['xdg-open', [DATA_DIR]];
           require('node:child_process').execFile(cmd, args, () => {});
           return send(res, 200, { ok: true });
+        }
+        if (p === '/api/update' && req.method === 'GET') return send(res, 200, updater.view());
+        if (p === '/api/update/check' && req.method === 'POST') return send(res, 200, await updater.check());
+        if (p === '/api/update/install' && req.method === 'POST') {
+          if (!updater.view().canInstall) return send(res, 400, { error: 'This copy of Mergio can’t update itself. Download the new version instead.' });
+          // Progress arrives over the live connection; Mergio closes itself once the installer takes over.
+          updater.install(onQuit).catch(e => log('update', `update failed: ${e.message}`));
+          return send(res, 200, updater.view());
         }
         if (p === '/api/quit' && req.method === 'POST') { send(res, 200, { ok: true }); setTimeout(onQuit, 200); return; }
         if ((m = /^\/api\/pronouns\/([\w]+)$/.exec(p))) return send(res, 200, { pronouns: await pronouns(m[1].toLowerCase()) });
@@ -178,6 +188,7 @@ function createServer(manager, { onQuit }) {
   manager.on('message', m => broadcast({ op: 'msg', msg: m }));
   manager.on('delete', d => broadcast({ op: 'delete', ...d }));
   manager.on('status', list => broadcast({ op: 'sources', sources: list }));
+  updater.onChange(update => broadcast({ op: 'update', update }));
 
   return server;
 }
