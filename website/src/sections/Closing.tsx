@@ -46,6 +46,7 @@ export function Footer() {
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/60">
           <a className="hover:text-white" href={RELEASES} target="_blank" rel="noopener noreferrer">Download</a>
           <a className="hover:text-white" href={readme('complete-guide')} target="_blank" rel="noopener noreferrer">Guide</a>
+          <a className="hover:text-white" href="#devnotes">Dev notes</a>
           <a className="hover:text-white" href={`${REPO}/issues`} target="_blank" rel="noopener noreferrer">Report a problem</a>
           <a className="hover:text-white inline-flex items-center gap-1.5" href={REPO} target="_blank" rel="noopener noreferrer"><GithubIcon className="h-4 w-4" />GitHub</a>
         </nav>
