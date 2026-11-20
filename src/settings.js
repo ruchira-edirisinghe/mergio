@@ -56,6 +56,15 @@ const DEFAULTS = {
     joinLifetime: 6,
     uwuMode: false,
   },
+  alerts: {
+    placement: 'chat',          // chat | overlay (own browser source) | both
+    duration: 6,                // seconds each alert stays on the alerts overlay
+    position: 'center',         // top | center | bottom of the alerts browser source
+    size: 1,
+    animation: 'pop',           // pop | slide | fade
+    showMessage: true,
+    showAvatar: true,
+  },
   twitch: { messages: true, cheers: true, announcements: true, subs: true, giftSubs: true, raids: true, redemptions: true, watchStreaks: true, joins: false, sharedChat: 'show', thirdPartyEmotes: true },
   youtube: { messages: true, superChats: true, superStickers: true, memberships: true, giftedMemberships: true, milestones: true },
   kick: { messages: true, subs: true, giftSubs: true, hosts: true, rewards: true, kicksGifts: true, follows: true },

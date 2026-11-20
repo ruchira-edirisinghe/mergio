@@ -1,0 +1,67 @@
+/* Mergio alerts overlay: one centred alert at a time. Size and position come from Alerts settings. */
+:root {
+  --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --scale: 1;
+  --twitch: #9146ff; --youtube: #ff0033; --kick: #53fc18; --tiktok: #fe2c55; --facebook: #0866ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
+body { font-family: var(--font); color: #fff; -webkit-font-smoothing: antialiased; font-size: calc(22px * var(--scale)); line-height: 1.25; }
+
+#stage { position: absolute; inset: 0; padding: 1em; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+body.pos-top #stage { justify-content: flex-start; }
+body.pos-bottom #stage { justify-content: flex-end; }
+#conn { position: fixed; top: 8px; left: 8px; font: 600 12px/1 system-ui; padding: 6px 10px; border-radius: 99px; background: rgba(220, 38, 38, .85); color: #fff; }
+
+/* ---------- the alert ---------- */
+.alert {
+  --ev: var(--pc);
+  position: relative; width: min(100%, 24em); display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 1.6em 1.3em 1.1em; margin-top: 1.9em; border-radius: 1.1em; isolation: isolate;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ev) 30%, rgba(14, 14, 22, .92)), rgba(14, 14, 22, .92) 70%);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ev) 75%, transparent), 0 .6em 2em -.4em color-mix(in srgb, var(--ev) 70%, transparent), 0 .4em 1.2em rgba(0, 0, 0, .45);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+.art { position: absolute; top: -1.9em; left: 50%; width: 3.6em; height: 3.6em; margin-left: -1.8em; display: grid; place-items: center; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--ev) 55%, #1b1b28), #12121b); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ev) 80%, #fff), 0 .3em 1em rgba(0, 0, 0, .5); }
+.art.gift { background: radial-gradient(circle, color-mix(in srgb, var(--ev) 35%, transparent), transparent 70%); box-shadow: none; }
+.art .gift-img { width: 120%; height: 120%; object-fit: contain; filter: drop-shadow(0 .2em .4em rgba(0, 0, 0, .5)); }
+.art .av { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.art .av-mini { position: absolute; right: -.2em; bottom: -.2em; width: 1.5em; height: 1.5em; border-radius: 50%; object-fit: cover; border: 2px solid #12121b; }
+.art .glyph { display: grid; place-items: center; width: 60%; height: 60%; color: #fff; }
+.art .glyph svg { width: 100%; height: 100%; filter: drop-shadow(0 0 .3em color-mix(in srgb, var(--ev) 90%, #fff)); }
+.art .glyph.corner { position: absolute; right: -.25em; bottom: -.25em; width: 1.45em; height: 1.45em; padding: .28em; border-radius: 50%; background: var(--ev); box-shadow: 0 0 0 2px #12121b; }
+
+.info { display: flex; flex-direction: column; align-items: center; gap: .2em; min-width: 0; max-width: 100%; }
+.label { display: flex; align-items: center; justify-content: center; gap: .5em; flex-wrap: wrap; font-size: .62em; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; margin-bottom: .15em; }
+.label .what-kind { color: color-mix(in srgb, var(--ev) 30%, #fff); }
+.label .pchip { display: inline-flex; align-items: center; gap: .35em; padding: .2em .6em .2em .45em; border-radius: 99px; letter-spacing: .03em; text-transform: none; background: var(--pc); color: #fff; }
+.p-kick .label .pchip { color: #0b0b0f; }
+.label .pchip svg { width: 1.15em; height: 1.15em; }
+.name { font-size: 1.35em; font-weight: 900; overflow-wrap: anywhere; }
+.title { font-weight: 600; opacity: .92; }
+.amount { margin-top: .2em; font-size: 1.15em; font-weight: 900; padding: .08em .6em; border-radius: .5em; background: color-mix(in srgb, var(--ev) 60%, rgba(0, 0, 0, .25)); font-variant-numeric: tabular-nums; }
+.amount.bump { animation: bump .45s cubic-bezier(.34, 1.56, .64, 1); }
+.msg { margin-top: .45em; font-size: .9em; font-weight: 500; opacity: .95; overflow-wrap: anywhere; max-height: 4.2em; overflow: hidden; }
+.msg .emote { height: 1.4em; vertical-align: middle; margin: -.2em .05em; }
+
+/* confetti burst from the picture (runs once) */
+.burst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+.burst i { position: absolute; width: .3em; height: .3em; margin: -.15em; border-radius: 50%; background: color-mix(in srgb, var(--ev) 55%, #fff); opacity: 0;
+  animation: burst 1s .25s cubic-bezier(.22, 1, .36, 1) forwards; }
+.burst i:nth-child(odd) { background: #fff; width: .2em; height: .2em; }
+@keyframes burst { 0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-3.2em) scale(.4); } }
+
+/* ---------- in and out ---------- */
+.anim-pop .alert { animation: in-pop .6s cubic-bezier(.34, 1.56, .64, 1) both; }
+.anim-slide .alert { animation: in-slide .55s cubic-bezier(.22, 1, .36, 1) both; }
+.anim-fade .alert { animation: in-fade .45s ease-out both; }
+.alert .art { animation: art-pop .7s .1s cubic-bezier(.34, 1.56, .64, 1) both; }
+.alert.out { animation: out .5s ease-in forwards !important; }
+@keyframes in-pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+@keyframes in-slide { from { opacity: 0; transform: translateY(1.5em); } to { opacity: 1; transform: none; } }
+@keyframes in-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes art-pop { from { transform: scale(.4) rotate(-12deg); } to { transform: none; } }
+@keyframes out { to { opacity: 0; transform: scale(.92) translateY(-.4em); } }
+@keyframes bump { 40% { transform: scale(1.25); } }
+@media (prefers-reduced-motion: reduce) { .alert, .alert .art, .burst i { animation: none !important; } }
