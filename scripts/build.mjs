@@ -1,5 +1,5 @@
 // Builds a single self-contained executable with Node's Single Executable Applications (SEA) feature.
-//   npm run build         -> dist/ZUNO-CHAT.exe (Windows) or dist/zuno-chat (macOS / Linux)
+//   npm run build         -> dist/Mergio.exe (Windows) or dist/mergio (macOS / Linux)
 // Steps: bundle with esbuild -> embed public/ as SEA assets -> inject into a copy of the node binary.
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
@@ -13,7 +13,7 @@ const require = createRequire(import.meta.url);
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const win = process.platform === 'win32', mac = process.platform === 'darwin';
 const BUILD = join(root, 'build'), DIST = join(root, 'dist');
-const exeName = win ? 'ZUNO-CHAT.exe' : 'zuno-chat';
+const exeName = win ? 'Mergio.exe' : 'mergio';
 const exe = join(DIST, exeName);
 const step = s => console.log(`\n> ${s}`);
 
@@ -25,10 +25,10 @@ step('Bundling with esbuild');
 await build({
   entryPoints: [join(root, 'src/main.js')],
   bundle: true, platform: 'node', format: 'cjs', target: 'node20',
-  outfile: join(BUILD, 'zuno-chat.cjs'),
+  outfile: join(BUILD, 'mergio.cjs'),
   minify: true, legalComments: 'none', logLevel: 'warning',
   external: ['bufferutil', 'utf-8-validate'], // optional native speedups of `ws`
-  define: { 'process.env.ZUNOCHAT_BUNDLED': '"1"' },
+  define: { 'process.env.MERGIO_BUNDLED': '"1"' },
 });
 
 step('Collecting web assets');
@@ -46,7 +46,7 @@ console.log(`  ${Object.keys(assets).length} files`);
 step('Creating the SEA blob');
 const seaConfig = join(BUILD, 'sea-config.json');
 writeFileSync(seaConfig, JSON.stringify({
-  main: join(BUILD, 'zuno-chat.cjs'),
+  main: join(BUILD, 'mergio.cjs'),
   output: join(BUILD, 'sea-prep.blob'),
   disableExperimentalSEAWarning: true,
   useSnapshot: false,
@@ -69,12 +69,12 @@ if (win) {
   execFileSync(rcedit, [exe,
     '--set-icon', join(root, 'assets', 'icon.ico'),
     '--set-file-version', v, '--set-product-version', v,
-    '--set-version-string', 'ProductName', 'ZUNO-CHAT',
-    '--set-version-string', 'FileDescription', 'ZUNO-CHAT - multi-platform chat overlay',
-    '--set-version-string', 'CompanyName', 'ZUNO-CHAT (open source)',
+    '--set-version-string', 'ProductName', 'Mergio',
+    '--set-version-string', 'FileDescription', 'Mergio - multi-platform chat overlay',
+    '--set-version-string', 'CompanyName', 'Mergio (open source)',
     '--set-version-string', 'LegalCopyright', `MIT License - ${pkg.author}`,
     '--set-version-string', 'OriginalFilename', exeName,
-    '--set-version-string', 'InternalName', 'zuno-chat',
+    '--set-version-string', 'InternalName', 'mergio',
   ], { stdio: 'inherit' });
 
 }

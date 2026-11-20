@@ -1,6 +1,6 @@
 name: Release
 
-# Push a tag like v1.1.0 to build the ZUNO-CHAT installers for Windows, macOS and Linux and publish a GitHub release.
+# Push a tag like v1.1.0 to build the Mergio installers for Windows, macOS and Linux and publish a GitHub release.
 # Run it by hand (workflow_dispatch) to get the installers as workflow artifacts without publishing.
 on:
   push:

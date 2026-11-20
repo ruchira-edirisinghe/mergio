@@ -10,7 +10,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-process.env.ZUNOCHAT_DATA = mkdtempSync(join(tmpdir(), 'zuno-chat-check-'));
+process.env.MERGIO_DATA = mkdtempSync(join(tmpdir(), 'mergio-check-'));
 const require = createRequire(import.meta.url);
 let failed = 0;
 const test = (name, fn) => { try { fn(); console.log(`  ok  ${name}`); } catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); } };

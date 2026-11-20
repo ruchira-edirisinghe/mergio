@@ -2,10 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleName</key><string>ZUNO-CHAT</string>
-  <key>CFBundleDisplayName</key><string>ZUNO-CHAT</string>
-  <key>CFBundleIdentifier</key><string>io.github.ruchira-edirisinghe.zuno-chat</string>
-  <key>CFBundleExecutable</key><string>ZUNO-CHAT</string>
+  <key>CFBundleName</key><string>Mergio</string>
+  <key>CFBundleDisplayName</key><string>Mergio</string>
+  <key>CFBundleIdentifier</key><string>io.github.ruchira-edirisinghe.mergio</string>
+  <key>CFBundleExecutable</key><string>Mergio</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>@VERSION@</string>

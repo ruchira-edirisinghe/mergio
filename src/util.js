@@ -25,11 +25,11 @@ function writable(dir) {
 
 function resolveDataDir() {
   const candidates = [];
-  if (process.env.ZUNOCHAT_DATA) candidates.push(process.env.ZUNOCHAT_DATA);
+  if (process.env.MERGIO_DATA) candidates.push(process.env.MERGIO_DATA);
   const exeDir = isSea() ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
   if (!/\.app[\\/]Contents[\\/]/.test(exeDir)) candidates.push(path.join(exeDir, 'data'));
   const home = userConfigHome();
-  candidates.push(path.join(home, 'ZUNO-CHAT'));
+  candidates.push(path.join(home, 'Mergio'));
   for (const dir of candidates) {
     try {
       writable(dir);
@@ -56,7 +56,7 @@ function isSea() {
 }
 
 const DATA_DIR = resolveDataDir();
-const LOG_FILE = path.join(DATA_DIR, 'zuno-chat.log');
+const LOG_FILE = path.join(DATA_DIR, 'mergio.log');
 
 /* ---------- tiny logger (file + console, file is trimmed at 1 MB) ---------- */
 function log(scope, ...args) {

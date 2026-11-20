@@ -13,7 +13,7 @@ function openBrowser(url) {
 }
 
 const argv = new Set(process.argv.slice(2));
-const port = Number(process.env.ZUNOCHAT_PORT) || settings.get().advanced.port;
+const port = Number(process.env.MERGIO_PORT) || settings.get().advanced.port;
 const dashboard = `http://localhost:${port}/dashboard`;
 // Launched by hand (shortcut, double-click): always show the control panel.
 // Launched at sign-in (--autostart): only when the user asked for it. --no-open never opens it.
@@ -34,7 +34,7 @@ server.on('error', e => {
 });
 
 server.listen(port, '127.0.0.1', () => {
-  log('app', `ZUNO-CHAT ${pkg.version} running. Dashboard: ${dashboard}  Overlay: http://localhost:${port}/overlay  Data: ${DATA_DIR}`);
+  log('app', `Mergio ${pkg.version} running. Dashboard: ${dashboard}  Overlay: http://localhost:${port}/overlay  Data: ${DATA_DIR}`);
   manager.startAll();
   if (shouldOpen) openBrowser(dashboard);
 });
