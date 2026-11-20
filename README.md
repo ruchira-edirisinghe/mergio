@@ -184,10 +184,10 @@ The **live preview** on the right updates instantly; use **Game / Dark / Light**
 
 | Section | What you can change |
 |---|---|
-| **Quick settings** | Text size and colour, profile pictures, platform icons, bubbles, alignment, disappearing messages and timer, newest at top or bottom |
+| **Quick settings** | Text size and colour, profile pictures, platform icons, box behind each message (turn it off for plain text), alignment, disappearing messages and timer, newest at top or bottom |
 | **What to show** | Badges, usernames, message text, pronouns, timestamps (12/24h) |
 | **Text & colours** | Font, thickness, spacing, username colours, text shadow |
-| **Bubbles & background** | Bubble colour, see-through, roundness, platform colour strip, overlay background |
+| **Message box & background** | Box colour, see-through, roundness, platform colour strip, overlay background |
 | **Motion & layout** | Animation, most messages on screen, emote size, big emotes, one-line layout, grouping |
 | **Alert look** | Alerts in the chat as calm lines with the gift picture or as big highlighted cards, follower alerts as alerts or small notes, how long "joined" notes stay |
 | **Filters** | `!command` filter, picture links, ignored bots, blocked words |
