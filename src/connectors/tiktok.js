@@ -7,8 +7,11 @@ const TT_PINK = '#fe2c55';
 let lib = null;
 const loadLib = () => (lib ||= require('tiktok-live-connector'));
 
-const first = x => (Array.isArray(x) ? x[0] : x) || '';
-const pic = img => first(img?.url) || first(img?.urlList) || first(img?.url_list) || '';
+// Picture URL from an image object; browsers can't show HEIC, so prefer any other format.
+const pic = img => {
+  const urls = [img?.url, img?.urlList, img?.url_list].flat().filter(u => typeof u === 'string' && /^https:\/\//.test(u));
+  return urls.find(u => !/\.heic/i.test(u)) || '';
+};
 
 class TikTokConnector extends Connector {
   start() {
