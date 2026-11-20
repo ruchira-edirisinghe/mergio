@@ -59,8 +59,11 @@
           document.body.classList.add('offline', 'quit');
         } }, icon('power'), 'Quit'))));
 
-    c.append(h('p', { class: 'about' }, `Mergio ${st.version} · Free and open source (MIT) · `,
-      h('a', { href: 'https://github.com/ruchira-edirisinghe/mergio', target: '_blank', rel: 'noopener' }, 'Website'), ' · ',
+    c.append(h('p', { class: 'about' }, `Mergio ${st.version} · Created by `,
+      h('a', { href: 'https://ruchiraedirisinghe.vercel.app', target: '_blank', rel: 'noopener' }, 'Ruchira Edirisinghe'),
+      ' · Free and open source (MIT, with credit to the creator) · ',
+      h('a', { href: 'https://mergio-stream-overlay-gamma.vercel.app', target: '_blank', rel: 'noopener' }, 'Website'), ' · ',
+      h('a', { href: 'https://github.com/ruchira-edirisinghe/mergio', target: '_blank', rel: 'noopener' }, 'GitHub'), ' · ',
       h('a', { href: 'https://github.com/ruchira-edirisinghe/mergio/issues/new/choose', target: '_blank', rel: 'noopener' }, 'Report a problem')));
   }
 
