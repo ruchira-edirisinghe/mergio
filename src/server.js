@@ -11,7 +11,7 @@ const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
 
 const PUBLIC = path.resolve(__dirname, '..', 'public');
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.json': 'application/json', '.webp': 'image/webp', '.woff2': 'font/woff2' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.json': 'application/json', '.webp': 'image/webp', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json' };
 
 /** Reads a file from public/ (from disk in dev, from the embedded assets in the packaged exe). */
 function readAsset(rel) {
@@ -133,6 +133,8 @@ function createServer(manager, { onQuit }) {
       if (p === '/' ) return send(res, 302, '', 'text/plain', { Location: '/dashboard' });
       const file = p === '/overlay' || p === '/overlay/' ? 'overlay/index.html'
         : p === '/alerts' || p === '/alerts/' ? 'alerts/index.html'
+        : p === '/manifest.webmanifest' ? 'dashboard/manifest.webmanifest'
+        : p === '/sw.js' ? 'dashboard/sw.js' // served from the root so it can look after /dashboard
         : p === '/dashboard' || p === '/dashboard/' ? 'dashboard/index.html'
         : p.slice(1);
       const buf = readAsset(file);

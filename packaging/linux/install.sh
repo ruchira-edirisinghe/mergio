@@ -16,6 +16,7 @@ ln -sf "$APPDIR/mergio" "$BINDIR/mergio"
 install -m644 "$HERE/mergio.png" "$DATA/icons/hicolor/256x256/apps/mergio.png"
 sed "s#@EXEC@#$APPDIR/mergio#" "$HERE/mergio.desktop" > "$DATA/applications/mergio.desktop"
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database -q "$DATA/applications" || true
+command -v xdg-mime >/dev/null 2>&1 && xdg-mime default mergio.desktop x-scheme-handler/mergio || true
 
 echo "Mergio is installed."
 echo "Open it from your app menu, or run: mergio"

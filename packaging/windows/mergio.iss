@@ -64,6 +64,13 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "Open th
 ; Same file the in-app "Start with Windows" switch manages, so both stay in sync.
 Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; Parameters: "--autostart"; Comment: "Mergio chat overlay"; Tasks: autostart
 
+[Registry]
+; The mergio:// link lets the control panel app window start Mergio (its "Start Mergio" button).
+Root: HKA; Subkey: "Software\Classes\mergio"; ValueType: string; ValueName: ""; ValueData: "URL:Mergio"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\mergio"; ValueType: string; ValueName: "URL Protocol"; ValueData: ""
+Root: HKA; Subkey: "Software\Classes\mergio\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#AppExe},0"
+Root: HKA; Subkey: "Software\Classes\mergio\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExe}"" ""%1"""
+
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Open Mergio now"; Flags: nowait postinstall skipifsilent
 
