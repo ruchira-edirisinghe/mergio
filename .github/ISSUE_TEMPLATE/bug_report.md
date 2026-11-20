@@ -14,7 +14,7 @@ labels: bug
 
 **Operating system:**
 
-**Log lines** (from `data/mergio.log` next to the app; remove anything private):
+**Log lines** (from `mergio.log`; the folder is shown under Advanced → Backup & data; remove anything private):
 
 ```
 paste here
