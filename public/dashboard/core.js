@@ -127,18 +127,25 @@
   MG.field = (section, f) => {
     const v = MG.st.settings[section][f.key];
     const id = `f-${section}-${f.key}`;
-    const label = h('label', { for: id }, f.label, f.hint ? h('span', { class: 'hint', text: f.hint }) : null);
+    const label = h('label', { for: id }, h('span', { class: 'lt' }, f.label, f.help ? MG.help(f.help) : null), f.hint ? h('span', { class: 'hint', text: f.hint }) : null);
     let ctl;
     switch (f.type) {
       case 'toggle':
         ctl = h('span', { class: 'switch' }, h('input', { type: 'checkbox', id, checked: !!v, onchange: e => { MG.save(section, f.key, e.target.checked); f.onchange?.(e.target.checked); } }), h('span'));
         break;
-      case 'select':
-        ctl = h('select', { id, onchange: e => MG.save(section, f.key, typeof v === 'boolean' ? e.target.value === 'true' : typeof v === 'number' ? Number(e.target.value) : e.target.value) }, ...f.options.map(([val, txt]) => h('option', { value: val, selected: String(v) === String(val), text: txt })));
+      case 'select': {
+        const typed = x => (typeof v === 'boolean' ? String(x) === 'true' : typeof v === 'number' ? Number(x) : String(x));
+        const pick = x => { MG.save(section, f.key, typed(x)); f.onchange?.(typed(x)); };
+        const short = !f.dropdown && f.options.length <= 3 && f.options.every(o => String(o[1]).length <= 13);
+        ctl = short ? MG.segmented({ id, value: v, options: f.options, onchange: pick, label: f.label }) : MG.dropdown({ id, value: v, options: f.options, onchange: pick, label: f.label });
         break;
+      }
       case 'range': {
         const out = h('output', { text: fmt(f, v) });
-        ctl = h('span', { class: 'range' }, h('input', { type: 'range', id, min: f.min, max: f.max, step: f.step || 1, value: v, oninput: e => { out.textContent = fmt(f, e.target.value); MG.save(section, f.key, Number(e.target.value)); } }), out);
+        const fill = el => el.style.setProperty('--p', `${((el.value - f.min) / (f.max - f.min)) * 100}%`);
+        const input = h('input', { type: 'range', id, min: f.min, max: f.max, step: f.step || 1, value: v, oninput: e => { fill(e.target); out.textContent = fmt(f, e.target.value); MG.save(section, f.key, Number(e.target.value)); } });
+        fill(input);
+        ctl = h('span', { class: 'range' }, input, out);
         break;
       }
       case 'number':
@@ -150,7 +157,7 @@
         break;
       }
       case 'font':
-        ctl = h('input', { type: 'text', id, list: 'fontlist', value: v, placeholder: 'Inter', onchange: e => MG.save(section, f.key, e.target.value.trim()) });
+        ctl = MG.combo({ id, value: v, placeholder: 'Inter', suggestions: f.suggestions || [], onchange: x => MG.save(section, f.key, x.trim()) });
         break;
       case 'textarea':
         ctl = h('textarea', { id, placeholder: f.placeholder || '', onchange: e => MG.save(section, f.key, e.target.value) }, v);
@@ -165,6 +172,117 @@
     if (f.when) { el._when = f.when; el.classList.add('has-when'); el.classList.toggle('dep-off', !f.when(MG.st.settings)); }
     return el;
   };
+  /* ---------------- themed controls: dropdown, segmented pills, font picker, (i) help ---------------- */
+  let openMenu = null;
+  const closeMenu = () => { if (openMenu) { const m = openMenu; openMenu = null; m.close(); } };
+  document.addEventListener('pointerdown', e => { if (openMenu && !openMenu.owns(e.target)) closeMenu(); }, true);
+  window.addEventListener('resize', closeMenu);
+  document.addEventListener('scroll', e => { if (openMenu && !openMenu.menu.contains(e.target)) closeMenu(); }, true);
+
+  /** A floating list under (or above) an anchor, styled like the app. items: [{ value, text, desc }] */
+  function popMenu(anchor, items, current, onpick, { filter = '' } = {}) {
+    closeMenu();
+    const menu = h('div', { class: 'menu', role: 'listbox' });
+    let active = Math.max(0, items.findIndex(it => String(it.value) === String(current)));
+    const rows = items.map((it, i) => {
+      const on = String(it.value) === String(current);
+      const r = h('div', { class: `opt ${on ? 'on' : ''}`, role: 'option', 'aria-selected': String(on), id: `${anchor.id || 'm'}-o${i}` },
+        h('span', { class: 'ot' }, h('b', { text: it.text }), it.desc ? h('small', { text: it.desc }) : null), on ? icon('check') : null);
+      r.addEventListener('pointerenter', () => setActive(i));
+      r.addEventListener('click', () => { onpick(it.value); closeMenu(); });
+      return r;
+    });
+    menu.append(...rows);
+    if (!rows.length) menu.append(h('div', { class: 'opt empty', text: filter ? 'No match. Press Enter to use it anyway.' : 'Nothing to pick' }));
+    document.body.append(menu);
+    const place = () => {
+      const r = anchor.getBoundingClientRect(), vh = window.innerHeight;
+      menu.style.minWidth = `${Math.max(r.width, 180)}px`;
+      const below = vh - r.bottom - 12, above = r.top - 12;
+      const up = below < Math.min(menu.scrollHeight, 280) && above > below;
+      menu.style.maxHeight = `${Math.max(140, Math.min(320, up ? above : below))}px`;
+      const w = menu.offsetWidth;
+      menu.style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - w - 8))}px`;
+      menu.style.top = up ? `${r.top - menu.offsetHeight - 6}px` : `${r.bottom + 6}px`;
+      menu.classList.toggle('up', up);
+    };
+    function setActive(i) {
+      rows[active]?.classList.remove('act');
+      active = Math.max(0, Math.min(rows.length - 1, i));
+      rows[active]?.classList.add('act');
+      rows[active]?.scrollIntoView({ block: 'nearest' });
+      if (rows[active]) anchor.setAttribute('aria-activedescendant', rows[active].id);
+    }
+    place(); setActive(active);
+    anchor.setAttribute('aria-expanded', 'true');
+    openMenu = {
+      menu,
+      owns: t => menu.contains(t) || anchor.contains(t),
+      close: () => { menu.remove(); anchor.setAttribute('aria-expanded', 'false'); anchor.removeAttribute('aria-activedescendant'); },
+      key: e => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); return true; }
+        if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); return true; }
+        if (e.key === 'Home') { e.preventDefault(); setActive(0); return true; }
+        if (e.key === 'End') { e.preventDefault(); setActive(rows.length - 1); return true; }
+        if (e.key === 'Enter' && rows.length) { e.preventDefault(); onpick(items[active].value); closeMenu(); return true; }
+        if (e.key === 'Escape' || e.key === 'Tab') { closeMenu(); return e.key === 'Escape'; }
+        return false;
+      },
+    };
+    return openMenu;
+  }
+
+  /** A dropdown that looks like the rest of Mergio. options: [[value, text, description?]] */
+  MG.dropdown = ({ id, value, options, onchange, label }) => {
+    let cur = value;
+    const items = options.map(([v, text, desc]) => ({ value: v, text, desc }));
+    const txt = h('span', { class: 'dd-v' });
+    const show = () => { txt.textContent = (items.find(it => String(it.value) === String(cur)) || items[0] || {}).text || ''; };
+    const btn = h('button', { type: 'button', class: 'dd', id, 'aria-haspopup': 'listbox', 'aria-expanded': 'false', 'aria-label': label }, txt, h('i', { class: 'dd-c' }));
+    const pick = x => { cur = x; show(); onchange(x); btn.focus(); };
+    btn.addEventListener('click', () => (openMenu?.owns(btn) ? closeMenu() : popMenu(btn, items, cur, pick)));
+    btn.addEventListener('keydown', e => {
+      if (openMenu?.owns(btn)) { openMenu.key(e); return; }
+      if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) { e.preventDefault(); popMenu(btn, items, cur, pick); }
+    });
+    show();
+    return btn;
+  };
+
+  /** Two or three short choices side by side. */
+  MG.segmented = ({ id, value, options, onchange, label }) => {
+    const wrap = h('div', { class: 'segs', id, role: 'radiogroup', 'aria-label': label });
+    const btns = options.map(([v, text]) => h('button', { type: 'button', role: 'radio', 'aria-checked': String(String(v) === String(value)), class: String(v) === String(value) ? 'on' : '',
+      onclick: () => { for (const b of btns) { const on = b === btn(v); b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); } onchange(v); } }, text));
+    const btn = v => btns[options.findIndex(o => String(o[0]) === String(v))];
+    wrap.append(...btns);
+    return wrap;
+  };
+
+  /** A text box with themed suggestions underneath (used for fonts). */
+  MG.combo = ({ id, value, placeholder, suggestions, onchange }) => {
+    const input = h('input', { type: 'text', id, value, placeholder, autocomplete: 'off', role: 'combobox', 'aria-expanded': 'false', 'aria-autocomplete': 'list' });
+    const items = q => suggestions.filter(s => !q || s.toLowerCase().includes(q.toLowerCase())).slice(0, 60).map(s => ({ value: s, text: s }));
+    const pick = x => { input.value = x; onchange(x); };
+    const open = () => popMenu(input, items(input.value === value ? '' : input.value), input.value, pick, { filter: input.value });
+    input.addEventListener('focus', open);
+    input.addEventListener('input', () => popMenu(input, items(input.value), input.value, pick, { filter: input.value }));
+    input.addEventListener('keydown', e => {
+      if (openMenu?.owns(input) && openMenu.key(e)) return;
+      if (e.key === 'Enter') { e.preventDefault(); onchange(input.value); closeMenu(); }
+      if (e.key === 'ArrowDown' && !openMenu) open();
+    });
+    input.addEventListener('change', () => onchange(input.value));
+    return h('span', { class: 'combo' }, input);
+  };
+
+  /** A small (i) that explains a setting in plain words. */
+  MG.help = text => {
+    const b = h('button', { type: 'button', class: 'info-tip', 'aria-label': `About this setting: ${text}`, onclick: e => { e.preventDefault(); e.stopPropagation(); b.classList.toggle('show'); } }, icon('info'), h('span', { class: 'tip', role: 'tooltip', text }));
+    b.addEventListener('blur', () => b.classList.remove('show'));
+    return b;
+  };
+
   /** Shows or hides fields that only apply when another setting is on (f.when). */
   MG.refreshDeps = () => { for (const el of document.querySelectorAll('.f.has-when')) el.classList.toggle('dep-off', !el._when(MG.st.settings)); };
   MG.fields = (section, list) => h('div', { class: 'fields' }, ...list.map(f => MG.field(section, f)));
