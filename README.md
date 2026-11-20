@@ -8,7 +8,7 @@
 **Every live chat in one beautiful overlay.**
 YouTube · Twitch · Kick · TikTok · Facebook, merged into a single OBS browser source.
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-7c5cff.svg)](LICENSE)
+[![License: MIT with credit](https://img.shields.io/badge/license-MIT%20%2B%20credit-7c5cff.svg)](LICENSE)
 ![Platforms](https://img.shields.io/badge/runs%20on-Windows%20%7C%20macOS%20%7C%20Linux-ff3d8b)
 ![Lightweight](https://img.shields.io/badge/memory-~50--80%20MB-22c55e)
 ![No account needed](https://img.shields.io/badge/login-not%20needed*-ffb341)
@@ -509,6 +509,8 @@ Bug reports, ideas and pull requests are welcome. Please open an issue first for
 
 ## Credits
 
+Mergio was created by **[Ruchira Edirisinghe](https://ruchiraedirisinghe.vercel.app)**. Contributions from other people were added later.
+
 - [TikTok-Live-Connector](https://github.com/zerodytrash/TikTok-Live-Connector) (MIT) and [Euler Stream](https://www.eulerstream.com) for TikTok
 - [ws](https://github.com/websockets/ws) (MIT) for WebSockets
 - [Simple Icons](https://simpleicons.org) (CC0) for platform logos
@@ -519,4 +521,4 @@ Mergio isn't affiliated with or endorsed by YouTube, Twitch, Kick, TikTok or Met
 
 ## License
 
-[MIT](LICENSE) © Ruchira Edirisinghe. Free to use, modify and share, including commercially.
+[MIT License, with credit to the creator](LICENSE) © Ruchira Edirisinghe. Mergio is free and open source: you can use, modify and share it, including commercially. The one extra condition: any copy, fork or project based on Mergio must clearly credit **Ruchira Edirisinghe** as the creator of Mergio, in its README and in its about or credits screen if it has one. Contributions added later by other people don't change this.

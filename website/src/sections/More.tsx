@@ -51,7 +51,7 @@ export function Features() {
 }
 
 const FAQ: [string, string][] = [
-  ['Is it really free?', 'Yes. Mergio is open source under the MIT License. No subscriptions, no account.'],
+  ['Is it really free?', 'Yes. Mergio is free and open source under the MIT License, with credit to its creator. No subscriptions, no account.'],
   ['Do I need API keys?', 'No. Type your username or paste a link. Only Facebook needs a free Page token, and the guide shows how.'],
   ['Does it work with Streamlabs or TikTok LIVE Studio?', 'Yes. Anything that can show a web page works. Paste the same overlay link.'],
   ['Where does my chat go?', 'Nowhere. Mergio runs on your own PC, with no telemetry and no cloud.'],
