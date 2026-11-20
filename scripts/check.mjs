@@ -37,9 +37,13 @@ const cases = [
   ['https://studio.youtube.com/video/jfKfPfyJRdk/livestreaming', 'youtube', 'jfKfPfyJRdk'],
   ['https://www.facebook.com/somepage/videos/1234567890123/', 'facebook', '1234567890123'],
   ['https://www.facebook.com/watch/?v=1234567890123', 'facebook', '1234567890123'],
+  ['https://www.facebook.com/somepage', 'facebook', 'page:somepage'],
+  ['https://www.facebook.com/somepage/live', 'facebook', 'page:somepage'],
+  ['fb:somepage', 'facebook', 'page:somepage'],
+  ['https://www.facebook.com/profile.php?id=100089123456', 'facebook', 'page:100089123456'],
 ];
 for (const [input, platform, target] of cases) test(input, () => { const r = detect(input); assert.equal(r.platform, platform); assert.equal(r.target, target); });
-for (const bad of ['', 'hello world', 'https://example.com/x', 'https://www.facebook.com/somepage']) test(`rejects "${bad}"`, () => assert.throws(() => detect(bad)));
+for (const bad of ['', 'hello world', 'https://example.com/x', 'https://www.facebook.com/watch/live/']) test(`rejects "${bad}"`, () => assert.throws(() => detect(bad)));
 
 console.log('Settings');
 const settings = require(join(root, 'src/settings.js'));
