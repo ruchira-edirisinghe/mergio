@@ -23,9 +23,9 @@ npm run preview  # serves the build locally
 
 1. In Vercel, choose **Add New → Project** and import this repository.
 2. Leave **Root Directory** empty and keep the default settings. The `vercel.json` at the repository root installs and builds this folder.
-3. Deploy. Vercel publishes the `main` branch, and every pull request gets a preview link.
+3. Deploy. Vercel publishes the `main` branch. Other branches and pull requests don't deploy.
 
-Commits that don't touch `website/` or `vercel.json` skip the deploy (`ignoreCommand` in `vercel.json`).
+A push to `main` only deploys when `website/` or `vercel.json` changed since the last commit Vercel deployed (`ignoreCommand` in `vercel.json`). When Vercel can't tell what it deployed last, it builds anyway. To deploy without a change, redeploy with the environment variable `FORCE_DEPLOY=1`.
 
 ## Media credits
 
