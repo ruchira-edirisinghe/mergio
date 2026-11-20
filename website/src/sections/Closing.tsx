@@ -59,29 +59,23 @@ const COLUMNS: { title: string; links: { label: string; href: string; external?:
   ] },
 ];
 
-/** Who made Mergio: photo in a spinning gradient ring, linking to the portfolio. */
+/** Who made Mergio: a compact row like the GitHub card, with the photo in a spinning gradient ring. Links to the portfolio. */
 function CreatorCard() {
   return (
-    <a href={CREATOR.url} {...ext} aria-label={`${CREATOR.name}, creator of Mergio. Opens the portfolio.`}
-      className="group relative flex flex-col items-center gap-6 overflow-hidden rounded-3xl bg-gradient-to-br from-[#1b1630] via-surface to-surface p-6 text-center ring-1 ring-white/[.08] transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:ring-violet/40 hover:shadow-[0_30px_80px_-30px_rgba(124,77,255,.7)] sm:flex-row sm:p-8 sm:text-left">
-      <span className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-pink/15 opacity-60 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
-      <span className="relative grid h-28 w-28 shrink-0 place-items-center sm:h-32 sm:w-32">
-        <span className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,#7c4dff,#d63cff,#ff2d8f,#ffb02e,#7c4dff)] anim-spin-slow" />
-        <span className="absolute inset-[3px] rounded-full bg-surface" />
-        <img src={CREATOR.photo} alt={CREATOR.name} width={320} height={320} loading="lazy" decoding="async" draggable={false}
-          className="relative h-[calc(100%-12px)] w-[calc(100%-12px)] rounded-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
-      </span>
-      <span className="relative min-w-0">
-        <span className="text-xs font-medium uppercase tracking-[.18em] text-white/45">Created by</span>
-        <span className="mt-1.5 flex items-center justify-center gap-2 text-2xl font-semibold text-white sm:justify-start sm:text-3xl" style={{ letterSpacing: '-0.02em' }}>
-          <span className="bg-[linear-gradient(transparent_calc(100%-2px),currentColor_0)] bg-[length:0%_100%] bg-no-repeat transition-[background-size] duration-500 group-hover:bg-[length:100%_100%]">{CREATOR.name}</span>
-          <ArrowUpRight className="h-5 w-5 shrink-0 text-white/50 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white" />
+    <a href={CREATOR.url} {...ext} aria-label={`Created by ${CREATOR.name}. Opens the portfolio.`}
+      className="group flex items-center justify-between gap-4 rounded-2xl bg-white/[.04] p-4 ring-1 ring-white/[.08] transition-colors hover:bg-white/[.08]">
+      <span className="flex min-w-0 items-center gap-3">
+        <span className="relative grid h-10 w-10 shrink-0 place-items-center">
+          <span className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,#7c4dff,#d63cff,#ff2d8f,#ffb02e,#7c4dff)] anim-spin-slow" />
+          <img src={CREATOR.photo} alt="" width={320} height={320} loading="lazy" decoding="async" draggable={false}
+            className="relative h-[calc(100%-4px)] w-[calc(100%-4px)] rounded-full object-cover ring-2 ring-ink" />
         </span>
-        <span className="mt-2 block max-w-md text-[15px] leading-relaxed text-white/60">I designed and built Mergio so streamers can read every chat in one place, free for everyone.</span>
-        <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition-colors group-hover:bg-white/90">
-          Visit my portfolio<ArrowUpRight className="h-4 w-4" />
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold text-white">Created by {CREATOR.name}</span>
+          <span className="block text-xs text-white/50">Designed and built Mergio. Visit my portfolio.</span>
         </span>
       </span>
+      <ArrowUpRight className="h-5 w-5 shrink-0 text-white/50 transition-transform group-hover:-translate-y-px group-hover:translate-x-px group-hover:text-white" />
     </a>
   );
 }
@@ -101,7 +95,7 @@ export function Footer() {
               {PLATFORMS.map(p => <PlatformIcon key={p.id} id={p.id} className="h-5 w-5" aria-label={p.name} />)}
             </div>
           </div>
-          <Reveal variant="left"><CreatorCard /></Reveal>
+          <div className="lg:mt-auto"><CreatorCard /></div>
         </div>
 
         <nav aria-label="Footer" className="flex flex-col gap-10 lg:pt-2">
