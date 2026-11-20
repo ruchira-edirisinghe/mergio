@@ -34,6 +34,7 @@ function make(kind) {
     case 'cheer': return { ...base, platform: 'twitch', channel: 'twitch', type: 'cheer', user: user('twitch'), parts: [{ type: 'cheer', name: 'Cheer500', url: 'https://d3aqoihi2n8ty8.cloudfront.net/actions/cheer/dark/animated/100/2.gif', amount: 500, color: '#9c3ee8' }, ...t(' hype!')], event: { kind: 'cheer', title: 'cheered 500 bits', amount: '500 bits', image: 'https://d3aqoihi2n8ty8.cloudfront.net/actions/cheer/dark/animated/100/2.gif', color: '#9c3ee8', value: 500 } };
     case 'sub': return { ...base, platform: 'twitch', channel: 'twitch', type: 'sub', user: user('twitch'), parts: t('12 months already?!'), event: { kind: 'sub', title: 'resubscribed for 12 months', amount: 'Tier 1', color: '#9147ff', value: 12 } };
     case 'giftsub': return { ...base, platform: 'kick', channel: 'kick', type: 'giftsub', user: user('kick'), event: { kind: 'giftsub', title: 'gifted 5 subs', amount: '5 gifts', color: '#53fc18', value: 5 } };
+    case 'twitchgiftsub': return { ...base, platform: 'twitch', channel: 'twitch', type: 'giftsub', user: user('twitch'), event: { kind: 'giftsub', title: 'gifted 10 subs to the community', amount: '10 gifts', color: '#9147ff', value: 10 } };
     case 'raid': return { ...base, platform: 'twitch', channel: 'twitch', type: 'raid', user: user('twitch'), event: { kind: 'raid', title: 'is raiding with 128 viewers', amount: '128 viewers', color: '#ff6b3d', value: 128 } };
     case 'gift': return { ...base, platform: 'tiktok', channel: 'tiktok', type: 'gift', user: user('tiktok', { color: '' }), event: { kind: 'gift', title: 'sent Rose', amount: '×10', count: 10, image: '', color: '#fe2c55', value: 10, diamonds: 10 } };
     case 'member': return { ...base, platform: 'youtube', channel: 'youtube', type: 'member', user: user('youtube', { color: '' }), event: { kind: 'member', title: 'Welcome to the channel!', amount: 'New member', color: '#0f9d58' } };
@@ -48,6 +49,6 @@ function make(kind) {
   }
 }
 
-const KINDS = ['twitch', 'youtube', 'kick', 'tiktok', 'facebook', 'superchat', 'cheer', 'sub', 'tiktoksub', 'kicksub', 'giftsub', 'raid', 'gift', 'member', 'follow', 'kickfollow', 'join', 'like', 'kicks'];
+const KINDS = ['twitch', 'youtube', 'kick', 'tiktok', 'facebook', 'superchat', 'cheer', 'sub', 'tiktoksub', 'kicksub', 'giftsub', 'twitchgiftsub', 'raid', 'gift', 'member', 'follow', 'kickfollow', 'join', 'like', 'kicks'];
 
 module.exports = { make, KINDS };

@@ -10,13 +10,14 @@
   <link rel="stylesheet" href="/dashboard/dashboard.css">
 </head>
 <body>
+  <div class="offline-bar" role="alert">Mergio isn't running. Start it from the Mergio icon; this page reconnects by itself.</div>
   <div class="app">
     <aside class="side">
       <div class="brand">
-        <img src="/shared/wordmark.svg" alt="Mergio" width="170" height="36">
+        <img src="/shared/wordmark.svg" alt="Mergio" width="170" height="44">
         <small id="version">v—</small>
       </div>
-      <nav id="nav" aria-label="Sections"></nav>
+      <nav id="nav" aria-label="Pages"></nav>
       <div class="side-foot">
         <div class="live-sum" id="liveSum"><span class="dot"></span><span>Starting…</span></div>
       </div>
@@ -24,31 +25,38 @@
 
     <main class="main">
       <header class="topbar">
-        <h1 id="pageTitle">Connections</h1>
+        <div class="titles">
+          <h1 id="pageTitle">Home</h1>
+          <p id="pageSub"></p>
+        </div>
         <div class="top-actions">
-          <button class="btn ghost" id="btnGuide" title="Show the step-by-step guide"></button>
-          <button class="btn ghost" id="btnTest" title="Send a few sample messages to the overlay"></button>
-          <button class="btn primary" id="btnCopy" title="Copy the overlay URL for OBS"></button>
+          <button class="btn ghost" id="btnGuide" title="Step-by-step guide"></button>
+          <button class="btn ghost" id="btnTest" title="Send sample messages and alerts to the overlay"></button>
+          <button class="btn ghost" id="btnPreview" title="Show the live preview" hidden></button>
+          <button class="btn primary" id="btnCopy" title="Copy the link you paste into OBS"></button>
         </div>
       </header>
       <div class="content" id="content"></div>
     </main>
 
-    <aside class="preview" id="previewPane">
+    <aside class="preview" id="previewPane" aria-label="Live preview">
       <div class="preview-head">
         <b>Live preview</b>
         <div class="seg" id="bgSeg" role="group" aria-label="Preview background">
           <button data-bg="game" class="on">Game</button><button data-bg="dark">Dark</button><button data-bg="light">Light</button>
         </div>
+        <button class="icon-btn x" id="btnPreviewClose" title="Hide preview" aria-label="Hide preview"></button>
       </div>
       <div class="stage bg-game" id="stage">
         <iframe id="previewFrame" src="/overlay?preview=1" title="Overlay preview"></iframe>
       </div>
       <div class="preview-foot">
+        <span class="lbl">Try:</span>
         <button class="btn ghost sm" data-test="random">Message</button>
-        <button class="btn ghost sm" data-test="gift">TikTok gift</button>
+        <button class="btn ghost sm" data-test="gift">Gift</button>
+        <button class="btn ghost sm" data-test="follow">Follow</button>
+        <button class="btn ghost sm" data-test="sub">Sub</button>
         <button class="btn ghost sm" data-test="superchat">Super Chat</button>
-        <button class="btn ghost sm" data-test="burst">All events</button>
       </div>
     </aside>
   </div>
@@ -56,6 +64,15 @@
 
   <script src="/shared/icons.js"></script>
   <script src="/shared/glyphs.js"></script>
-  <script src="/dashboard/dashboard.js"></script>
+  <script src="/dashboard/core.js"></script>
+  <script src="/dashboard/pages/home.js"></script>
+  <script src="/dashboard/pages/chats.js"></script>
+  <script src="/dashboard/pages/obs.js"></script>
+  <script src="/dashboard/pages/style.js"></script>
+  <script src="/dashboard/pages/alerts.js"></script>
+  <script src="/dashboard/pages/live.js"></script>
+  <script src="/dashboard/pages/settings.js"></script>
+  <script src="/dashboard/pages/help.js"></script>
+  <script src="/dashboard/guide.js"></script>
 </body>
 </html>

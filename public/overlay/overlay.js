@@ -452,7 +452,7 @@
   /* ---------------- connection ---------------- */
   let retry = 0, lastSources = [];
   function connect() {
-    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws?client=${isPreview ? 'preview' : 'overlay'}${window.obsstudio ? '&obs=1' : ''}`);
     ws.onopen = () => { retry = 0; connBadge.hidden = true; };
     ws.onmessage = e => {
       const d = JSON.parse(e.data);

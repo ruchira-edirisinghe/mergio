@@ -96,6 +96,7 @@ function createServer(manager, { onQuit }) {
     overlayUrl: `http://localhost:${settings.get().advanced.port}/overlay`,
     testKinds: testdata.KINDS,
     autostart: { supported: autostart.supported(), enabled: autostart.isEnabled() },
+    overlays: overlayStatus(),
   });
 
   const server = http.createServer(async (req, res) => {
@@ -141,6 +142,11 @@ function createServer(manager, { onQuit }) {
           return send(res, 200, state());
         }
         if (p === '/api/clear' && req.method === 'POST') { manager.recent = []; broadcast({ op: 'clear' }); return send(res, 200, { ok: true }); }
+        if (p === '/api/open-data' && req.method === 'POST') {
+          const [cmd, args] = process.platform === 'win32' ? ['explorer.exe', [DATA_DIR]] : process.platform === 'darwin' ? ['open', [DATA_DIR]] : ['xdg-open', [DATA_DIR]];
+          require('node:child_process').execFile(cmd, args, () => {});
+          return send(res, 200, { ok: true });
+        }
         if (p === '/api/quit' && req.method === 'POST') { send(res, 200, { ok: true }); setTimeout(onQuit, 200); return; }
         if ((m = /^\/api\/pronouns\/([\w]+)$/.exec(p))) return send(res, 200, { pronouns: await pronouns(m[1].toLowerCase()) });
         return send(res, 404, { error: 'not found' });
@@ -170,6 +176,11 @@ function createServer(manager, { onQuit }) {
   const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
   // ws re-emits the HTTP server's errors (e.g. port already in use); main.js handles those on the server itself.
   wss.on('error', () => {});
+  /** Open overlays (not previews): how many, and whether one of them runs inside OBS. */
+  function overlayStatus() {
+    const list = [...wss.clients].filter(c => c.overlay && c.readyState === 1);
+    return { count: list.length, obs: list.some(c => c.overlay.obs) };
+  }
   const broadcast = obj => {
     const data = JSON.stringify(obj);
     for (const c of wss.clients) if (c.readyState === 1) c.send(data);
@@ -177,6 +188,15 @@ function createServer(manager, { onQuit }) {
   wss.on('connection', (ws, req) => {
     const host = (req.headers.host || '').split(':')[0];
     if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) return ws.close();
+    // Overlays identify themselves so the control panel can show "Mergio is in OBS".
+    const q = new URL(req.url, 'http://localhost').searchParams;
+    if (q.get('client') === 'overlay') {
+      // OBS browser sources expose window.obsstudio (sent as obs=1); the user agent is a fallback.
+      ws.overlay = { obs: q.get('obs') === '1' || /\bOBS\//.test(req.headers['user-agent'] || '') };
+      if (!settings.get().advanced.overlaySeen) settings.update({ advanced: { overlaySeen: true } });
+      ws.on('close', () => broadcast({ op: 'overlays', ...overlayStatus() }));
+      broadcast({ op: 'overlays', ...overlayStatus() });
+    }
     ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(-60) }));
   });
   manager.on('message', m => broadcast({ op: 'msg', msg: m }));
