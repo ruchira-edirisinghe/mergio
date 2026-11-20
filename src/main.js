@@ -15,7 +15,9 @@ function openBrowser(url) {
 const argv = new Set(process.argv.slice(2));
 const port = Number(process.env.ZUNOCHAT_PORT) || settings.get().advanced.port;
 const dashboard = `http://localhost:${port}/dashboard`;
-const shouldOpen = !argv.has('--no-open') && settings.get().advanced.openDashboardOnStart;
+// Launched by hand (shortcut, double-click): always show the control panel.
+// Launched at sign-in (--autostart): only when the user asked for it. --no-open never opens it.
+const shouldOpen = !argv.has('--no-open') && (!argv.has('--autostart') || settings.get().advanced.openDashboardOnStart);
 
 const manager = new Manager();
 const server = createServer(manager, {
@@ -26,7 +28,7 @@ server.on('error', e => {
   if (e.code === 'EADDRINUSE') {
     // Already running (or the port is taken): just show the dashboard of the running copy.
     log('app', `port ${port} is in use; opening the running instance`);
-    if (!argv.has('--no-open')) openBrowser(dashboard);
+    if (!argv.has('--no-open') && !argv.has('--autostart')) openBrowser(dashboard);
     setTimeout(() => process.exit(0), 500);
   } else { log('app', e); process.exit(1); }
 });
