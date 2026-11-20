@@ -25,8 +25,7 @@
   const ART = { gift: 'gift', kicks: 'coin', sub: 'star', giftsub: 'gift', giftmember: 'gift', raid: 'raid', host: 'raid', cheer: 'cheer', superchat: 'money', hypechat: 'money', supersticker: 'sparkle', member: 'crown', milestone: 'crown', giftreceived: 'crown', redemption: 'sparkle', powerup: 'bolt', streak: 'flame', follow: 'follow', notice: 'star' };
 
   const STYLES = ['spotlight', 'banner', 'neon', 'bubble', 'card', 'toast'];
-  const PARTY = ['#ffffff', '#ffd166', '#ff5fa2', '#7c4dff', '#4ade80', '#38bdf8'];
-  const rnd = (a, b) => a + Math.random() * (b - a);
+  const SVG = 'http://www.w3.org/2000/svg';
 
   let S = null;
   const queue = [];
@@ -102,9 +101,7 @@
       art.appendChild(img(avatar, 'av', `/avatar/default/${encodeURIComponent(m.user.name || '?')}`));
       const b = glyph(); b.classList.add('corner'); art.appendChild(b);
     } else art.appendChild(glyph());
-    const burst = h('span', 'burst');
-    for (let i = 0; i < 12; i++) { const d = h('i'); d.style.setProperty('--a', `${i * 30}deg`); burst.appendChild(d); }
-    art.appendChild(burst);
+    art.appendChild(h('i', 'ring'));
 
     let label = LABELS[ev.kind] || '';
     if (ev.kind === 'sub' && /resub|continued/i.test(ev.title || '')) label = 'Resubscribed';
@@ -136,35 +133,21 @@
     return el;
   }
 
-  /** Decoration that depends on the style: light rays, rings, a running neon edge, floating hearts... */
+  /** Decoration behind the alert: the neon tube, the sticker's glint, the glass card's glow. */
   function decor() {
     const fx = h('div', 'fx'), st = S.alerts.style;
-    if (st === 'spotlight') fx.append(h('i', 'glow'), h('i', 'rays'), h('i', 'ring'), h('i', 'ring'));
-    else if (st === 'neon') fx.append(h('i', 'edge'), h('i', 'scan'));
-    else if (st === 'banner' || st === 'card') fx.appendChild(h('i', 'sheen'));
-    else if (st === 'bubble') {
-      const fl = h('div', 'floaty');
-      for (let i = 0; i < 9; i++) {
-        const d = h('i', null, i % 3 ? '\u2665' : '\u2605');
-        d.style.cssText = `--x:${rnd(5, 92)}%;--s:${rnd(0.7, 1.3).toFixed(2)}em;--c:${i % 2 ? 'var(--ev)' : PARTY[2]};--t:${rnd(2.2, 3.4).toFixed(2)}s;--d:${rnd(0.3, 2.5).toFixed(2)}s;--dx:${rnd(-1.5, 1.5).toFixed(2)}em;--r:${rnd(-40, 40) | 0}deg`;
-        fl.appendChild(d);
+    if (st === 'neon') {
+      const svg = document.createElementNS(SVG, 'svg');
+      svg.setAttribute('class', 'tube');
+      for (const cls of ['glow', 'core']) {
+        const r = document.createElementNS(SVG, 'rect');
+        r.setAttribute('class', cls); r.setAttribute('pathLength', '1');
+        svg.appendChild(r);
       }
-      fx.appendChild(fl);
-    }
+      fx.appendChild(svg);
+    } else if (st === 'bubble') fx.appendChild(h('i', 'shine'));
+    else if (st === 'card') fx.append(h('i', 'blob'), h('i', 'blob'));
     return fx;
-  }
-
-  /** Spotlight: a shower of confetti over the whole browser source. */
-  function confetti(color) {
-    const box = h('div', 'confetti');
-    const colors = [color, ...PARTY];
-    for (let i = 0; i < 44; i++) {
-      const c = h('i');
-      c.style.cssText = `--x:${rnd(0, 100).toFixed(1)}%;--c:${colors[i % colors.length]};--t:${rnd(1.8, 3.2).toFixed(2)}s;--d:${rnd(0, 0.9).toFixed(2)}s;--dx:${rnd(-4, 4).toFixed(1)}em;--r:${rnd(-540, 540) | 0}deg`;
-      box.appendChild(c);
-    }
-    document.body.appendChild(box);
-    setTimeout(() => box.remove(), 4500);
   }
 
   /* ---------------- sound: a short chime made on the fly (no files) ---------------- */
@@ -217,7 +200,6 @@
     stage.appendChild(el);
     current = { m, el, timer: 0 };
     hold(S.alerts.duration);
-    if (S.alerts.style === 'spotlight') confetti(m.event.color || getComputedStyle(el).getPropertyValue('--pc').trim() || PARTY[3]);
     chime(m.event.kind || m.type);
   }
 

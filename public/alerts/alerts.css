@@ -1,214 +1,235 @@
-/* Mergio alerts overlay: one centred alert at a time. Size and position come from Alerts settings. */
+/* Mergio alerts overlay: one alert at a time. Size and position come from Alerts settings.
+   Six looks (body.st-*). They share the same parts: .fx (decoration), .art (picture), .info (text) and .timer. */
 :root {
   --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
   --scale: 1;
   --twitch: #9146ff; --youtube: #ff0033; --kick: #53fc18; --tiktok: #fe2c55; --facebook: #0866ff;
+  --out: cubic-bezier(.16, 1, .3, 1);
+  --spring: cubic-bezier(.34, 1.4, .64, 1);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
 body { font-family: var(--font); color: #fff; -webkit-font-smoothing: antialiased; font-size: calc(22px * var(--scale)); line-height: 1.25; }
 
-#stage { position: absolute; inset: 0; padding: 1em; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#stage { position: absolute; inset: 0; z-index: 1; padding: 1em; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 body.pos-top #stage { justify-content: flex-start; }
 body.pos-bottom #stage { justify-content: flex-end; }
 #conn { position: fixed; top: 8px; left: 8px; font: 600 12px/1 system-ui; padding: 6px 10px; border-radius: 99px; background: rgba(220, 38, 38, .85); color: #fff; }
 
-/* ---------- the alert ---------- */
-.alert {
-  --ev: var(--pc);
-  position: relative; width: min(100%, 24em); display: flex; flex-direction: column; align-items: center; text-align: center;
-  padding: 2.35em 1.3em 1.1em; margin-top: 1.9em; border-radius: 1.1em; isolation: isolate;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--ev) 30%, rgba(14, 14, 22, .92)), rgba(14, 14, 22, .92) 70%);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ev) 75%, transparent), 0 .6em 2em -.4em color-mix(in srgb, var(--ev) 70%, transparent), 0 .4em 1.2em rgba(0, 0, 0, .45);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
-}
-.art { position: absolute; top: -1.9em; left: 50%; width: 3.6em; height: 3.6em; margin-left: -1.8em; display: grid; place-items: center; border-radius: 50%;
-  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--ev) 55%, #1b1b28), #12121b); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ev) 80%, #fff), 0 .3em 1em rgba(0, 0, 0, .5); }
-.art.gift { background: radial-gradient(circle, color-mix(in srgb, var(--ev) 35%, transparent), transparent 70%); box-shadow: none; }
-.art .gift-img { width: 120%; height: 120%; object-fit: contain; filter: drop-shadow(0 .2em .4em rgba(0, 0, 0, .5)); }
-.art .av { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-.art .av-mini { position: absolute; right: -.2em; bottom: -.2em; width: 1.5em; height: 1.5em; border-radius: 50%; object-fit: cover; border: 2px solid #12121b; }
-.art .glyph { display: grid; place-items: center; width: 60%; height: 60%; color: #fff; }
-.art .glyph svg { width: 100%; height: 100%; filter: drop-shadow(0 0 .3em color-mix(in srgb, var(--ev) 90%, #fff)); }
-.art .glyph.corner { position: absolute; right: -.25em; bottom: -.25em; width: 1.45em; height: 1.45em; padding: .28em; border-radius: 50%; background: var(--ev); box-shadow: 0 0 0 2px #12121b; }
-
-.info { display: flex; flex-direction: column; align-items: center; gap: .2em; min-width: 0; max-width: 100%; }
-.label { display: flex; align-items: center; justify-content: center; gap: .5em; flex-wrap: wrap; font-size: .62em; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; margin-bottom: .15em; }
-.label .what-kind { color: color-mix(in srgb, var(--ev) 30%, #fff); }
-.label .pchip { display: inline-flex; align-items: center; gap: .35em; padding: .2em .6em .2em .45em; border-radius: 99px; letter-spacing: .03em; text-transform: none; background: var(--pc); color: #fff; }
-.p-kick .label .pchip { color: #0b0b0f; }
-.label .pchip svg { width: 1.15em; height: 1.15em; }
-.name { font-size: 1.35em; font-weight: 900; overflow-wrap: anywhere; }
-.title { font-weight: 600; opacity: .92; }
-.amount { margin-top: .2em; font-size: 1.15em; font-weight: 900; padding: .08em .6em; border-radius: .5em; background: color-mix(in srgb, var(--ev) 60%, rgba(0, 0, 0, .25)); font-variant-numeric: tabular-nums; }
-.amount.bump { animation: bump .45s cubic-bezier(.34, 1.56, .64, 1); }
-.msg { margin-top: .45em; font-size: .9em; font-weight: 500; opacity: .95; overflow-wrap: anywhere; max-height: 4.2em; overflow: hidden; }
-.msg .emote { height: 1.4em; vertical-align: middle; margin: -.2em .05em; }
-
-/* confetti burst from the picture (runs once) */
-.burst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
-.burst i { position: absolute; width: .3em; height: .3em; margin: -.15em; border-radius: 50%; background: color-mix(in srgb, var(--ev) 55%, #fff); opacity: 0;
-  animation: burst 1s .25s cubic-bezier(.22, 1, .36, 1) forwards; }
-.burst i:nth-child(odd) { background: #fff; width: .2em; height: .2em; }
-@keyframes burst { 0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-3.2em) scale(.4); } }
-
-/* ---------- in and out ---------- */
-.anim-pop .alert { animation: in-pop .6s cubic-bezier(.34, 1.56, .64, 1) both; }
-.anim-slide .alert { animation: in-slide .55s cubic-bezier(.22, 1, .36, 1) both; }
-.anim-fade .alert { animation: in-fade .45s ease-out both; }
-.alert .art { animation: art-pop .7s .1s cubic-bezier(.34, 1.56, .64, 1) both; }
-.alert.out { animation: out .5s ease-in forwards !important; }
-@keyframes in-pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
-@keyframes in-slide { from { opacity: 0; transform: translateY(1.5em); } to { opacity: 1; transform: none; } }
-@keyframes in-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes art-pop { from { transform: scale(.4) rotate(-12deg); } to { transform: none; } }
-@keyframes out { to { opacity: 0; transform: scale(.92) translateY(-.4em); } }
-@keyframes bump { 40% { transform: scale(1.25); } }
-
-/* ===================================================================================
-   Alert styles (body.st-*). The base rules above are the "Card" style.
-   Every style shares the same parts: .fx (decoration), .art (picture), .info (text),
-   .timer (time left) and a name split into letters (.name .l).
-   =================================================================================== */
+/* ---------- shared parts ---------- */
+.alert { --ev: var(--pc); position: relative; display: flex; isolation: isolate; max-width: 100%; }
+.fx { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; }
+.art { position: relative; flex: none; display: grid; place-items: center; }
+.art .av { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.art .gift-img { width: 100%; height: 100%; object-fit: contain; }
+.art .av-mini { position: absolute; right: -.15em; bottom: -.15em; width: 1.4em; height: 1.4em; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 .12em #101018; }
+.art .glyph { display: grid; place-items: center; width: 52%; height: 52%; }
+.art .glyph svg { width: 100%; height: 100%; }
+.art .glyph.corner { position: absolute; right: -.2em; bottom: -.2em; width: 1.35em; height: 1.35em; padding: .27em; border-radius: 50%; background: var(--ev); color: #fff; box-shadow: 0 0 0 .12em #101018; }
+.art .ring { display: none; }
+.info { display: flex; flex-direction: column; gap: .12em; min-width: 0; }
+.label { display: flex; align-items: center; gap: .55em; flex-wrap: wrap; font-size: .56em; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.label .pchip { display: inline-flex; align-items: center; gap: .35em; letter-spacing: .02em; text-transform: none; font-weight: 700; opacity: .85; }
+.label .pchip svg { width: 1.2em; height: 1.2em; }
+.name { font-size: 1.3em; font-weight: 900; letter-spacing: -.01em; overflow-wrap: anywhere; }
 .name .l { display: inline-block; white-space: pre; }
-.timer { position: absolute; left: 1.1em; right: 1.1em; bottom: .45em; height: .16em; border-radius: 99px; overflow: hidden; background: rgba(255, 255, 255, .12); }
-.timer i { display: block; height: 100%; border-radius: inherit; background: color-mix(in srgb, var(--ev) 70%, #fff); transform-origin: left; animation: timer var(--hold, 6s) linear forwards; }
-@keyframes timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
-.fx { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: -1; }
-.sheen { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
-.sheen::after { content: ''; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .28), transparent); animation: sheen 3.2s .5s ease-in-out infinite; }
-@keyframes sheen { 0% { left: -60%; } 45%, 100% { left: 130%; } }
-@keyframes l-pop { 0% { opacity: 0; transform: translateY(.7em) scale(.4) rotate(-10deg); } 70% { opacity: 1; transform: translateY(-.12em) scale(1.12); } 100% { transform: none; } }
-@keyframes l-drop { 0% { opacity: 0; transform: translateY(-.9em); } 60% { opacity: 1; transform: translateY(.08em); } 100% { transform: none; } }
-@keyframes l-slide { from { opacity: 0; transform: translateX(-.6em); } to { opacity: 1; transform: none; } }
-@keyframes l-flicker { 0%, 12% { opacity: 0; } 14% { opacity: 1; } 18% { opacity: .2; } 24%, 100% { opacity: 1; } }
-
-/* ---------- Card (the classic look) gets a gentle shine ---------- */
-.st-card .name .l { animation: l-slide .35s calc(.2s + var(--i) * 22ms) ease-out both; }
-
-/* ---------- Spotlight: big picture, spinning light rays, pulsing rings and confetti ---------- */
-.st-spotlight .alert { width: min(100%, 26em); padding: 1.6em 1em 1.2em; margin-top: 0; background: none; box-shadow: none; text-shadow: 0 2px .5em rgba(0, 0, 0, .75); animation: sp-in .7s cubic-bezier(.34, 1.56, .64, 1) both; }
-.st-spotlight .alert .art { position: relative; top: auto; left: auto; margin: 0 0 .45em; width: 4.4em; height: 4.4em;
-  box-shadow: 0 0 0 .2em color-mix(in srgb, var(--ev) 85%, #fff), 0 0 2.2em color-mix(in srgb, var(--ev) 85%, transparent), 0 .4em 1.2em rgba(0, 0, 0, .5);
-  animation: sp-art .9s .05s cubic-bezier(.34, 1.56, .64, 1) both, float 3.4s 1s ease-in-out infinite; }
-.st-spotlight .alert .art.gift { width: 5.2em; height: 5.2em; box-shadow: none; }
-.st-spotlight .fx { inset: auto; left: 50%; top: 2.2em; width: 0; height: 0; }
-.st-spotlight .alert.has-gift .fx { top: 2.6em; }
-.st-spotlight .rays { position: absolute; left: -8em; top: -8em; width: 16em; height: 16em; border-radius: 50%;
-  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--ev) 45%, transparent) 0 7deg, transparent 7deg 18deg);
-  -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%); mask: radial-gradient(circle, #000 18%, transparent 68%);
-  animation: rays-in .8s ease-out both, spin 14s linear infinite; }
-.st-spotlight .glow { position: absolute; left: -5em; top: -5em; width: 10em; height: 10em; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--ev) 55%, transparent), transparent 65%); animation: breathe 2.4s ease-in-out infinite; }
-.st-spotlight .ring { position: absolute; left: -2.4em; top: -2.4em; width: 4.8em; height: 4.8em; border-radius: 50%; border: .14em solid color-mix(in srgb, var(--ev) 70%, #fff); opacity: 0; animation: ring 2.2s .3s ease-out infinite; }
-.st-spotlight .ring + .ring { animation-delay: 1.4s; }
-.st-spotlight .label { font-size: .6em; margin-bottom: .35em; }
-.st-spotlight .label .what-kind { padding: .3em .8em; border-radius: 99px; background: color-mix(in srgb, var(--ev) 80%, #000 10%); color: #fff; }
-.st-spotlight .name { font-size: 1.65em; letter-spacing: -.01em; text-shadow: 0 0 .5em color-mix(in srgb, var(--ev) 80%, transparent), 0 2px .3em rgba(0, 0, 0, .7); }
-.st-spotlight .name .l { animation: l-pop .55s calc(.35s + var(--i) * 40ms) cubic-bezier(.34, 1.56, .64, 1) both; }
-.st-spotlight .amount { font-size: 1.4em; padding: 0; background: linear-gradient(90deg, #fff, color-mix(in srgb, var(--ev) 50%, #fff)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; filter: drop-shadow(0 0 .3em color-mix(in srgb, var(--ev) 80%, transparent)); }
-.st-spotlight .msg { padding: .45em .9em; border-radius: .9em; background: rgba(10, 10, 18, .6); backdrop-filter: blur(6px); }
-.st-spotlight .timer { left: 30%; right: 30%; bottom: .2em; }
-.st-spotlight .alert.out { animation: sp-out .5s ease-in forwards !important; }
-@keyframes sp-in { from { opacity: 0; transform: scale(.5); } to { opacity: 1; transform: none; } }
-@keyframes sp-art { 0% { transform: scale(0) rotate(-30deg); } 100% { transform: none; } }
-@keyframes sp-out { to { opacity: 0; transform: scale(1.15); filter: blur(6px); } }
-@keyframes rays-in { from { opacity: 0; transform: scale(.3); } }
+.title { font-weight: 600; opacity: .9; }
+.amount { align-self: flex-start; margin-top: .25em; padding: .1em .55em; border-radius: .45em; font-weight: 900; font-variant-numeric: tabular-nums; background: var(--ev); color: #fff; }
+.p-kick .amount { color: #0b0b0f; }
+.amount.bump { animation: bump .45s var(--spring); }
+.msg { margin-top: .4em; font-size: .86em; font-weight: 500; overflow-wrap: anywhere; max-height: 4.2em; overflow: hidden; }
+.msg .emote { height: 1.4em; vertical-align: middle; margin: -.2em .05em; }
+.timer { position: absolute; left: 0; right: 0; bottom: 0; height: .14em; overflow: hidden; animation: fade .5s .7s both; }
+.timer i { display: block; height: 100%; background: var(--ev); transform-origin: left; animation: timer var(--hold, 6s) linear forwards; }
+@keyframes timer { to { transform: scaleX(0); } }
+@keyframes bump { 40% { transform: scale(1.22); } }
+@keyframes rise { from { opacity: 0; transform: translateY(.5em); } }
+@keyframes fade { from { opacity: 0; } }
 @keyframes spin { to { rotate: 360deg; } }
-@keyframes breathe { 50% { transform: scale(1.15); opacity: .75; } }
-@keyframes ring { 0% { opacity: .9; transform: scale(.9); } 100% { opacity: 0; transform: scale(2.4); } }
-@keyframes float { 50% { translate: 0 -.25em; } }
 
-/* confetti shower (Spotlight) */
-.confetti { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
-.confetti i { position: absolute; top: -1em; left: var(--x); width: .42em; height: .7em; border-radius: .1em; background: var(--c); opacity: 0;
-  animation: fall var(--t) var(--d) cubic-bezier(.3, .6, .6, 1) forwards; }
-.confetti i:nth-child(3n) { width: .5em; height: .5em; border-radius: 50%; }
-@keyframes fall { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 85% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), 105vh) rotate(var(--r)); } }
-#stage { z-index: 1; }
+/* ===================================================================
+   Spotlight: the picture big and centred, a light orbiting it, and the
+   name rising into place. No panel, so it sits right on the game.
+   =================================================================== */
+.st-spotlight .alert { width: min(100%, 24em); flex-direction: column; align-items: center; text-align: center; padding: .4em 1em 1em; }
+.st-spotlight .art { width: 4.8em; height: 4.8em; margin-bottom: .75em; border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--ev) 50%, #1d1d2b), #0d0d15 78%);
+  box-shadow: inset 0 0 0 .08em rgba(255, 255, 255, .18), 0 1.2em 2.6em -1em color-mix(in srgb, var(--ev) 90%, transparent);
+  animation: sp-art .9s var(--out) both; }
+.st-spotlight .art.gift { width: 5.4em; height: 5.4em; background: radial-gradient(circle, color-mix(in srgb, var(--ev) 40%, transparent), transparent 68%); box-shadow: none; }
+.st-spotlight .art .gift-img { filter: drop-shadow(0 .4em .8em rgba(0, 0, 0, .55)); }
+.st-spotlight .art .glyph { color: #fff; filter: drop-shadow(0 0 .35em color-mix(in srgb, var(--ev) 90%, #fff)); }
+.st-spotlight .art .ring { display: block; position: absolute; inset: -.32em; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 62%, color-mix(in srgb, var(--ev) 70%, transparent) 82%, #fff 86%, transparent 86.5%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - .14em), #000 calc(100% - .12em)); mask: radial-gradient(farthest-side, transparent calc(100% - .14em), #000 calc(100% - .12em));
+  animation: fade .6s .35s both, spin 2.8s linear infinite; }
+.st-spotlight .art.gift .ring { display: none; }
+.st-spotlight .label { justify-content: center; margin-bottom: .45em; color: color-mix(in srgb, var(--ev) 35%, #fff); text-shadow: 0 1px .4em rgba(0, 0, 0, .8); }
+.st-spotlight .label .what-kind { display: inline-flex; align-items: center; gap: .8em; }
+.st-spotlight .label .what-kind::before, .st-spotlight .label .what-kind::after { content: ''; width: 2.4em; height: .14em; border-radius: 99px; background: linear-gradient(90deg, transparent, currentColor); animation: sp-line .7s .35s var(--out) both; }
+.st-spotlight .label .what-kind::after { transform-origin: left; background: linear-gradient(270deg, transparent, currentColor); }
+.st-spotlight .label .what-kind::before { transform-origin: right; }
+.st-spotlight .label .pchip { display: none; }
+.st-spotlight .label { animation: fade .5s .3s both; }
+.st-spotlight .name { font-size: 1.85em; line-height: 1.1; padding-bottom: .08em; overflow: hidden; text-shadow: 0 .06em .5em rgba(0, 0, 0, .7); }
+.st-spotlight .name .l { animation: up .7s calc(.42s + var(--i) * 24ms) var(--out) both; }
+.st-spotlight .title { margin-top: .2em; text-shadow: 0 1px .4em rgba(0, 0, 0, .85); animation: rise .6s .7s var(--out) both; }
+.st-spotlight .amount { align-self: center; padding: .14em .75em; border-radius: 99px; box-shadow: 0 .4em 1.2em -.4em color-mix(in srgb, var(--ev) 90%, transparent); animation: rise .6s .78s var(--out) both; }
+.st-spotlight .msg { padding: .5em .95em; border-radius: .8em; background: rgba(10, 10, 16, .66); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); animation: rise .6s .86s var(--out) both; }
+.st-spotlight .timer { left: 38%; right: 38%; bottom: .1em; border-radius: 99px; background: rgba(255, 255, 255, .14); }
+.st-spotlight .timer i { border-radius: inherit; }
+.st-spotlight .alert.out { animation: sp-out .5s cubic-bezier(.7, 0, .84, 0) forwards; }
+@keyframes sp-art { from { opacity: 0; transform: scale(.55); filter: blur(10px); } }
+@keyframes sp-line { from { transform: scaleX(0); opacity: 0; } }
+@keyframes up { from { transform: translateY(110%); } }
+@keyframes sp-out { to { opacity: 0; transform: translateY(-.6em) scale(.97); filter: blur(8px); } }
 
-/* ---------- Banner: a ribbon that sweeps in from the side ---------- */
-.st-banner .alert { flex-direction: row; align-items: center; text-align: left; gap: .8em; width: min(100%, 30em); padding: .75em 1.6em .95em .8em; margin-top: 0; border-radius: .7em;
-  background: linear-gradient(100deg, color-mix(in srgb, var(--ev) 88%, #000 12%), color-mix(in srgb, var(--ev) 40%, #0e0e16) 75%);
-  box-shadow: 0 .5em 1.8em -.3em color-mix(in srgb, var(--ev) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .25);
-  animation: bn-in .75s cubic-bezier(.22, 1, .36, 1) both; }
-.st-banner .alert .art { position: relative; top: auto; left: auto; margin: 0; flex: none; width: 3.4em; height: 3.4em; box-shadow: 0 0 0 .15em rgba(255, 255, 255, .85), 0 .3em .8em rgba(0, 0, 0, .4); }
-.st-banner .alert .art.gift { box-shadow: none; }
-.st-banner .info { align-items: flex-start; }
-.st-banner .label { justify-content: flex-start; font-size: .56em; }
-.st-banner .label .what-kind { color: rgba(255, 255, 255, .85); }
-.st-banner .name { font-size: 1.25em; }
-.st-banner .name .l { animation: l-slide .3s calc(.35s + var(--i) * 25ms) ease-out both; }
-.st-banner .amount { background: rgba(0, 0, 0, .28); }
-.st-banner .msg { font-size: .82em; }
-.st-banner .timer { left: 0; right: 0; bottom: 0; height: .2em; border-radius: 0 0 .7em .7em; background: rgba(0, 0, 0, .25); }
-.st-banner .timer i { background: #fff; }
-.st-banner .alert.out { animation: bn-out .5s ease-in forwards !important; }
-@keyframes bn-in { 0% { opacity: 0; transform: translateX(-60%) skewX(-14deg); clip-path: inset(0 100% 0 0 round .7em); } 60% { opacity: 1; transform: translateX(2%) skewX(-3deg); clip-path: inset(-2em -2em -2em -2em); } 100% { transform: none; clip-path: inset(-2em -2em -2em -2em); } }
-@keyframes bn-out { to { opacity: 0; transform: translateX(40%) skewX(-10deg); } }
+/* ===================================================================
+   Banner: a broadcast lower third. A colour block wipes in, the panel
+   unrolls from it and the text slides in after.
+   =================================================================== */
+.st-banner .alert { width: min(100%, 30em); align-items: stretch; text-align: left; filter: drop-shadow(0 .7em 1.2em rgba(0, 0, 0, .45)); }
+.st-banner .art { width: 4.4em; border-radius: .55em 0 0 .55em; background: linear-gradient(160deg, color-mix(in srgb, var(--ev) 85%, #fff 15%), var(--ev) 55%, color-mix(in srgb, var(--ev) 70%, #000)); transform-origin: left; animation: bn-block .5s var(--out) both; }
+.st-banner .art .av, .st-banner .art .gift-img { width: 3.1em; height: 3.1em; border-radius: .45em; box-shadow: 0 0 0 .12em rgba(255, 255, 255, .9), 0 .3em .7em rgba(0, 0, 0, .35); }
+.st-banner .art .av { border-radius: 50%; }
+.st-banner .art .glyph.corner, .st-banner .art .av-mini { display: none; }
+.st-banner .art .gift-img { box-shadow: none; filter: drop-shadow(0 .2em .35em rgba(0, 0, 0, .4)); }
+.st-banner .art .glyph { color: #fff; }
+.st-banner .alert.p-kick .art .glyph { color: #0b0b0f; }
+.st-banner .art > * { animation: fade .4s .35s both; }
+.st-banner .info { flex: 1; position: relative; justify-content: center; padding: .7em 1.3em .85em 1.15em; border-radius: 0 .55em .55em 0; background: linear-gradient(90deg, #15151f, rgba(16, 16, 24, .95)); overflow: hidden; animation: bn-panel .65s .18s var(--out) both; }
+.st-banner .info::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: .22em; background: color-mix(in srgb, var(--ev) 45%, #fff); }
+.st-banner .info > * { animation: bn-text .55s var(--out) both; }
+.st-banner .label { animation-delay: .38s; color: color-mix(in srgb, var(--ev) 30%, #fff); }
+.st-banner .label .what-kind { color: inherit; }
+.st-banner .name { font-size: 1.35em; animation-delay: .45s; }
+.st-banner .title { font-size: .9em; animation-delay: .52s; }
+.st-banner .amount { animation-delay: .58s; }
+.st-banner .msg { font-size: .8em; opacity: .9; animation-delay: .62s; }
+.st-banner .timer { left: 0; right: 0; height: .16em; border-radius: 0 0 .55em 0; background: rgba(255, 255, 255, .07); }
+.st-banner .alert.out .info { animation: bn-panel-out .45s cubic-bezier(.7, 0, .84, 0) forwards; }
+.st-banner .alert.out .art { animation: bn-block-out .35s .3s cubic-bezier(.7, 0, .84, 0) forwards; }
+@keyframes bn-block { from { transform: scaleX(0); } }
+@keyframes bn-panel { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes bn-text { from { opacity: 0; transform: translateX(-1.2em); } }
+@keyframes bn-panel-out { from { clip-path: inset(0 0 0 0); } to { clip-path: inset(0 100% 0 0); } }
+@keyframes bn-block-out { to { transform: scaleX(0); } }
 
-/* ---------- Neon: a glowing sign with a light running round the edge ---------- */
-@property --ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-.st-neon .alert { background: rgba(7, 6, 14, .88); box-shadow: 0 0 2em -.2em color-mix(in srgb, var(--ev) 60%, transparent), inset 0 0 1.4em color-mix(in srgb, var(--ev) 22%, transparent); animation: neon-on .9s steps(1) both; }
+/* ===================================================================
+   Neon: a dark sign whose glowing tube draws itself round the edge,
+   then the name switches on.
+   =================================================================== */
+.st-neon .alert { width: min(100%, 24em); flex-direction: column; align-items: center; text-align: center; padding: 1.15em 1.5em 1.25em; border-radius: 1em; background: rgba(7, 6, 13, .86); box-shadow: 0 0 3em -1.2em color-mix(in srgb, var(--ev) 80%, transparent); animation: fade .4s both; }
 .st-neon .fx { z-index: 0; }
-.st-neon .edge { position: absolute; inset: 0; border-radius: inherit; padding: .14em;
-  background: conic-gradient(from var(--ang), var(--ev), #fff 8%, var(--ev) 16%, color-mix(in srgb, var(--ev) 25%, transparent) 30% 70%, var(--ev) 84%, #ff2d8f 92%, var(--ev));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: edge 3s linear infinite; }
-.st-neon .scan { position: absolute; inset: 0; border-radius: inherit; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 4px); }
-.st-neon .art, .st-neon .info, .st-neon .timer { z-index: 1; }
-.st-neon .art { background: #08070f; box-shadow: 0 0 0 .14em var(--ev), 0 0 1em var(--ev), 0 0 2em color-mix(in srgb, var(--ev) 60%, transparent); }
-.st-neon .art.gift { background: radial-gradient(circle, color-mix(in srgb, var(--ev) 30%, transparent), transparent 70%); box-shadow: none; }
-.st-neon .name { color: #fff; text-shadow: 0 0 .08em #fff, 0 0 .35em var(--ev), 0 0 .9em var(--ev), 0 0 1.6em color-mix(in srgb, var(--ev) 70%, transparent); }
-.st-neon .name .l { animation: l-flicker 1.2s calc(.3s + var(--i) * 45ms) linear both; }
-.st-neon .label .what-kind { color: color-mix(in srgb, var(--ev) 45%, #fff); text-shadow: 0 0 .5em var(--ev); }
-.st-neon .amount { background: transparent; box-shadow: 0 0 0 .1em var(--ev), 0 0 .8em color-mix(in srgb, var(--ev) 70%, transparent); text-shadow: 0 0 .4em var(--ev); }
-.st-neon .timer i { background: var(--ev); box-shadow: 0 0 .5em var(--ev); }
-.st-neon .alert.out { animation: neon-off .45s steps(1) forwards !important; }
-@keyframes edge { to { --ang: 360deg; } }
-@keyframes neon-on { 0% { opacity: 0; } 10% { opacity: 1; } 16% { opacity: .15; } 24% { opacity: 1; } 30% { opacity: .4; } 36%, 100% { opacity: 1; } }
+.st-neon .tube { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.st-neon .tube rect { x: 1px; y: 1px; width: calc(100% - 2px); height: calc(100% - 2px); rx: 1em; fill: none; stroke-dasharray: 0 1; animation: draw .8s .05s cubic-bezier(.65, 0, .35, 1) forwards; }
+.st-neon .tube .glow { stroke: var(--ev); stroke-width: 3.5px; filter: drop-shadow(0 0 4px var(--ev)) drop-shadow(0 0 12px var(--ev)); }
+.st-neon .tube .core { stroke: #fff; stroke-width: 1.2px; opacity: .85; }
+.st-neon .art, .st-neon .info, .st-neon .timer { position: relative; z-index: 1; }
+.st-neon .info { align-items: center; }
+.st-neon .art { width: 3.6em; height: 3.6em; margin-bottom: .6em; border-radius: 50%; background: #07060d; box-shadow: 0 0 0 .1em var(--ev), 0 0 .9em var(--ev), inset 0 0 .8em color-mix(in srgb, var(--ev) 50%, transparent); animation: neon-on .9s .45s steps(1) both; }
+.st-neon .art.gift { width: 4.2em; height: 4.2em; background: none; box-shadow: none; }
+.st-neon .art .gift-img { filter: drop-shadow(0 0 .5em color-mix(in srgb, var(--ev) 80%, transparent)); }
+.st-neon .art .glyph { color: #fff; filter: drop-shadow(0 0 .25em var(--ev)) drop-shadow(0 0 .6em var(--ev)); }
+.st-neon .label { justify-content: center; color: color-mix(in srgb, var(--ev) 40%, #fff); text-shadow: 0 0 .6em var(--ev); animation: fade .5s .6s both; }
+.st-neon .name { font-size: 1.6em; color: #fff; text-shadow: 0 0 .06em #fff, 0 0 .3em var(--ev), 0 0 .8em var(--ev), 0 0 1.6em color-mix(in srgb, var(--ev) 60%, transparent); animation: neon-on 1s .55s steps(1) both; }
+.st-neon .title { opacity: .9; animation: fade .5s .8s both; }
+.st-neon .amount { align-self: center; background: transparent; color: #fff; box-shadow: 0 0 0 .09em var(--ev), 0 0 .8em color-mix(in srgb, var(--ev) 70%, transparent), inset 0 0 .6em color-mix(in srgb, var(--ev) 50%, transparent); text-shadow: 0 0 .4em var(--ev); animation: fade .5s .85s both; }
+.st-neon .msg { opacity: .9; animation: fade .5s .9s both; }
+.st-neon .timer { position: absolute; left: 30%; right: 30%; bottom: .45em; border-radius: 99px; background: rgba(255, 255, 255, .08); }
+.st-neon .timer i { border-radius: inherit; box-shadow: 0 0 .5em var(--ev); }
+.st-neon .alert.out { animation: neon-off .5s steps(1) forwards; }
+@keyframes draw { to { stroke-dasharray: 1 0; } }
+@keyframes neon-on { 0% { opacity: 0; } 8% { opacity: 1; } 14% { opacity: .2; } 22% { opacity: 1; } 28% { opacity: .5; } 34%, 100% { opacity: 1; } }
 @keyframes neon-off { 0% { opacity: 1; } 20% { opacity: .2; } 35% { opacity: .9; } 50%, 100% { opacity: 0; } }
 
-/* ---------- Bubbly: soft, bouncy and cute, with floating hearts ---------- */
-.st-bubble .alert { color: #2a2140; text-shadow: none; border-radius: 1.6em; padding-bottom: 1.3em;
-  background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--ev) 14%, #fff));
-  box-shadow: 0 .35em 0 color-mix(in srgb, var(--ev) 55%, #fff), 0 .9em 1.8em -.4em color-mix(in srgb, var(--ev) 60%, transparent);
-  animation: jelly .9s cubic-bezier(.34, 1.56, .64, 1) both; }
-.st-bubble .alert .art { background: #fff; box-shadow: 0 0 0 .2em color-mix(in srgb, var(--ev) 70%, #fff), 0 .3em .8em rgba(0, 0, 0, .15); animation: art-pop .7s .1s cubic-bezier(.34, 1.56, .64, 1) both, bob 2.6s 1s ease-in-out infinite; }
-.st-bubble .alert .art.gift { background: radial-gradient(circle, #fff 55%, transparent 72%); box-shadow: none; }
-.st-bubble .art .glyph, .st-bubble .art .glyph.corner { color: var(--ev); }
-.st-bubble .art .glyph svg { filter: none; }
-.st-bubble .art .glyph.corner { color: #fff; }
-.st-bubble .label .what-kind { color: color-mix(in srgb, var(--ev) 75%, #2a2140); }
-.st-bubble .name { color: color-mix(in srgb, var(--ev) 55%, #2a2140); }
-.st-bubble .name .l { animation: l-drop .5s calc(.3s + var(--i) * 35ms) cubic-bezier(.34, 1.56, .64, 1) both; }
-.st-bubble .title { opacity: .8; }
-.st-bubble .amount { color: #fff; background: var(--ev); box-shadow: 0 .15em 0 color-mix(in srgb, var(--ev) 60%, #000); }
-.st-bubble .msg { opacity: .85; }
-.st-bubble .timer { background: color-mix(in srgb, var(--ev) 15%, #fff); }
-.st-bubble .timer i { background: var(--ev); }
-.st-bubble .floaty { position: absolute; left: 0; right: 0; bottom: .5em; height: 0; }
-.st-bubble .floaty i { position: absolute; left: var(--x); bottom: 0; font-style: normal; font-size: var(--s); line-height: 1; color: var(--c); opacity: 0; animation: rise var(--t) var(--d) ease-out infinite; }
-.st-bubble .alert.out { animation: pop-out .45s cubic-bezier(.6, -.4, .7, .4) forwards !important; }
-@keyframes jelly { 0% { opacity: 0; transform: scale(.2); } 40% { opacity: 1; transform: scale(1.12, .9); } 60% { transform: scale(.94, 1.06); } 80% { transform: scale(1.03, .98); } 100% { transform: none; } }
-@keyframes bob { 50% { translate: 0 -.2em; rotate: 4deg; } }
-@keyframes rise { 0% { opacity: 0; transform: translateY(0) scale(.6); } 20% { opacity: .9; } 100% { opacity: 0; transform: translate(var(--dx), -6em) scale(1.1) rotate(var(--r)); } }
-@keyframes pop-out { to { opacity: 0; transform: scale(.3); } }
+/* ===================================================================
+   Bubbly: a die-cut sticker that slaps onto the scene, then a light
+   glints across it.
+   =================================================================== */
+.st-bubble .alert { width: min(100%, 23em); align-items: center; gap: .85em; text-align: left; padding: .85em 1.3em .95em .85em; border-radius: 1.4em; color: #1c1530;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--ev) 20%, #fff), #fff 55%);
+  box-shadow: 0 0 0 .28em #fff, 0 .15em 0 .28em color-mix(in srgb, var(--ev) 25%, #ddd), 0 1em 1.6em -.5em rgba(0, 0, 0, .55);
+  rotate: -2deg; animation: slap .75s var(--out) both; }
+.st-bubble .fx { overflow: hidden; }
+.st-bubble .shine { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .9) 48%, transparent 60%); transform: translateX(-120%); animation: glint 1s .55s ease-in-out both; }
+.st-bubble .art { width: 3.8em; height: 3.8em; border-radius: 1.05em; background: var(--ev); box-shadow: 0 0 0 .16em #fff, 0 .3em .6em rgba(0, 0, 0, .2); rotate: 5deg; animation: tilt .8s .2s var(--spring) both; }
+.st-bubble .art.gift { background: color-mix(in srgb, var(--ev) 18%, #fff); }
+.st-bubble .art .glyph { color: #fff; }
+.st-bubble .art .gift-img { width: 115%; height: 115%; filter: drop-shadow(0 .2em .3em rgba(0, 0, 0, .25)); }
+.st-bubble .label { gap: .45em; letter-spacing: .1em; }
+.st-bubble .label .what-kind { padding: .3em .7em; border-radius: 99px; background: #1c1530; color: #fff; }
+.st-bubble .label .pchip { color: color-mix(in srgb, var(--ev) 70%, #1c1530); opacity: 1; }
+.st-bubble .name { font-size: 1.4em; margin-top: .1em; }
+.st-bubble .name .l { animation: hop .5s calc(.3s + var(--i) * 28ms) var(--spring) both; }
+.st-bubble .title { opacity: .75; }
+.st-bubble .amount { box-shadow: 0 .14em 0 color-mix(in srgb, var(--ev) 60%, #000); }
+.st-bubble .msg { opacity: .8; }
+.st-bubble .timer { left: 1.6em; right: 1.6em; bottom: .4em; border-radius: 99px; background: color-mix(in srgb, var(--ev) 14%, #eee); }
+.st-bubble .timer i { border-radius: inherit; }
+.st-bubble .alert.out { animation: peel .5s cubic-bezier(.6, 0, .9, .4) forwards; }
+@keyframes slap { 0% { opacity: 0; transform: scale(1.45) rotate(-9deg); } 45% { opacity: 1; transform: scale(.95) rotate(1deg); } 70% { transform: scale(1.02); } 100% { transform: none; } }
+@keyframes glint { to { transform: translateX(120%); } }
+@keyframes tilt { from { rotate: -14deg; scale: .6; } }
+@keyframes hop { 0% { opacity: 0; transform: translateY(.45em) scale(.7); } 100% { opacity: 1; transform: none; } }
+@keyframes peel { to { opacity: 0; transform: translate(.6em, -.9em) rotate(7deg) scale(.92); } }
 
-/* ---------- Minimal: a small quiet pill ---------- */
-.st-toast .alert { flex-direction: row; align-items: center; text-align: left; gap: .75em; width: auto; max-width: min(100%, 26em); margin-top: 0; padding: .5em 1.3em .65em .5em; border-radius: 99px;
-  background: rgba(14, 14, 22, .9); box-shadow: 0 0 0 1px rgba(255, 255, 255, .09), 0 .5em 1.4em rgba(0, 0, 0, .45); font-size: .85em; }
-.st-toast .alert .art { position: relative; top: auto; left: auto; margin: 0; flex: none; width: 2.6em; height: 2.6em; box-shadow: 0 0 0 .12em var(--ev); }
-.st-toast .alert .art.gift { box-shadow: none; }
-.st-toast .art .av-mini, .st-toast .burst, .st-toast .label .pchip { display: none; }
-.st-toast .info { align-items: flex-start; gap: 0; }
-.st-toast .label { justify-content: flex-start; font-size: .55em; margin: 0; }
-.st-toast .label .what-kind { color: color-mix(in srgb, var(--ev) 55%, #fff); }
-.st-toast .name { font-size: 1.05em; }
-.st-toast .title { font-size: .85em; }
-.st-toast .amount { margin-top: .1em; font-size: .9em; }
-.st-toast .msg { font-size: .8em; margin-top: .15em; max-height: 2.6em; }
-.st-toast .timer { left: 1.5em; right: 1.5em; bottom: .25em; height: .12em; }
+/* ===================================================================
+   Card: frosted glass with a soft colour glow inside. It tilts up into
+   place and the text follows.
+   =================================================================== */
+.st-card .alert { width: min(100%, 25em); align-items: center; gap: .9em; text-align: left; padding: .95em 1.3em 1.05em .95em; border-radius: 1.1em;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .03) 60%), rgba(16, 16, 26, .78);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), inset 0 1px 0 rgba(255, 255, 255, .28), 0 1.2em 2.4em -1em rgba(0, 0, 0, .7);
+  transform-origin: 50% 100%; animation: glass-in .85s var(--out) both; }
+.anim-slide.st-card .alert { animation-name: glass-slide; }
+.anim-fade.st-card .alert { animation: fade .6s ease-out both; }
+.st-card .fx { overflow: hidden; }
+.st-card .blob { position: absolute; width: 9em; height: 9em; left: -3em; top: -4.5em; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--ev) 70%, transparent), transparent 68%); opacity: .55; animation: drift 7s ease-in-out infinite alternate; }
+.st-card .blob + .blob { left: auto; right: -4em; top: auto; bottom: -5.5em; opacity: .3; animation-duration: 9s; }
+.st-card .art { width: 3.7em; height: 3.7em; border-radius: .9em; background: linear-gradient(150deg, color-mix(in srgb, var(--ev) 70%, #fff 10%), color-mix(in srgb, var(--ev) 60%, #000 20%)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25), 0 .5em 1em -.4em color-mix(in srgb, var(--ev) 90%, transparent); animation: rise .6s .15s var(--out) both; }
+.st-card .art.gift { background: rgba(255, 255, 255, .06); }
+.st-card .art .glyph { color: #fff; }
+.st-card .info > * { animation: rise .55s var(--out) both; }
+.st-card .label { animation-delay: .25s; color: color-mix(in srgb, var(--ev) 35%, #fff); }
+.st-card .label .what-kind { color: inherit; }
+.st-card .name { animation-delay: .32s; }
+.st-card .title { font-size: .92em; opacity: .85; animation-delay: .39s; }
+.st-card .amount { animation-delay: .45s; }
+.st-card .msg { font-size: .82em; opacity: .9; animation-delay: .5s; }
+.st-card .timer { left: 1.3em; right: 1.3em; bottom: .38em; border-radius: 99px; background: rgba(255, 255, 255, .1); }
+.st-card .timer i { border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, var(--ev) 60%, #fff), var(--ev)); }
+.st-card .alert.out { animation: glass-out .5s cubic-bezier(.7, 0, .84, 0) forwards; }
+@keyframes glass-in { from { opacity: 0; transform: perspective(30em) rotateX(28deg) translateY(1.2em) scale(.95); } }
+@keyframes glass-slide { from { opacity: 0; transform: translateY(1.6em); } }
+@keyframes glass-out { to { opacity: 0; transform: translateY(-.5em) scale(.97); } }
+@keyframes drift { to { transform: translate(1.5em, 1em) scale(1.15); } }
 
+/* ===================================================================
+   Minimal: a small black pill that grows out from the middle (like a
+   phone's live activity), shows the alert, then shrinks away.
+   =================================================================== */
+.st-toast .alert { align-items: center; gap: .7em; text-align: left; max-width: min(100%, 26em); padding: .42em 1.35em .42em .42em; border-radius: 99px; font-size: .88em; background: #050507;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .07), 0 .6em 1.6em -.4em rgba(0, 0, 0, .7); animation: island 1s var(--out) both; }
+.st-toast .art { width: 2.5em; height: 2.5em; border-radius: 50%; background: color-mix(in srgb, var(--ev) 30%, #15151d); animation: fade .3s .15s both; }
+.st-toast .art.gift { background: radial-gradient(circle, color-mix(in srgb, var(--ev) 40%, transparent), transparent 70%); }
+.st-toast .art .glyph { color: color-mix(in srgb, var(--ev) 40%, #fff); }
+.st-toast .art .av-mini, .st-toast .label .pchip, .st-toast .timer { display: none; }
+.st-toast .info { gap: 0; }
+.st-toast .info > * { animation: rise .45s var(--out) both; }
+.st-toast .label { font-size: .52em; color: color-mix(in srgb, var(--ev) 45%, #fff); animation-delay: .42s; }
+.st-toast .name { font-size: 1.05em; animation-delay: .48s; }
+.st-toast .title { font-size: .82em; opacity: .75; animation-delay: .54s; }
+.st-toast .amount { margin-top: .15em; font-size: .85em; animation-delay: .58s; }
+.st-toast .msg { margin-top: .15em; font-size: .78em; max-height: 2.6em; animation-delay: .6s; }
+.st-toast .alert.out { animation: island-out .55s cubic-bezier(.7, 0, .3, 1) forwards; }
+@keyframes island { 0% { opacity: 0; transform: scale(.6); clip-path: inset(0 calc(50% - 2em) round 99px); } 22% { opacity: 1; transform: none; clip-path: inset(0 calc(50% - 2em) round 99px); } 100% { clip-path: inset(0 0 round 99px); } }
+@keyframes island-out { 0% { clip-path: inset(0 0 round 99px); } 60% { opacity: 1; transform: none; clip-path: inset(0 calc(50% - 2em) round 99px); } 100% { opacity: 0; transform: scale(.6); clip-path: inset(0 calc(50% - 2em) round 99px); } }
+
+/* Simple fade for people who turn motion down. */
 @media (prefers-reduced-motion: reduce) {
-  .alert, .alert .art, .burst i, .name .l, .rays, .glow, .ring, .confetti i, .sheen::after, .edge, .floaty i, .timer i { animation: none !important; }
-  .confetti, .floaty, .ring { display: none; }
+  .alert, .alert *, .alert *::before, .alert *::after { animation: none !important; }
+  .st-neon .tube rect { stroke-dasharray: 1 0; }
+  .alert.out { opacity: 0; transition: opacity .3s; }
 }

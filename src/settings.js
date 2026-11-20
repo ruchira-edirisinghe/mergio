@@ -63,7 +63,7 @@ const DEFAULTS = {
     position: 'center',         // top | center | bottom of the alerts browser source
     size: 1,
     style: 'spotlight',         // spotlight | banner | neon | bubble | card | toast
-    animation: 'pop',           // pop | slide | fade (Card and Minimal styles)
+    animation: 'pop',           // pop | slide | fade (Card style)
     showMessage: true,
     showAvatar: true,
     sound: false,               // a short chime with each alert
