@@ -189,9 +189,10 @@ function createServer(manager, { onQuit }) {
     const host = (req.headers.host || '').split(':')[0];
     if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) return ws.close();
     // Overlays identify themselves so the control panel can show "Mergio is in OBS".
-    const client = new URL(req.url, 'http://localhost').searchParams.get('client');
-    if (client === 'overlay') {
-      ws.overlay = { obs: /OBS\//.test(req.headers['user-agent'] || '') };
+    const q = new URL(req.url, 'http://localhost').searchParams;
+    if (q.get('client') === 'overlay') {
+      // OBS browser sources expose window.obsstudio (sent as obs=1); the user agent is a fallback.
+      ws.overlay = { obs: q.get('obs') === '1' || /\bOBS\//.test(req.headers['user-agent'] || '') };
       if (!settings.get().advanced.overlaySeen) settings.update({ advanced: { overlaySeen: true } });
       ws.on('close', () => broadcast({ op: 'overlays', ...overlayStatus() }));
       broadcast({ op: 'overlays', ...overlayStatus() });
