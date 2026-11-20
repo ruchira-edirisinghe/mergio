@@ -1,34 +1,45 @@
-import type { CSSProperties } from 'react';
+import { Clapperboard, Video } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { APP_LOGOS } from '../components/logos';
+import { Reveal } from '../components/Reveal';
 
-const APPS: [string, CSSProperties][] = [
-  ['OBS Studio', { fontFamily: 'Georgia, serif', fontWeight: 700, letterSpacing: '-0.02em', fontSize: 17 }],
-  ['STREAMLABS', { fontFamily: '"Arial Black", Arial, sans-serif', fontWeight: 900, letterSpacing: '0.08em', fontSize: 15 }],
-  ['Meld Studio', { fontFamily: '"Trebuchet MS", sans-serif', fontWeight: 600, letterSpacing: '0.01em', fontSize: 17, fontStyle: 'italic' }],
-  ['vMix', { fontFamily: 'Impact, "Arial Narrow", sans-serif', fontWeight: 400, letterSpacing: '0.05em', fontSize: 19 }],
-  ['XSPLIT', { fontFamily: '"Courier New", monospace', fontWeight: 700, letterSpacing: '0.18em', fontSize: 15 }],
-  ['TikTok LIVE Studio', { fontFamily: 'Verdana, sans-serif', fontWeight: 700, letterSpacing: '-0.03em', fontSize: 15 }],
-  ['Windows', { fontFamily: 'Palatino, "Book Antiqua", serif', fontWeight: 500, letterSpacing: '0.03em', fontSize: 17 }],
-  ['macOS', { fontFamily: 'Helvetica, Arial, sans-serif', fontWeight: 700, letterSpacing: '-0.01em', fontSize: 17 }],
-  ['LINUX', { fontFamily: '"Times New Roman", serif', fontWeight: 400, letterSpacing: '0.12em', fontSize: 16 }],
+function Logo({ id }: { id: string }) {
+  return <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0" fill="currentColor" aria-hidden="true"><path d={APP_LOGOS[id]} /></svg>;
+}
+
+const APPS: [ReactNode, string][] = [
+  [<Logo id="obsstudio" />, 'OBS Studio'],
+  [<Logo id="streamlabs" />, 'Streamlabs'],
+  [<Logo id="tiktok" />, 'TikTok LIVE Studio'],
+  [<Logo id="xsplit" />, 'XSplit'],
+  [<Video className="h-6 w-6 shrink-0" />, 'Meld Studio'],
+  [<Clapperboard className="h-6 w-6 shrink-0" />, 'vMix'],
+  [<Logo id="windows" />, 'Windows'],
+  [<Logo id="apple" />, 'macOS'],
+  [<Logo id="linux" />, 'Linux'],
 ];
 
 export function WorksWith() {
   return (
-    <section className="bg-[#F5F5F5] px-4 sm:px-6">
-      <div className="max-w-[88rem] mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 items-center">
-        <p className="text-black/70 text-base leading-relaxed">
-          Works with the streaming apps<br className="hidden md:block" /> you already use, on any computer.
+    <section className="bg-ink px-4 sm:px-6">
+      <Reveal className="max-w-[88rem] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8 items-center">
+        <p className="text-white/70 text-base leading-relaxed">
+          Works with the apps<br className="hidden lg:block" /> you already stream with.
         </p>
-        <div className="md:col-span-3 overflow-hidden marquee-mask" aria-label={APPS.map(a => a[0]).join(', ')}>
+        <div className="lg:col-span-3 overflow-hidden marquee-mask" aria-label={APPS.map(a => a[1]).join(', ')}>
           <div className="backers-track">
             {[0, 1].map(copy => (
               <div key={copy} className="flex shrink-0 items-center" aria-hidden="true">
-                {APPS.map(([name, style]) => <span key={name} className="mx-10 shrink-0 text-black/50 whitespace-nowrap" style={style}>{name}</span>)}
+                {APPS.map(([icon, name]) => (
+                  <span key={name} className="mx-6 sm:mx-8 inline-flex shrink-0 items-center gap-2.5 whitespace-nowrap text-[17px] font-semibold text-white/50">
+                    {icon}{name}
+                  </span>
+                ))}
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }

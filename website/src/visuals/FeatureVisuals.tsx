@@ -93,7 +93,7 @@ export function AvatarWall({ active }: { active: boolean }) {
         return (
           <div key={i} className="relative aspect-square">
             <span className={`absolute inset-0 grid place-items-center rounded-full text-sm font-bold text-white transition-opacity duration-300 ${loaded ? 'opacity-0' : 'opacity-100'}`} style={{ background: avatarGradient(u.name) }}>{initial(u.name)}</span>
-            {loaded && <Face name={u.name} className="absolute inset-0 h-full w-full rounded-full anim-pop" />}
+            {loaded && <Face name={u.name} index={i} className="absolute inset-0 h-full w-full rounded-full anim-pop" />}
             <span className="absolute -bottom-0.5 -right-0.5 grid h-[38%] w-[38%] place-items-center rounded-full bg-[#2B2644]">
               <PlatformIcon id={u.platform} colored className="h-[62%] w-[62%]" />
             </span>
