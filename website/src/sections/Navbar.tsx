@@ -8,6 +8,7 @@ const LINKS = [
   ['Alerts', '#modes'],
   ['Setup', '#setup'],
   ['FAQ', '#faq'],
+  ['Dev notes', '#devnotes'],
 ] as const;
 
 export function Navbar() {

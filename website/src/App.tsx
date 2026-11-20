@@ -5,6 +5,7 @@ import { WorksWith } from './sections/WorksWith';
 import { Modes } from './sections/Modes';
 import { Steps } from './sections/Steps';
 import { Faq, Features } from './sections/More';
+import { DevNotes } from './sections/DevNotes';
 import { DownloadCta, Footer } from './sections/Closing';
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
         <Steps />
         <Features />
         <Faq />
+        <DevNotes />
         <DownloadCta />
       </main>
       <Footer />
