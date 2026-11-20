@@ -1,6 +1,7 @@
 name: Release
 
-# Push a tag like v1.0.1 to build ZUNO-CHAT for Windows, macOS and Linux and publish a GitHub release.
+# Push a tag like v1.1.0 to build the ZUNO-CHAT installers for Windows, macOS and Linux and publish a GitHub release.
+# Run it by hand (workflow_dispatch) to get the installers as workflow artifacts without publishing.
 on:
   push:
     tags: ['v*']
@@ -14,13 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: windows-latest
-            asset: ZUNO-CHAT-windows-x64.zip
-          - os: macos-latest
-            asset: ZUNO-CHAT-macos-arm64.tar.gz
-          - os: ubuntu-latest
-            asset: ZUNO-CHAT-linux-x64.tar.gz
+        os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -32,23 +27,22 @@ jobs:
       - run: npm run check
       - run: npm run build
 
-      - name: Package (Windows)
+      - name: Install Inno Setup (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Copy-Item README.md, LICENSE dist/
-          Compress-Archive -Path dist/ZUNO-CHAT.exe, dist/README.md, dist/LICENSE -DestinationPath ${{ matrix.asset }}
+          $setup = "$env:RUNNER_TEMP\innosetup.exe"
+          Invoke-WebRequest https://github.com/jrsoftware/issrc/releases/download/is-6_7_4/innosetup-6.7.4.exe -OutFile $setup
+          if ((Get-AuthenticodeSignature $setup).Status -ne 'Valid') { throw 'Inno Setup download is not signed' }
+          Start-Process $setup -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/ALLUSERS','/DIR=C:\InnoSetup' -Wait
+          "ISCC=C:\InnoSetup\ISCC.exe" >> $env:GITHUB_ENV
 
-      - name: Package (macOS / Linux)
-        if: runner.os != 'Windows'
-        run: |
-          cp README.md LICENSE dist/
-          tar -czf ${{ matrix.asset }} -C dist zuno-chat README.md LICENSE
+      - run: npm run package
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.asset }}
-          path: ${{ matrix.asset }}
+          name: installers-${{ runner.os }}
+          path: dist/release/*
 
   release:
     needs: build
