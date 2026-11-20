@@ -96,6 +96,20 @@
   let page = (location.hash || '#home').slice(1);
   MG.current = () => page;
 
+  let navAt = null;
+  /** A soft highlight that glides to the page you open instead of jumping. */
+  function placeIndicator(nav) {
+    const on = nav.querySelector('button.on');
+    const ind = h('span', { class: 'nav-ind', 'aria-hidden': 'true' });
+    nav.prepend(ind);
+    if (!on) { ind.hidden = true; return; }
+    const to = { x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, hh: on.offsetHeight };
+    const set = r => { ind.style.transform = `translate(${r.x}px, ${r.y}px)`; ind.style.width = `${r.w}px`; ind.style.height = `${r.hh}px`; };
+    set(navAt && navAt.w ? navAt : to);
+    if (navAt && (navAt.x !== to.x || navAt.y !== to.y)) { void ind.offsetWidth; ind.classList.add('move'); set(to); }
+    navAt = to;
+  }
+
   function renderNav() {
     const nav = $('#nav'); nav.textContent = '';
     let group = null;
@@ -107,10 +121,22 @@
       if (badge) b.append(h('span', { class: `count ${badge.cls || ''}`, text: badge.text }));
       nav.append(b);
     }
+    placeIndicator(nav);
   }
   MG.renderNav = renderNav;
   const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  MG.go = id => { page = id; history.replaceState(null, '', `#${id}`); MG.render(); $('#content').scrollTop = 0; };
+  /** Plays the page-change animation around a render. */
+  function turnPage(fn) {
+    const c = $('#content');
+    const run = () => { fn(); c.scrollTop = 0; c.classList.remove('enter'); void c.offsetWidth; c.classList.add('enter'); clearTimeout(turnPage.t); turnPage.t = setTimeout(() => c.classList.remove('enter'), 1200); };
+    if (calm()) return fn();
+    if (document.startViewTransition) document.startViewTransition(run); else run();
+  }
+  MG.go = id => {
+    if (id === page) { $('#content').scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    page = id; history.replaceState(null, '', `#${id}`);
+    turnPage(MG.render);
+  };
   MG.render = () => {
     const p = PAGES.find(x => x.id === page) || PAGES[0];
     if (!p) return;
@@ -385,7 +411,7 @@
       document.querySelectorAll('#bgSeg button').forEach(x => x.classList.toggle('on', x === b));
       $('#stage').className = `stage bg-${b.dataset.bg}`;
     };
-    window.addEventListener('hashchange', () => { page = (location.hash || '#home').slice(1); MG.render(); });
+    window.addEventListener('hashchange', () => { page = (location.hash || '#home').slice(1); turnPage(MG.render); });
     setPreview(store.get('mg-preview') !== '0' && window.innerWidth > 1020);
     MG.render(); updateSummary(); connectWs(); fitPreview();
     await reveal();
