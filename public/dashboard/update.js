@@ -1,5 +1,7 @@
 /* Update popup: when a newer Mergio is out, show what's new and offer to update. On the installed Windows
-   app the update downloads and installs by itself; elsewhere the button opens the download page. */
+   app the update downloads and installs by itself; elsewhere the button opens the download page.
+   "What's new" popup: the first time the panel opens after a new version is installed (however it was
+   installed), it shows that version's release notes once. */
 (() => {
   'use strict';
   const { h, icon, $ } = MG;
@@ -37,12 +39,18 @@
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) done(); else setTimeout(done, 260);
   }
 
+  const noteItems = notes => notes.map((n, i) => h('li', { style: `--i:${i}` },
+    h('span', { class: 'ic' }, icon('sparkle')),
+    h('div', {}, n.title ? h('b', { text: n.title }) : null, n.text ? h('p', { text: n.text }) : null)));
+  const hero = onClose => h('div', { class: 'upd-hero' },
+    h('div', { class: 'upd-glow' }), h('div', { class: 'upd-rings' }, h('i'), h('i'), h('i')),
+    h('div', { class: 'upd-logo' }, h('img', { src: '/shared/logo.svg', alt: '' })),
+    h('button', { class: 'upd-x', type: 'button', 'aria-label': 'Close', onclick: onClose }, icon('plus')));
+
   function open(u, force = false) {
-    if (!u?.available || dlg || (!force && skipped(u))) return;
+    if (!u?.available || dlg || wn || (!force && skipped(u))) return;
     const notes = (u.notes || []).slice(0, 6);
-    const list = h('ul', { class: 'upd-list' }, notes.map((n, i) => h('li', { style: `--i:${i}` },
-      h('span', { class: 'ic' }, icon('sparkle')),
-      h('div', {}, n.title ? h('b', { text: n.title }) : null, n.text ? h('p', { text: n.text }) : null))));
+    const list = h('ul', { class: 'upd-list' }, noteItems(notes));
     const more = (u.notes || []).length > notes.length || u.behind > 1;
 
     const primary = h('button', { class: 'btn primary upd-go', type: 'button', onclick: () => go(u) },
@@ -54,10 +62,7 @@
       h('div', { class: 'upd-ptext' }, h('span', { class: 'st', text: 'Starting the download…' }), h('span', { class: 'pc', text: '' })));
 
     dlg = h('dialog', { class: 'upd', 'aria-labelledby': 'updTitle' },
-      h('div', { class: 'upd-hero' },
-        h('div', { class: 'upd-glow' }), h('div', { class: 'upd-rings' }, h('i'), h('i'), h('i')),
-        h('div', { class: 'upd-logo' }, h('img', { src: '/shared/logo.svg', alt: '' })),
-        h('button', { class: 'upd-x', type: 'button', 'aria-label': 'Close', onclick: () => close() }, icon('plus'))),
+      hero(() => close()),
       h('div', { class: 'upd-body' },
         h('div', { class: 'upd-vers' },
           h('span', { class: 'old', text: `v${u.current}` }), h('span', { class: 'arr' }, icon('chevron')), h('span', { class: 'new', text: `v${u.latest}` }),
@@ -127,7 +132,7 @@
     const tick = async () => {
       try {
         const st = await fetch('/api/state', { cache: 'no-store' }).then(r => r.json());
-        if (st.version === version) { try { sessionStorage.setItem('mg-updated', version); } catch { /* ignore */ } location.reload(); return; }
+        if (st.version === version) { location.reload(); return; }
       } catch { /* still restarting */ }
       if (Date.now() - started > 120000) { document.body.classList.remove('updating'); waiting = false; fail('The update is taking longer than expected. Open Mergio again from its icon.'); watching = false; return; }
       setTimeout(tick, 1500);
@@ -135,31 +140,79 @@
     setTimeout(tick, 2500);
   }
 
-  /** After the reload: a short "you're up to date" moment. */
-  function celebrate() {
-    let v = null;
-    try { v = sessionStorage.getItem('mg-updated'); sessionStorage.removeItem('mg-updated'); } catch { /* ignore */ }
-    if (!v) return;
-    const t = h('div', { class: 'upd-done', role: 'status' }, h('span', { class: 'ok' }, icon('check')),
-      h('div', {}, h('b', { text: `Updated to v${v}` }), h('span', { text: 'You have the newest Mergio.' })));
-    document.body.append(t);
-    setTimeout(() => t.classList.add('out'), 4200);
-    setTimeout(() => t.remove(), 4800);
+  /* ---------- "What's new" after an update ---------- */
+  let wn = null;
+
+  /** Fills in the notes; they may arrive a moment after the popup opens (Mergio fetches them from GitHub). */
+  function wnNotes(w) {
+    if (!wn) return;
+    const list = wn.querySelector('.upd-list'), sub = wn.querySelector('.upd-sub');
+    const notes = (w.notes || []).slice(0, 8);
+    if (w.url) wn.querySelector('.upd-all').href = w.url;
+    if (w.publishedAt) wn.querySelector('.upd-vers .when').textContent = ago(w.publishedAt);
+    if (notes.length) {
+      list.replaceChildren(...noteItems(notes));
+      list.hidden = false;
+      sub.textContent = "Here's what's new in this version:";
+    } else if (wn.dataset.waited) {
+      list.hidden = true;
+      sub.textContent = "The release notes couldn't be loaded right now. You can read them on GitHub.";
+    }
+  }
+
+  function closeWhatsNew() {
+    if (!wn || wn.classList.contains('out')) return;
+    const d = wn;
+    d.classList.add('out');
+    MG.api('POST', '/api/update/seen', {}).then(u => { MG.st.update = u; }).catch(() => {});
+    const done = () => {
+      d.close(); d.remove(); if (wn === d) wn = null;
+      if (MG.st.update?.available) setTimeout(() => open(MG.st.update), 300); // an even newer version is out
+    };
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) done(); else setTimeout(done, 260);
+  }
+
+  function openWhatsNew(w) {
+    if (!w?.show || wn || dlg || document.querySelector('dialog.guide[open]')) return;
+    wn = h('dialog', { class: 'upd wn', 'aria-labelledby': 'wnTitle' },
+      hero(closeWhatsNew),
+      h('div', { class: 'upd-body' },
+        h('div', { class: 'upd-vers' },
+          h('span', { class: 'done' }, icon('check'), 'Installed'), h('span', { class: 'new', text: `v${w.version}` }),
+          h('span', { class: 'when', text: w.publishedAt ? ago(w.publishedAt) : '' })),
+        h('h2', { id: 'wnTitle' }, 'Welcome to Mergio ', h('span', { class: 'grad', text: w.version })),
+        h('p', { class: 'upd-sub', text: 'Getting the release notes…' }),
+        h('ul', { class: 'upd-list' }, [0, 1, 2].map(i => h('li', { class: 'wn-wait', style: `--i:${i}` }, h('span', { class: 'ic' }), h('div', {}, h('i'), h('i'))))),
+        h('a', { class: 'upd-all', href: w.url, target: '_blank', rel: 'noopener' }, 'Read the full release notes', icon('external')),
+        h('div', { class: 'upd-warn ok' }, icon('check'),
+          h('p', {}, h('b', { text: "You're up to date. " }), 'Your chats, style and settings were kept.')),
+        h('div', { class: 'upd-actions' }, h('button', { class: 'btn primary', type: 'button', onclick: closeWhatsNew }, 'Got it'))));
+    wn.addEventListener('cancel', e => { e.preventDefault(); closeWhatsNew(); });
+    wn.addEventListener('click', e => { if (e.target === wn) closeWhatsNew(); });
+    document.body.append(wn);
+    wn.showModal();
+    wn.querySelector('.upd-actions .btn').focus();
+    wnNotes(w);
+    // If GitHub can't be reached, stop waiting after a few seconds and point to the online notes.
+    setTimeout(() => { if (wn) { wn.dataset.waited = '1'; wnNotes(MG.st.update?.whatsNew || w); } }, 6000);
   }
 
   MG.openUpdate = (force = true) => open(MG.st.update, force);
   MG.on('ready', () => {
-    celebrate();
-    const u = MG.st.update;
-    badge(u);
-    // Give the opening animation a moment before the popup appears.
-    if (u?.available) setTimeout(() => open(MG.st.update), 900);
+    badge(MG.st.update);
+    // Give the opening animation a moment before a popup appears. "What's new" goes first.
+    setTimeout(() => {
+      const u = MG.st.update;
+      if (u?.whatsNew?.show) openWhatsNew(u.whatsNew);
+      else if (u?.available) open(u);
+    }, 900);
   });
   MG.on('update', u => {
     const was = MG.st.update?.available;
     MG.st.update = u;
     badge(u);
     show(u);
+    if (wn) wnNotes(u.whatsNew || {});
     if (u.available && !was) open(u);
   });
 })();

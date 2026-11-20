@@ -688,6 +688,20 @@ dialog.upd h2 .grad { background: linear-gradient(90deg, #b69cff, #ff6fb5, #ffb5
 .upd-warn b { color: #fde68a; }
 .upd-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 .upd-actions .btn { padding: 10px 16px; border-radius: 11px; }
+/* "What's new" after an update */
+.upd-vers .done { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px 5px 7px; border-radius: 7px; background: rgba(34, 197, 94, .14); color: #6ee7a0; box-shadow: inset 0 0 0 1px rgba(34, 197, 94, .35); font-family: Inter, system-ui, sans-serif; }
+.upd-vers .done svg { width: 13px; height: 13px; }
+.upd-warn.ok { background: linear-gradient(90deg, rgba(34, 197, 94, .12), rgba(34, 197, 94, .04)); border-color: rgba(34, 197, 94, .28); }
+.upd-warn.ok > svg { color: #4ade80; }
+.upd-warn.ok p { color: #c9ecd6; }
+.upd-warn.ok b { color: #a7f3c4; }
+.upd-list[hidden] { display: none; }
+.wn-wait .ic, .wn-wait i { background: linear-gradient(90deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .11), rgba(255, 255, 255, .05)); background-size: 200% 100%; animation: wn-shimmer 1.4s linear infinite; }
+.wn-wait div { flex: 1; display: grid; gap: 7px; padding-top: 3px; }
+.wn-wait i { display: block; height: 10px; border-radius: 5px; width: 46%; }
+.wn-wait i + i { width: 82%; }
+@keyframes wn-shimmer { to { background-position: -200% 0; } }
+dialog.wn .upd-list p { display: block; -webkit-line-clamp: unset; overflow: visible; }
 .upd-go { position: relative; overflow: hidden; }
 .upd-go::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, .28) 50%, transparent 65%); transform: translateX(-100%); animation: upd-shine 3.2s ease-in-out 1.4s infinite; }
 .upd-progress { margin-top: 18px; animation: upd-up .4s cubic-bezier(.16, 1, .3, 1) both; }
@@ -701,17 +715,9 @@ dialog.upd h2 .grad { background: linear-gradient(90deg, #b69cff, #ff6fb5, #ffb5
 dialog.upd.busy .upd-x { visibility: hidden; }
 body.updating .offline-bar { display: none !important; }
 
-.upd-done { position: fixed; left: 50%; top: 22px; z-index: 80; display: flex; align-items: center; gap: 12px; padding: 12px 18px 12px 12px; border-radius: 16px; background: #17171f; border: 1px solid rgba(34, 197, 94, .35); box-shadow: 0 20px 50px -18px rgba(0, 0, 0, .8), 0 0 30px -12px rgba(34, 197, 94, .5); transform: translateX(-50%); animation: upd-drop .7s cubic-bezier(.34, 1.56, .64, 1) both; }
-.upd-done.out { animation: upd-lift .45s cubic-bezier(.4, 0, 1, 1) both; }
-.upd-done .ok { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; background: rgba(34, 197, 94, .18); color: #4ade80; }
-.upd-done .ok svg { width: 20px; height: 20px; }
-.upd-done b { display: block; }
-.upd-done span:not(.ok) { color: var(--muted); font-size: 12.5px; }
-@keyframes upd-drop { from { opacity: 0; transform: translate(-50%, -24px) scale(.9); } }
-@keyframes upd-lift { to { opacity: 0; transform: translate(-50%, -16px) scale(.96); } }
 
 @media (prefers-reduced-motion: reduce) {
-  dialog.upd[open], dialog.upd::backdrop, .upd-body > *, .upd-list li, .upd-logo, .upd-done { animation: none !important; }
+  dialog.upd[open], dialog.upd::backdrop, .upd-body > *, .upd-list li, .upd-logo, .wn-wait .ic, .wn-wait i { animation: none !important; }
   .upd-glow, .upd-rings i, .upd-pill::after, .upd-go::after, .upd-dot, dialog.upd h2 .grad { animation: none !important; }
 }
 
