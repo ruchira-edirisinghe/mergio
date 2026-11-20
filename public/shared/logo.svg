@@ -1,14 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>ZUNO-CHAT</title>
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#7c5cff"/>
-      <stop offset=".55" stop-color="#ff3d8b"/>
-      <stop offset="1" stop-color="#ffb341"/>
+    <linearGradient id="zc-a" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5146ff"/><stop offset=".5" stop-color="#a23cff"/><stop offset="1" stop-color="#ff2d8f"/>
     </linearGradient>
+    <linearGradient id="zc-b" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b9a4ff"/><stop offset=".45" stop-color="#b04bff"/><stop offset="1" stop-color="#ff2d8f"/>
+    </linearGradient>
+    <linearGradient id="zc-c" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8b3dff"/><stop offset="1" stop-color="#ff2d8f"/>
+    </linearGradient>
+    <linearGradient id="zc-s" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4b3bff"/><stop offset=".55" stop-color="#b23cff"/><stop offset="1" stop-color="#ff2d8f" stop-opacity=".9"/>
+    </linearGradient>
+    <mask id="zc-knock" maskUnits="userSpaceOnUse" x="-40" y="-40" width="340" height="340">
+      <rect x="-40" y="-40" width="340" height="340" fill="#fff"/>
+      <path d="M137.98000000000002 74.0 71.62 137.0H124.12L119.5 158.0H34.0L38.62 137.0L104.98 74.0H52.480000000000004L57.1 53.0H142.6Z" transform="skewX(8) translate(-22 0)" fill="#000" stroke="#000" stroke-width="18" stroke-linejoin="round"/>
+    </mask>
   </defs>
-  <rect width="64" height="64" rx="16" fill="url(#g)"/>
-  <path d="M16 15h32a7 7 0 0 1 7 7v15a7 7 0 0 1-7 7H31l-10 9v-9h-5a7 7 0 0 1-7-7V22a7 7 0 0 1 7-7z" fill="#fff"/>
-  <circle cx="22.5" cy="29.5" r="3.4" fill="#9146ff"/>
-  <circle cx="32" cy="29.5" r="3.4" fill="#ff0033"/>
-  <circle cx="41.5" cy="29.5" r="3.4" fill="#25c916"/>
+  <g transform="translate(22 0) skewX(-8)">
+    <g mask="url(#zc-knock)">
+      <path d="M86 50H186A34 34 0 0 1 220 84V140A34 34 0 0 1 186 174H112L58 214L70 174A26 26 0 0 1 46 148V84A34 34 0 0 1 80 50Z" fill="none" stroke="url(#zc-a)" stroke-width="20" stroke-linejoin="round"/>
+    </g>
+    <circle cx="150" cy="146" r="9" fill="#fff"/><circle cx="174" cy="146" r="9" fill="#fff"/><circle cx="198" cy="146" r="9" fill="#fff"/>
+  </g>
+  <path d="M137.98000000000002 74.0 71.62 137.0H124.12L119.5 158.0H34.0L38.62 137.0L104.98 74.0H52.480000000000004L57.1 53.0H142.6Z" fill="url(#zc-b)"/>
+  <g stroke="#ff2d8f" stroke-width="9" stroke-linecap="round">
+    <path d="M214 32L224 12"/><path d="M228 46L245 34"/><path d="M232 62H249"/>
+  </g>
 </svg>
