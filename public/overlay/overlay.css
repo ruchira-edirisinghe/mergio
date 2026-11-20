@@ -30,14 +30,13 @@ body.align-right .msg { text-align: right; }
 /* ---------- message shell ---------- */
 .msg { max-width: 100%; transform-origin: left bottom; will-change: transform, opacity; }
 body.align-right .msg { transform-origin: right bottom; }
-.msg.grouped { margin-top: calc(var(--gap) * -0.6); }
+.msg.grouped { margin-top: calc(var(--gap) * -0.3); }
 body.shadow .msg { text-shadow: var(--shadow); }
 
 .bubble { display: inline-block; max-width: 100%; padding: .42em .7em; border-radius: var(--radius); position: relative; overflow-wrap: anywhere; }
 body.bubbles .bubble { background: var(--bubble); }
 body.bubbles.accent .bubble { box-shadow: inset 3px 0 0 var(--pc); }
 body.bubbles.accent.align-right .bubble { box-shadow: inset -3px 0 0 var(--pc); }
-.msg.grouped .bubble { padding-top: .2em; }
 
 .head { display: inline; }
 body:not(.inline) .head { display: flex; align-items: center; gap: .3em; margin-bottom: .12em; flex-wrap: wrap; }
