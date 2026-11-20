@@ -42,20 +42,22 @@ const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
 const COLUMNS: { title: string; links: { label: string; href: string; external?: boolean }[] }[] = [
   { title: 'Product', links: [
-    { label: 'Features', href: '#features' },
-    { label: 'Download', href: '#download' },
-    { label: 'Dev notes', href: '#devnotes' },
+    { label: 'Features', href: '/#features' },
+    { label: 'Download', href: '/#download' },
+    { label: 'Dev notes', href: '/#devnotes' },
   ] },
   { title: 'Help', links: [
-    { label: 'Setup', href: '#setup' },
+    { label: 'Setup', href: '/#setup' },
     { label: 'Complete guide', href: readme('complete-guide'), external: true },
-    { label: 'FAQ', href: '#faq' },
+    { label: 'FAQ', href: '/#faq' },
     { label: 'Report a problem', href: `${REPO}/issues/new/choose`, external: true },
   ] },
   { title: 'Open source', links: [
     { label: 'Source code', href: REPO, external: true },
     { label: 'All releases', href: `${REPO}/releases`, external: true },
     { label: 'License', href: LICENSE, external: true },
+    { label: 'Privacy policy', href: '/privacy' },
+    { label: 'Terms of use', href: '/terms' },
   ] },
 ];
 
@@ -135,10 +137,14 @@ export function Footer() {
           <span className="mx-2 text-white/20">·</span>
           <a href={LICENSE} {...ext} className="underline-offset-4 hover:text-white hover:underline">MIT License, with credit to the creator</a>
         </p>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+        <a href="/privacy" className="underline-offset-4 hover:text-white hover:underline">Privacy</a>
+        <a href="/terms" className="underline-offset-4 hover:text-white hover:underline">Terms</a>
         <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="inline-flex w-fit items-center gap-2 rounded-full bg-white/[.06] px-4 py-2 text-white/70 ring-1 ring-white/10 transition-colors hover:bg-white/[.12] hover:text-white">
           <ArrowUp className="h-4 w-4" />Back to top
         </button>
+        </div>
       </div>
       <p className="relative mx-auto max-w-[88rem] pb-4 text-xs text-white/30">
         Stock video from <a className="underline underline-offset-2 hover:text-white/70" href="https://www.pexels.com" {...ext}>Pexels</a> and <a className="underline underline-offset-2 hover:text-white/70" href="https://mixkit.co" {...ext}>Mixkit</a>, portraits from Pexels. Brand logos belong to their owners.
