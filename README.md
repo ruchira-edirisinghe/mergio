@@ -64,6 +64,8 @@ Multistreaming means your viewers chat in five different places. Mergio reads al
 - 🎨 **Fully customizable:** 6 one-click styles (Glass, Neon, Minimal, Soft light, Retro pixel, Bold cards), any Google Font, colors, bubbles, opacity, roundness, animations, alignment, direction, emote size and more, with a settings search, plain-words ⓘ tips for beginners, and a live preview that updates as you change things.
 - ⚡ **Instant updates.** Style changes reach OBS immediately; you never re-copy the overlay link. The control panel tells you when OBS is showing your overlay.
 - 🪟 **Install it as an app:** the control panel can open in its own window with its own icon instead of a browser tab.
+- 🚀 **Always up to date:** each time Mergio opens it checks for a new version and shows what's new. On Windows, one click downloads it, installs it and opens Mergio again.
+- 🌊 **Smooth to use:** an animated opening, soft page transitions and a sliding sidebar highlight (all switched off if your system asks for reduced motion).
 - 🧹 **Moderation sync:** messages deleted or users banned on Twitch, YouTube or Kick vanish from the overlay too.
 - 🛡️ **Filters:** hide `!commands`, bots, blocked words or a whole event type; set a minimum TikTok gift value; choose who may post images.
 - 💬 **One feed for you:** a "Live chat" page to read every chat in one list. You can dock it inside OBS.
@@ -151,6 +153,8 @@ Click the **Mergio** icon (Start menu, desktop, Launchpad or app menu). Mergio s
 The first time, a short **tour** walks you through the next steps. You can open it again any time with the **Guide** button at the top of the control panel. The **Home** page always shows what's left to do.
 
 <div align="center"><img src="docs/guide/01-welcome.png" alt="The tour that opens the first time" width="820"></div>
+
+> **When a new version is out,** a popup lists what's new the next time Mergio opens. Updating is highly recommended, because each version fixes bugs. You can choose **Not now**; the **Update** pill under the logo keeps it one click away. See [Update or uninstall](#update-or-uninstall).
 
 > **Good to know:** closing the control panel doesn't stop the overlay; Mergio keeps running in the background. Clicking the Mergio icon again while it runs simply reopens the control panel. To fully close it, use **Settings → Reset or quit → Quit Mergio**.
 
@@ -279,7 +283,12 @@ From then on, opening Mergio on Windows opens that window. If you open the app w
 
 ## Update or uninstall
 
-**Update:** download the newest release and install it over the old one (Windows: run the new installer; macOS: drag the new app into Applications and replace the old one; Linux: install the new `.deb` or run the new `install.sh`). Your connections and style are kept.
+**Update:** Mergio checks GitHub for a new version every time it opens (and every few hours while it runs). When there is one, the control panel shows a popup with everything that's new since your version.
+
+- **Windows (installed):** click **Download and install**. Mergio downloads the new installer with a progress bar, closes, updates itself in the same folder and opens again. The control panel reloads by itself.
+- **Portable, macOS and Linux:** click **Get the new version** to open the download page, then install it over the old one (macOS: drag the new app into Applications and replace the old one; Linux: install the new `.deb` or run the new `install.sh`; portable: replace the folder's files).
+
+Your connections, style and settings are always kept.
 
 **Uninstall:**
 
@@ -377,7 +386,7 @@ npm run package      # -> installers for this OS in dist/release
 ## Privacy & security
 
 - The server listens on **127.0.0.1 only**, so nothing on your network or the internet can reach it, and it rejects requests from other websites.
-- No telemetry and no analytics; Mergio never phones home.
+- No telemetry and no analytics. The only request Mergio makes on its own behalf is the update check: it reads the public list of releases from GitHub (`api.github.com/repos/ruchira-edirisinghe/mergio/releases`) and sends nothing about you.
 - Tokens and keys stay in your local `config.json` and are never sent to the overlay.
 - Mergio only **reads** chat. It never posts, moderates or logs in as you.
 - Third-party services used for display only: profile pictures for Twitch (Twitch's public API, `decapi.me` as a fallback) and Kick, the public TikTok gift list, Twitch pronouns (`pronouns.alejo.io`, only when enabled), 7TV/BTTV/FFZ emotes, TikTok signing (Euler Stream).
