@@ -53,7 +53,12 @@ function detect(input) {
     const i = parts.indexOf('videos');
     if (i >= 0 && parts[i + 1]) return fromPlatform('facebook', parts[i + 1]);
     if (parts[0] === 'live' && parts[1] === 'producer' && parts[2]) return fromPlatform('facebook', parts[2]);
-    throw new Error('Use the Facebook live video link (…/videos/1234567890 or facebook.com/watch/?v=…). Open your live, click Share > Copy link.');
+    // A Page link: facebook.com/yourpage, facebook.com/yourpage/live, facebook.com/profile.php?id=123
+    const id = url.searchParams.get('id');
+    if (parts[0] === 'profile.php' && id) return fromPlatform('facebook', `page:${id}`);
+    if (parts[0] === 'pg' && parts[1]) return fromPlatform('facebook', `page:${parts[1]}`);
+    if (parts[0] && !['watch', 'live', 'groups', 'events', 'gaming', 'share'].includes(parts[0])) return fromPlatform('facebook', `page:${parts[0]}`);
+    throw new Error('Use your Facebook Page link (facebook.com/yourpage) or a live video link.');
   }
   throw new Error(`"${url.hostname}" is not supported yet. Supported: YouTube, Twitch, Kick, TikTok, Facebook.`);
 }
@@ -72,9 +77,13 @@ function fromPlatform(platform, value) {
       return { platform, target: v, label: '@' + v };
     case 'youtube':
       return { platform, target: v, label: v.startsWith('@') ? v : v.includes('/') ? v.split('/')[1] : v };
-    case 'facebook':
-      if (!/^\d{5,25}$/.test(v)) throw new Error('For Facebook paste the live video link (it contains a long number).');
-      return { platform, target: v, label: `video ${v}` };
+    case 'facebook': {
+      // A long number is one live video; anything else is a Page that Mergio watches for new live videos.
+      if (/^\d{5,25}$/.test(v)) return { platform, target: v, label: `video ${v}` };
+      const page = v.replace(/^page:/i, '').replace(/^@/, '') || 'me';
+      if (!/^[\w.-]{1,80}$/.test(page)) throw new Error(`"${value}" is not a Facebook Page name. Use your Page link, e.g. facebook.com/yourpage.`);
+      return { platform, target: `page:${page}`, label: page === 'me' ? 'My Page' : page };
+    }
     default:
       throw new Error(`Unknown platform "${platform}".`);
   }

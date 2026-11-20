@@ -3,43 +3,84 @@ const { Connector, textParts } = require('./base');
 const { fetchJson, backoff } = require('../util');
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
+const LOOK_EVERY = 30000;   // how often to look for a new live video while offline
+const CHECK_EVERY = 60000;  // how often to check that the live video is still live
 
 /**
  * Facebook does not expose live comments without authentication, so this connector uses the official
- * Graph API with a Page access token (see README > Facebook). It polls the live video's comments every 3s.
+ * Graph API with a Page access token (see README > Facebook).
+ *
+ * Two kinds of source:
+ *  - "page:<name or id>" (or "page:me" for the token's own Page): waits for the Page to go live, connects to
+ *    that live video's comments, and goes back to waiting when it ends. Add it once, works for every stream.
+ *  - a video id: reads the comments of that one live video.
  */
 class FacebookConnector extends Connector {
-  start() { this.attempt = 0; this.seen = new Set(); this.primed = false; this.run(); }
+  start() { this.attempt = 0; this.run(); }
   stop() { super.stop(); clearTimeout(this.timer); }
   later(fn, ms) { clearTimeout(this.timer); if (!this.stopped) this.timer = setTimeout(fn, ms); }
 
   token() { return this.ctx.settings().advanced.facebookAccessToken.trim(); }
+  api(path, params = '') { return fetchJson(`${GRAPH}/${path}${path.includes('?') ? '&' : '?'}${params}${params ? '&' : ''}access_token=${encodeURIComponent(this.token())}`); }
+  get pageMode() { return this.source.target.startsWith('page:'); }
 
   async run() {
     if (this.stopped) return;
     if (!this.token()) {
-      this.setState('error', 'Facebook needs a Page access token. Add it in Settings > Advanced (see the Help tab), then click Reconnect.');
+      this.setState('error', 'Facebook needs a Page access token. Add it in Settings > Accounts & keys (see Help), then click Reconnect.');
       return;
     }
     try {
+      if (this.pageMode) return await this.findLive();
       this.setState('connecting', 'Opening the Facebook live video…');
-      const info = await fetchJson(`${GRAPH}/${this.source.target}?fields=title,from,live_status&access_token=${encodeURIComponent(this.token())}`);
+      const info = await this.api(this.source.target, 'fields=title,from,live_status');
       this.channelName = info.from?.name || this.channelName;
-      this.setState('live', `Connected${info.title ? ' to "' + info.title + '"' : ''}`);
-      this.poll();
+      this.watch(this.source.target, info.title);
     } catch (e) {
-      const msg = graphError(e);
       const wait = backoff(this.attempt++, 5000);
-      this.setState('error', `${msg} Retrying in ${Math.round(wait / 1000)}s.`);
+      this.setState('error', `${graphError(e)} Retrying in ${Math.round(wait / 1000)}s.`);
       this.later(() => this.run(), wait);
     }
+  }
+
+  /** Page mode: is the Page live right now? If so, connect to that video; otherwise look again shortly. */
+  async findLive() {
+    if (!this.page) {
+      const slug = this.source.target.slice(5) || 'me';
+      const page = await this.api(encodeURIComponent(slug), 'fields=id,name');
+      this.page = { id: page.id, name: page.name || slug };
+      this.channelName = this.page.name;
+    }
+    const res = await this.api(`${this.page.id}/live_videos`, `broadcast_status=${encodeURIComponent('["LIVE"]')}&fields=id,title,status&limit=1`);
+    const live = (res.data || []).find(v => !v.status || v.status === 'LIVE');
+    this.attempt = 0;
+    if (!live) {
+      this.setState('waiting', `${this.page.name} is not live right now. Checking again in ${LOOK_EVERY / 1000}s.`);
+      return this.later(() => this.run(), LOOK_EVERY);
+    }
+    this.watch(live.id, live.title);
+  }
+
+  /** Starts reading the comments of one live video. */
+  watch(videoId, title) {
+    this.videoId = videoId;
+    this.seen = new Set();
+    this.primed = false;
+    this.checkedAt = Date.now();
+    this.setState('live', `Connected${title ? ' to "' + title + '"' : ''}`);
+    this.poll();
   }
 
   async poll() {
     if (this.stopped) return;
     try {
-      const url = `${GRAPH}/${this.source.target}/comments?order=reverse_chronological&live_filter=no_filter&filter=stream&limit=50&fields=id,message,created_time,from{id,name,picture.type(small)}&access_token=${encodeURIComponent(this.token())}`;
-      const res = await fetchJson(url);
+      // Page mode: once a minute make sure the stream hasn't ended, then wait for the next one.
+      if (this.pageMode && Date.now() - this.checkedAt > CHECK_EVERY) {
+        this.checkedAt = Date.now();
+        const v = await this.api(this.videoId, 'fields=status');
+        if (v.status && v.status !== 'LIVE') { this.videoId = null; return this.run(); }
+      }
+      const res = await this.api(`${this.videoId}/comments`, 'order=reverse_chronological&live_filter=no_filter&filter=stream&limit=50&fields=id,message,created_time,from{id,name,picture.type(small)}');
       const fresh = (res.data || []).filter(c => !this.seen.has(c.id)).reverse();
       for (const c of fresh) {
         this.seen.add(c.id);
@@ -58,7 +99,8 @@ class FacebookConnector extends Connector {
     } catch (e) {
       const wait = backoff(this.attempt++, 3000, 60000);
       this.setState('waiting', `${graphError(e)} Retrying in ${Math.round(wait / 1000)}s.`);
-      this.later(() => this.poll(), wait);
+      // Page mode looks for the live video again (it may have ended); a single video keeps retrying.
+      this.later(() => (this.pageMode ? this.run() : this.poll()), wait);
     }
   }
 }

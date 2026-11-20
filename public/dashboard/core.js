@@ -26,7 +26,7 @@
     { id: 'twitch', name: 'Twitch', ask: 'Your Twitch username', example: 'yourname', prefix: 'twitch:' },
     { id: 'kick', name: 'Kick', ask: 'Your Kick username', example: 'yourname', prefix: 'kick:' },
     { id: 'tiktok', name: 'TikTok', ask: 'Your TikTok username', example: '@yourname', prefix: 'tiktok:' },
-    { id: 'facebook', name: 'Facebook', ask: 'Your Facebook live video link', example: 'facebook.com/yourpage/videos/123…', prefix: '' },
+    { id: 'facebook', name: 'Facebook', ask: 'Your Facebook Page name or link', example: 'facebook.com/yourpage', prefix: 'fb:' },
   ];
   MG.pname = id => (MG.PLATFORMS.find(p => p.id === id) || {}).name || id;
   MG.colorIcon = p => { const s = icon(p); s.style.color = `var(--${p})`; return s; };
