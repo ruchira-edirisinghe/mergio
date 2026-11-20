@@ -32,10 +32,11 @@ Multistreaming means your viewers chat in five different places. Mergio reads al
   3. [Open Mergio](#step-3--open-mergio)
   4. [Connect your chats](#step-4--connect-your-chats)
   5. [Make it yours](#step-5--make-it-yours)
-  6. [Pick your alerts](#step-6--pick-your-alerts)
+  6. [Choose your alerts](#step-6--choose-your-alerts)
   7. [Add the overlay to OBS](#step-7--add-the-overlay-to-obs)
   8. [Optional: control Mergio from inside OBS](#step-8--optional-control-mergio-from-inside-obs)
   9. [Go live](#step-9--go-live)
+- [Use Mergio as an app](#use-mergio-as-an-app)
 - [Update or uninstall](#update-or-uninstall) · [Different looks per scene](#different-looks-per-scene)
 - [Platform notes](#platform-notes) (YouTube, Twitch, Kick, TikTok, Facebook) · [Troubleshooting](#troubleshooting)
 - [Privacy & security](#privacy--security) · [How it works](#how-it-works) · [Build it yourself](#build-it-yourself) · [For developers](#for-developers)
@@ -43,22 +44,28 @@ Multistreaming means your viewers chat in five different places. Mergio reads al
 
 ## Features
 
-- 🔗 **Paste-and-go connections.** Paste any stream or channel link. Mergio detects the platform, connects, and reconnects by itself if the connection drops.
-- ⏳ **Auto-connect when you go live.** Add your YouTube or TikTok channel once. Mergio waits and connects the moment your stream starts.
-- 🎉 **Subscriber & follower alerts** as big animated cards that name the platform (e.g. **NEW FOLLOWER · on TikTok**, **NEW SUBSCRIBER · on Kick**), with a little celebration burst.
-- 🎁 **Alerts that look the part:**
-  - TikTok gifts with the real gift artwork, and combos that count up live (×1 → ×10 → ×50)
-  - TikTok joins, likes, follows and shares
+- 🔗 **Type a name or paste a link.** Pick a platform and type your username, or paste any stream or channel link. Mergio connects, and reconnects by itself if the connection drops.
+- ⏳ **Auto-connect when you go live.** Add your channels once. Mergio waits and connects the moment your stream starts.
+- 🖼️ **Real profile pictures for everyone in chat**, even in busy chats (Twitch pictures are looked up 100 at a time and cached).
+- 🎁 **The real gift picture for every gift:** a Rose shows a rose, a Galaxy shows the galaxy, and TikTok combos count up live (×1 → ×10 → ×50). Kick's KICKs gifts show their own pictures too.
+- 🔔 **Alerts where you want them:**
+  - **In the chat** as a calm line with the gift picture, so they don't take over your chat
+  - **On their own overlay**: a separate browser source you can put anywhere on your scene, showing one big animated alert at a time (**NEW SUBSCRIBER · on Twitch**, **GIFT · on TikTok**…)
+  - **Or both**
+- 🎉 **Every alert type:**
+  - TikTok gifts, follows, subscriptions, joins, likes and shares
   - Twitch Bits with animated cheermotes, subs, gift subs, raids, Hype Chats, announcements, Power-ups and watch streaks
   - YouTube Super Chats in their real tier colors, Super Stickers, new members, milestones and gifted memberships
-  - Kick subs, gifted subs, Kicks gifts, hosts and reward redemptions
+  - Kick follows, subs, gifted subs, KICKs gifts, hosts and reward redemptions
+- ⏱️ **Disappearing messages (optional):** messages fade out after the time you choose, so only the newest stay on screen.
 - 😀 **Emotes everywhere:** Twitch, 7TV, BetterTTV, FrankerFaceZ, YouTube custom emoji, Kick emotes, and cheermotes.
-- 🎨 **Fully customizable:** 6 one-click styles (Glass, Neon, Minimal, Soft light, Retro pixel, Bold cards), any Google Font, colors, bubbles, opacity, roundness, animations, alignment, direction, emote size and more. A live preview updates as you change things.
-- ⚡ **Instant updates.** Style changes reach OBS immediately; you never re-copy the overlay link.
+- 🎨 **Fully customizable:** 6 one-click styles (Glass, Neon, Minimal, Soft light, Retro pixel, Bold cards), any Google Font, colors, bubbles, opacity, roundness, animations, alignment, direction, emote size and more, with a settings search and a live preview that updates as you change things.
+- ⚡ **Instant updates.** Style changes reach OBS immediately; you never re-copy the overlay link. The control panel tells you when OBS is showing your overlay.
+- 🪟 **Install it as an app:** the control panel can open in its own window with its own icon instead of a browser tab.
 - 🧹 **Moderation sync:** messages deleted or users banned on Twitch, YouTube or Kick vanish from the overlay too.
 - 🛡️ **Filters:** hide `!commands`, bots, blocked words or a whole event type; set a minimum TikTok gift value; choose who may post images.
-- 💬 **One feed for you:** a "Live chat" tab to read every chat in one list. You can dock it inside OBS.
-- 🪶 **Lightweight:** one small background app (about 50–80 MB of memory, no window of its own). The overlay only uses GPU-friendly animations.
+- 💬 **One feed for you:** a "Live chat" page to read every chat in one list. You can dock it inside OBS.
+- 🪶 **Lightweight:** one small background app (about 50–80 MB of memory). The overlays only use GPU-friendly animations.
 - 🔒 **Private:** everything runs on `localhost`. No telemetry, no accounts, no cloud.
 
 <div align="center"><img src="docs/overlay.png" alt="Chat messages, gifts, subscriber, follower, Super Chat and raid alerts in the overlay" width="420"></div>
@@ -137,65 +144,84 @@ Then open **Mergio** from your app menu, or run `mergio` in a terminal. Kick sup
 
 ### Step 3 · Open Mergio
 
-Click the **Mergio** icon (Start menu, desktop, Launchpad or app menu). Mergio starts in the background and opens its **control panel** in your web browser at `http://localhost:8787`.
+Click the **Mergio** icon (Start menu, desktop, Launchpad or app menu). Mergio starts in the background and opens its **control panel** at `http://localhost:8787`. (Want it in its own window instead of a browser tab? See [Use Mergio as an app](#use-mergio-as-an-app).)
 
-The first time, a short **welcome guide** walks you through the next steps. You can open it again any time with the **Guide** button at the top of the control panel.
+The first time, a short **tour** walks you through the next steps. You can open it again any time with the **Guide** button at the top of the control panel. The **Home** page always shows what's left to do.
 
-<div align="center"><img src="docs/guide/01-welcome.png" alt="The welcome guide that opens the first time" width="820"></div>
+<div align="center"><img src="docs/guide/01-welcome.png" alt="The tour that opens the first time" width="820"></div>
 
-> **Good to know:** Mergio has no window of its own; the control panel *is* the app. Closing the browser tab doesn't stop the overlay. Clicking the Mergio icon again while it's running simply reopens the control panel. To fully close it, use **Advanced → Quit Mergio**.
+> **Good to know:** closing the control panel doesn't stop the overlay; Mergio keeps running in the background. Clicking the Mergio icon again while it runs simply reopens the control panel. To fully close it, use **Settings → Reset or quit → Quit Mergio**.
 
 ### Step 4 · Connect your chats
 
-1. Copy the link of your live stream, or of your channel.
-2. On the **Connections** page, paste it into the big box and press **Enter**.
-3. Repeat for every platform you stream to. They all merge into one overlay.
+1. Open **Chats**.
+2. Pick your platform (YouTube, Twitch, Kick, TikTok or Facebook) and type your **username**. Or choose **Any link** and paste a stream or channel link.
+3. Press **Enter**. Repeat for every platform you stream to; they all merge into one overlay.
 
-Each chat shows its status: **Connected**, **Waiting** (not live yet; it connects by itself as soon as you go live) or **Problem** (with a hint about what's wrong).
+Each chat shows its status: **Connected**, **Waiting for you to go live** (it connects by itself as soon as you go live) or a problem with a hint about what's wrong. You can pause, reconnect or remove each chat.
 
-<div align="center"><img src="docs/guide/02-connect.png" alt="The Connections page with connected chats and the live preview" width="820"></div>
+<div align="center"><img src="docs/guide/02-chats.png" alt="The Chats page with connected chats and the live preview" width="820"></div>
 
 **Which links work?**
 
-| Platform | Paste one of these |
+| Platform | Type or paste one of these |
 |---|---|
-| YouTube | `youtube.com/watch?v=VIDEO_ID`, `youtu.be/VIDEO_ID`, `youtube.com/live/VIDEO_ID`, or your channel `youtube.com/@yourname` (finds your live stream automatically) |
-| Twitch | `twitch.tv/yourname` |
-| Kick | `kick.com/yourname` |
-| TikTok | `tiktok.com/@yourname` or `tiktok.com/@yourname/live` |
+| YouTube | your channel `@yourname` (finds your live stream automatically), `youtube.com/watch?v=VIDEO_ID`, `youtu.be/VIDEO_ID` or `youtube.com/live/VIDEO_ID` |
+| Twitch | `yourname` or `twitch.tv/yourname` |
+| Kick | `yourname` or `kick.com/yourname` |
+| TikTok | `yourname`, `tiktok.com/@yourname` or `tiktok.com/@yourname/live` |
 | Facebook | `facebook.com/yourpage/videos/1234567890` or `facebook.com/watch/?v=1234567890` (needs a free token, see [Facebook](#facebook)) |
-| Shortcuts | `twitch:name`, `kick:name`, `tiktok:name`, `yt:@name` |
 
-**Tip:** add your channel links once and leave them there. Every time you go live, Mergio connects on its own.
+**Tip:** add your channels once and leave them there. Every time you go live, Mergio connects on its own.
 
 ### Step 5 · Make it yours
 
-Open **Appearance** and click one of the six styles (Glass, Neon, Minimal, Soft light, Retro pixel, Bold cards). Then fine-tune fonts, colours, bubbles, animations and more. The **live preview** on the right updates instantly; use the **Game / Dark / Light** buttons above it to check how it looks over your stream.
+Open **Style** and click one of the six looks (Glass, Neon, Minimal, Soft light, Retro pixel, Bold cards). **Quick settings** has the options most people change: text size and colour, profile pictures, platform icons, bubbles, left or right, newest at the top or bottom, and **Messages disappear after a while** (with the number of seconds). Everything else is in folding sections, and the search box finds any setting.
 
-<div align="center"><img src="docs/guide/03-appearance.png" alt="The Appearance page with style presets" width="820"></div>
+The **live preview** on the right updates instantly; use **Game / Dark / Light** above it to check how it looks over your stream.
 
-| Page | What you can change |
+<div align="center"><img src="docs/guide/03-style.png" alt="The Style page with ready-made looks and quick settings" width="820"></div>
+
+| Section | What you can change |
 |---|---|
-| **Appearance** | Style presets, alert labels with platform name, follower alerts as cards or pills, platform icons, avatars, badges, usernames, pronouns, timestamps (12/24h), font, size, weight, spacing, text/username colours, text shadow, bubbles (colour, opacity, roundness, platform strip), background, animation, alignment, max messages, emote size, big emotes, event style |
-| **Behavior** | Hide-after timer, newest at top/bottom, one-line or two-line layout, grouping, join pill time, `!command` filter, image permissions, ignored bots, blocked words, mention highlighting, UwU mode |
-| **Events & alerts** | Every message and event type per platform, Twitch shared chat, minimum TikTok gift value |
-| **Advanced** | Start with Windows, Facebook token, optional TikTok key, port, export/import your style, reset, quit |
+| **Quick settings** | Text size and colour, profile pictures, platform icons, bubbles, alignment, disappearing messages and timer, newest at top or bottom |
+| **What to show** | Badges, usernames, message text, pronouns, timestamps (12/24h) |
+| **Text & colours** | Font, thickness, spacing, username colours, text shadow |
+| **Bubbles & background** | Bubble colour, see-through, roundness, platform colour strip, overlay background |
+| **Motion & layout** | Animation, most messages on screen, emote size, big emotes, one-line layout, grouping |
+| **Alert look** | Alerts in the chat as calm lines with the gift picture or as big highlighted cards, follower alerts as alerts or small notes, how long "joined" notes stay |
+| **Filters** | `!command` filter, picture links, ignored bots, blocked words |
+| **Mentions & extras** | Highlight messages that mention you, extra names, UwU mode |
 
-Press **Test** at the top at any time to send sample messages and alerts.
+Press **Send test** at the top at any time to send sample messages and alerts.
 
-### Step 6 · Pick your alerts
+### Step 6 · Choose your alerts
 
-**Events & alerts** lists everything each platform can show: TikTok gifts, joins, likes and follows; Twitch Bits, subs, gift subs and raids; YouTube Super Chats and memberships; Kick subs, gifted subs, Kicks and follows. Switch off anything you don't want on screen. For TikTok you can also set a minimum gift value.
+Open **Alerts**. At the top, choose **where alerts show**:
 
-<div align="center"><img src="docs/guide/04-events.png" alt="The Events and alerts page" width="820"></div>
+- **In the chat**: subs, gifts, Super Chats, follows and raids appear between messages as a calm line with the gift picture.
+- **Their own overlay**: alerts leave the chat and show one at a time, big and animated, on a separate browser source you can put anywhere on your scene.
+- **Both**: a small line in the chat plus the big alert.
+
+<div align="center"><img src="docs/guide/04-alerts.png" alt="The Alerts page: where alerts show, the alerts overlay link and settings" width="820"></div>
+
+If you pick an overlay, the page shows its link (`http://localhost:8787/alerts`) and the OBS steps. Add it like the chat overlay (step 7) as a second Browser source, for example **800 × 500**, and drag it wherever you want alerts to pop up. It's see-through until an alert comes in, and the box turns green when OBS shows it. You can set how long each alert stays, its size, where it sits in its box, the animation, and whether it shows the viewer's picture and message.
+
+<div align="center">
+<img src="docs/guide/08-alert-gift.png" alt="A TikTok Galaxy gift on the alerts overlay" width="400"> <img src="docs/guide/09-alert-sub.png" alt="A Twitch resub on the alerts overlay" width="400">
+</div>
+
+Below that, **Which alerts and messages to show** lists everything each platform can show: TikTok gifts, follows, subscriptions, joins and likes; Twitch Bits, subs, gift subs and raids; YouTube Super Chats and memberships; Kick follows, subs, gifted subs and KICKs. Switch off anything you don't want on screen, and press **Try** to see any of them. For TikTok you can also set a minimum gift value.
 
 ### Step 7 · Add the overlay to OBS
 
-1. In Mergio, open **Add to OBS** and click **Copy** next to your overlay link (`http://localhost:8787/overlay`).
+1. In Mergio, open **Add to OBS** and click **Copy link** next to your overlay link (`http://localhost:8787/overlay`).
 2. In OBS, click **+** under *Sources* and choose **Browser**. Name it *Mergio* and click **OK**.
 3. Paste the link into **URL**. Set **Width** `500` and **Height** `800` (any size works; the chat fills the box).
 4. Leave everything else as it is and click **OK**.
 5. Move and resize the chat on your scene like any other source.
+
+The **Add to OBS** page turns green (*Mergio is showing in OBS*) as soon as it works.
 
 <div align="center"><img src="docs/guide/05-add-to-obs.png" alt="The Add to OBS page with the overlay link" width="820"></div>
 
@@ -213,13 +239,22 @@ Add the control panel as an OBS dock to read every chat and change settings with
 
 ### Step 9 · Go live
 
-- Start Mergio before you go live, or turn on **Advanced → Start with Windows** so it's always ready.
-- Chats that say *Waiting* connect by themselves when your stream starts.
+- Start Mergio before you go live, or turn on **Settings → Start Mergio with Windows** so it's always ready.
+- Chats that say *Waiting for you to go live* connect by themselves when your stream starts.
 - Every alert names the platform it came from, e.g. **NEW FOLLOWER · on TikTok** or **NEW SUBSCRIBER · on Kick**.
 
-<div align="center"><img src="docs/guide/07-advanced.png" alt="The Advanced page with Start with Windows, tokens and backup" width="820"></div>
+<div align="center"><img src="docs/guide/07-settings.png" alt="The Settings page with Start with Windows, installing as an app, accounts and backup" width="820"></div>
 
 🎉 **That's it, you're all set!** Need help? [Open an issue](https://github.com/ruchira-edirisinghe/mergio/issues/new/choose) and describe what happened.
+
+## Use Mergio as an app
+
+The control panel can run in its own window, with its own icon on the taskbar, instead of a browser tab. This works in Chrome, Edge and Brave:
+
+1. Open the control panel.
+2. Click **Install app** at the top (or the install icon at the right end of the address bar), then **Install**.
+
+From then on, opening Mergio on Windows opens that window. If you open the app while Mergio isn't running, it shows a **Start Mergio** button and switches to the control panel by itself once Mergio is up.
 
 ## Update or uninstall
 
@@ -228,20 +263,22 @@ Add the control panel as an OBS dock to read every chat and change settings with
 **Uninstall:**
 
 - **Windows:** *Settings → Apps → Installed apps → Mergio → Uninstall*. The portable version is just a folder: delete it.
-- **macOS:** quit Mergio (*Advanced → Quit Mergio*), then drag **Mergio** from Applications to the Bin. Settings live in `~/Library/Application Support/Mergio`.
+- **macOS:** quit Mergio (*Settings → Reset or quit → Quit Mergio*), then drag **Mergio** from Applications to the Bin. Settings live in `~/Library/Application Support/Mergio`.
 - **Linux:** `sudo apt remove mergio` for the `.deb`, or `./uninstall.sh` from the unpacked `tar.gz` folder.
 
-**Back up your style first:** *Advanced → Export style* saves a small file you can import later or share with friends.
+**Back up your style first:** *Settings → Back up your style → Save style to a file* saves a small file you can import later or share with friends.
 
 ## Different looks per scene
 
-Add any Appearance or Behavior option to the overlay link to override it for that browser source only:
+Add any Style option to the overlay link to override it for that browser source only:
 
 ```
 http://localhost:8787/overlay?fontSize=28&theme=neon&align=right&maxMessages=12
 ```
 
-Useful options: `theme` (glass, neon, minimal, soft, retro), `fontSize`, `font`, `align` (left/right), `scrollDirection` (normal/reversed), `hideAfter` (seconds), `maxMessages`, `showAvatar`, `showPlatform`, `useChatBubbles`, `inlineChat`, `animation` (slide, pop, fade, none).
+Useful options: `theme` (glass, neon, minimal, soft, retro), `fontSize`, `font`, `align` (left/right), `scrollDirection` (normal/reversed), `fadeMessages` (true/false) with `hideAfter` (seconds), `maxMessages`, `showAvatar`, `showPlatform`, `useChatBubbles`, `inlineChat`, `animation` (slide, pop, fade, none).
+
+The alerts overlay works the same way: `http://localhost:8787/alerts?size=1.3&position=top&duration=8` (`size`, `position` top/center/bottom, `duration` in seconds, `animation` pop/slide/fade, `showAvatar`, `showMessage`).
 
 ## Platform notes
 
@@ -249,14 +286,14 @@ Useful options: `theme` (glass, neon, minimal, soft, retro), `fontSize`, `font`,
 Uses the same public chat feed as YouTube's pop-out chat, so no API key and no quota. Paste a **video link** to read that stream, or your **channel link** (`youtube.com/@name`) to let Mergio find your current live stream automatically (it checks every 30 s while you're offline).
 
 ### Twitch
-Connects to Twitch chat anonymously (read-only), like a logged-out viewer. Badges, emotes (Twitch, 7TV, BTTV, FFZ), Bits with animated cheermotes, subs, gifts, raids, announcements, Hype Chats, Power-ups and watch streaks all work. Turn on **Viewers joining chat** in *Events* if you want join notices (Twitch only sends these for channels with fewer than about 1,000 chatters).
+Connects to Twitch chat anonymously (read-only), like a logged-out viewer. Badges, emotes (Twitch, 7TV, BTTV, FFZ), Bits with animated cheermotes, subs, gifts, raids, announcements, Hype Chats, Power-ups and watch streaks all work. Turn on **Viewers joining chat** on the *Alerts* page if you want join notices (Twitch only sends these for channels with fewer than about 1,000 chatters).
 
 ### Kick
 Reads Kick's public real-time chat as a guest. No login. Shows Kick emotes, badges, subs, gifted subs, Kicks gifts, hosts and reward redemptions.
 
 ### TikTok
 Uses the open-source [TikTok-Live-Connector](https://github.com/zerodytrash/TikTok-Live-Connector). Shows comments, **who joined the LIVE**, **gifts with the real gift image and a live combo counter**, likes (grouped per viewer), follows, shares and subscriptions. You must be **LIVE** for it to connect. Until then the card says *Waiting* and checks again every 30 s.
-TikTok connections are signed by the free [Euler Stream](https://www.eulerstream.com) service. If you ever see a rate-limit message, create a free key there and paste it into **Advanced → Euler Stream API key**.
+TikTok connections are signed by the free [Euler Stream](https://www.eulerstream.com) service. If you ever see a rate-limit message, create a free key there and paste it into **Settings → Accounts & keys → Euler Stream key for TikTok**.
 
 ### Facebook
 Facebook only shares live comments with apps that have a **Page access token**. It's free:
@@ -264,8 +301,8 @@ Facebook only shares live comments with apps that have a **Page access token**. 
 1. Open the [Graph API Explorer](https://developers.facebook.com/tools/explorer/) and log in with the account that manages your Page.
 2. On the right, under **User or Page**, pick **Get Page Access Token** and choose your Page.
 3. Add the permissions `pages_read_engagement` and `pages_show_list`, then click **Generate Access Token**.
-4. Copy the token into **Mergio → Advanced → Facebook Page access token**.
-5. Paste your live video link (`…/videos/1234567890`) on the Connections tab.
+4. Copy the token into **Mergio → Settings → Accounts & keys → Facebook Page token**.
+5. Paste your live video link (`…/videos/1234567890`) on the Chats page.
 
 Tokens from the Explorer expire after about an hour. For one that lasts: open the [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/), paste the token, click **Extend Access Token**, then use that long-lived *user* token in the Explorer again to get a Page token. Page tokens made from a long-lived user token don't expire.
 
@@ -322,7 +359,7 @@ npm run package      # -> installers for this OS in dist/release
 - No telemetry and no analytics; Mergio never phones home.
 - Tokens and keys stay in your local `config.json` and are never sent to the overlay.
 - Mergio only **reads** chat. It never posts, moderates or logs in as you.
-- Third-party services used for display only: profile pictures for Twitch (`decapi.me`) and Kick, Twitch pronouns (`pronouns.alejo.io`, only when enabled), 7TV/BTTV/FFZ emotes, TikTok signing (Euler Stream).
+- Third-party services used for display only: profile pictures for Twitch (Twitch's public API, `decapi.me` as a fallback) and Kick, the public TikTok gift list, Twitch pronouns (`pronouns.alejo.io`, only when enabled), 7TV/BTTV/FFZ emotes, TikTok signing (Euler Stream).
 
 ## Troubleshooting
 
@@ -334,20 +371,20 @@ That platform isn't live yet, or the stream ended. Mergio keeps checking and con
 
 - Check Mergio is running: <code>http://localhost:8787</code> should open the control panel.
 - Make sure the Browser Source URL is exactly the one from **Add to OBS**.
-- Press **Test** in the control panel; if test messages show up, the overlay works and chat will appear when people type.
+- Press **Send test** in the control panel; if test messages show up, the overlay works and chat will appear when people type.
 - Right-click the source → **Refresh**.
 </details>
 
 <details><summary><b>TikTok shows an error</b></summary>
-Make sure you are LIVE and the username is correct. Rate-limit messages go away with a free Euler Stream key (Advanced tab).
+Make sure you are LIVE and the username is correct. Rate-limit messages go away with a free Euler Stream key (Settings → Accounts & keys).
 </details>
 
 <details><summary><b>Facebook says the token is invalid or expired</b></summary>
-Create a new Page token (see <a href="#facebook">Facebook</a>) and paste it in Advanced. Mergio reconnects automatically.
+Create a new Page token (see <a href="#facebook">Facebook</a>) and paste it in Settings → Accounts & keys. Mergio reconnects automatically.
 </details>
 
 <details><summary><b>Port 8787 is already used by another app</b></summary>
-Change the port in <b>Advanced</b>, restart Mergio and update the URL in OBS. You can also start it with the environment variable <code>MERGIO_PORT=9000</code>.
+Change the port in <b>Settings → Mergio app</b>, restart Mergio and update the URL in OBS. You can also start it with the environment variable <code>MERGIO_PORT=9000</code>.
 </details>
 
 <details><summary><b>Nothing happens when I open Mergio</b></summary>
@@ -367,7 +404,7 @@ Install <code>curl</code> (for example <code>sudo apt install curl</code>) and r
 
 <details><summary><b>Where are the logs?</b></summary>
 
-<code>mergio.log</code>, in the same folder as your settings (see <a href="#how-it-works">How it works</a>). The control panel shows the exact folder under <b>Advanced → Backup &amp; data</b>. The log is trimmed automatically at 1 MB.
+<code>mergio.log</code>, in the same folder as your settings (see <a href="#how-it-works">How it works</a>). The control panel shows the exact folder under <b>Settings → Back up your style</b> (with an <b>Open folder</b> button). The log is trimmed automatically at 1 MB.
 </details>
 
 ## For developers
