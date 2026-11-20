@@ -168,6 +168,8 @@ function createServer(manager, { onQuit }) {
 
   /* ---------- live updates over WebSocket ---------- */
   const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
+  // ws re-emits the HTTP server's errors (e.g. port already in use); main.js handles those on the server itself.
+  wss.on('error', () => {});
   const broadcast = obj => {
     const data = JSON.stringify(obj);
     for (const c of wss.clients) if (c.readyState === 1) c.send(data);
