@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { AppWindow, Bell, Eye, Home, Link2, Lock, MessageSquare, Mic, Monitor, Palette, Settings, Volume2 } from 'lucide-react';
 import { PlatformIcon, PLATFORMS, Wordmark } from '../components/brand';
 import { Face } from '../components/Face';
-import { AlertCard, ChatFeed, THEMES, type ThemeId } from '../components/Overlay';
+import { ALERT_LOOKS, AlertShow, ChatFeed, THEMES, type ThemeId } from '../components/Overlay';
 import { ALERTS, CHATS, SCRIPT, type ChatItem } from '../lib/chat';
 import { useCycle, useFeed, useInterval } from '../lib/hooks';
 import { VideoBackdrop } from './Backdrop';
@@ -49,16 +49,24 @@ export function ThemeStage({ active }: { active: boolean }) {
   );
 }
 
-/* ---------- Alerts overlay: one big alert at a time ---------- */
+/* ---------- Alerts overlay: one big alert at a time, in each of the six looks ---------- */
+/** Seconds each demo alert stays, so the Alerts tab can show all six looks before it moves on. */
+export const ALERT_DEMO_LIFE = 3.2;
 export function AlertStage({ active }: { active: boolean }) {
-  const life = 4.6;
-  const [i] = useCycle(ALERTS.length, life * 1000, active);
+  const life = ALERT_DEMO_LIFE;
+  const [i] = useCycle(ALERTS.length * ALERT_LOOKS.length, life * 1000, active);
+  const look = i % ALERT_LOOKS.length;
   return (
-    <div className="absolute inset-x-0 bottom-0 top-[48%] md:top-[40%] flex items-center justify-center px-6">
-      <div className="relative w-full max-w-[440px] pt-14">
-        <div className="relative grid min-h-[230px] place-items-center rounded-[3px] outline outline-[1.5px] outline-[#ff4d4d]/75">
+    <div className="absolute inset-x-0 bottom-0 top-[44%] md:top-[36%] flex flex-col items-center justify-center gap-4 px-6 pb-6">
+      <div className="hidden sm:flex flex-wrap justify-center gap-1.5 rounded-full bg-black/40 p-1 backdrop-blur-md">
+        {ALERT_LOOKS.map((l, k) => (
+          <span key={l.id} className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors duration-300 ${k === look ? 'bg-white text-black' : 'text-white/60'}`}>{l.name}</span>
+        ))}
+      </div>
+      <div className="relative w-full max-w-[460px] pt-6">
+        <div className="relative grid min-h-[220px] place-items-center rounded-[3px] outline outline-[1.5px] outline-[#ff4d4d]/75">
           <span className="absolute -top-6 left-0 rounded-t-md bg-[#ff4d4d]/85 px-2 py-0.5 text-[11px] font-semibold text-white">Browser source · Mergio Alerts</span>
-          <div className="py-12"><AlertCard key={i} item={ALERTS[i]} life={life} size={1.05} /></div>
+          <div className="w-full px-4 py-6"><AlertShow key={i} item={ALERTS[i % ALERTS.length]} look={ALERT_LOOKS[look].id} life={life} size={0.78} /></div>
         </div>
       </div>
     </div>
