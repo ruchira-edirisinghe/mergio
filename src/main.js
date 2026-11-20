@@ -62,7 +62,7 @@ server.on('error', e => {
 server.listen(port, '127.0.0.1', () => {
   log('app', `Mergio ${pkg.version} running. Dashboard: ${dashboard}  Overlay: http://localhost:${port}/overlay  Data: ${DATA_DIR}`);
   manager.startAll();
-  updater.start();
+  updater.start({ isNewUser: !settings.get().advanced.welcomeSeen });
   if (shouldOpen) openDashboard(dashboard);
 });
 

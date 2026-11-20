@@ -64,7 +64,7 @@ Multistreaming means your viewers chat in five different places. Mergio reads al
 - 🎨 **Fully customizable:** 6 one-click styles (Glass, Neon, Minimal, Soft light, Retro pixel, Bold cards), any Google Font, colors, bubbles, opacity, roundness, animations, alignment, direction, emote size and more, with a settings search, plain-words ⓘ tips for beginners, and a live preview that updates as you change things.
 - ⚡ **Instant updates.** Style changes reach OBS immediately; you never re-copy the overlay link. The control panel tells you when OBS is showing your overlay.
 - 🪟 **Install it as an app:** the control panel can open in its own window with its own icon instead of a browser tab.
-- 🚀 **Always up to date:** each time Mergio opens it checks for a new version and shows what's new. On Windows, one click downloads it, installs it and opens Mergio again.
+- 🚀 **Always up to date:** each time Mergio opens it checks for a new version and shows what's new. On Windows, one click downloads it, installs it and opens Mergio again, then shows the new version's release notes.
 - 🌊 **Smooth to use:** an animated opening, soft page transitions and a sliding sidebar highlight (all switched off if your system asks for reduced motion).
 - 🧹 **Moderation sync:** messages deleted or users banned on Twitch, YouTube or Kick vanish from the overlay too.
 - 🛡️ **Filters:** hide `!commands`, bots, blocked words or a whole event type; set a minimum TikTok gift value; choose who may post images.
@@ -287,6 +287,8 @@ From then on, opening Mergio on Windows opens that window. If you open the app w
 
 - **Windows (installed):** click **Download and install**. Mergio downloads the new installer with a progress bar, closes, updates itself in the same folder and opens again. The control panel reloads by itself.
 - **Portable, macOS and Linux:** click **Get the new version** to open the download page, then install it over the old one (macOS: drag the new app into Applications and replace the old one; Linux: install the new `.deb` or run the new `install.sh`; portable: replace the folder's files).
+
+After any update (however you installed it), the first time you open the control panel Mergio shows a **What's new** popup with the release notes of the version you now have. It shows once per version.
 
 Your connections, style and settings are always kept.
 
