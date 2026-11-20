@@ -52,14 +52,16 @@ Multistreaming means your viewers chat in five different places. Mergio reads al
   - **In the chat** as a calm line with the gift picture, so they don't take over your chat
   - **On their own overlay**: a separate browser source you can put anywhere on your scene, showing one big animated alert at a time (**NEW SUBSCRIBER · on Twitch**, **GIFT · on TikTok**…)
   - **Or both**
+- ✨ **Six alert styles:** Spotlight (light rays and confetti), Banner, Neon, Bubbly, Card and Minimal, picked from tiles that play a live preview, with an optional chime.
 - 🎉 **Every alert type:**
   - TikTok gifts, follows, subscriptions, joins, likes and shares
   - Twitch Bits with animated cheermotes, subs, gift subs, raids, Hype Chats, announcements, Power-ups and watch streaks
   - YouTube Super Chats in their real tier colors, Super Stickers, new members, milestones and gifted memberships
   - Kick follows, subs, gifted subs, KICKs gifts, hosts and reward redemptions
+- 💬 **Your chat layout:** name and message on one line, or the name on top with messages below. Several messages in a row from one person go in their own boxes or together in one box.
 - ⏱️ **Disappearing messages (optional):** messages fade out after the time you choose, so only the newest stay on screen.
 - 😀 **Emotes everywhere:** Twitch, 7TV, BetterTTV, FrankerFaceZ, YouTube custom emoji, Kick emotes, and cheermotes.
-- 🎨 **Fully customizable:** 6 one-click styles (Glass, Neon, Minimal, Soft light, Retro pixel, Bold cards), any Google Font, colors, bubbles, opacity, roundness, animations, alignment, direction, emote size and more, with a settings search and a live preview that updates as you change things.
+- 🎨 **Fully customizable:** 6 one-click styles (Glass, Neon, Minimal, Soft light, Retro pixel, Bold cards), any Google Font, colors, bubbles, opacity, roundness, animations, alignment, direction, emote size and more, with a settings search, plain-words ⓘ tips for beginners, and a live preview that updates as you change things.
 - ⚡ **Instant updates.** Style changes reach OBS immediately; you never re-copy the overlay link. The control panel tells you when OBS is showing your overlay.
 - 🪟 **Install it as an app:** the control panel can open in its own window with its own icon instead of a browser tab.
 - 🧹 **Moderation sync:** messages deleted or users banned on Twitch, YouTube or Kick vanish from the overlay too.
