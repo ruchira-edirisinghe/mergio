@@ -41,7 +41,10 @@
     const ov = MG.overlays;
     c.append(h('div', { class: 'tiles' },
       tile('chat', 'Chats', st.sources.length ? `${live} of ${st.sources.length} connected` : 'None yet', live ? 'ok' : st.sources.length ? 'warn' : '', 'chats'),
-      tile('eye', 'Overlay', ov.obs ? 'Showing in OBS' : ov.count ? 'Open in a browser' : 'Not open right now', ov.obs ? 'ok' : ov.count ? 'warn' : '', 'obs'),
+      tile('eye', 'Chat overlay', ov.obs ? 'Showing in OBS' : ov.count ? 'Open in a browser' : 'Not open right now', ov.obs ? 'ok' : ov.count ? 'warn' : '', 'obs'),
+      st.settings.alerts.placement === 'chat'
+        ? tile('bell', 'Alerts overlay', 'Off (alerts in chat)', '', 'obs')
+        : tile('bell', 'Alerts overlay', ov.alerts?.obs ? 'Showing in OBS' : ov.alerts?.count ? 'Open in a browser' : 'Not in OBS yet', ov.alerts?.obs ? 'ok' : 'warn', 'obs'),
       tile('sparkle', 'Messages', msgs ? `${msgs.toLocaleString()} this session` : 'Waiting for chat', msgs ? 'ok' : '', 'live')));
 
     // ----- your chats -----
