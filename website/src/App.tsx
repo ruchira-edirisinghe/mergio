@@ -1,0 +1,29 @@
+import { Navbar } from './sections/Navbar';
+import { Hero } from './sections/Hero';
+import { Info } from './sections/Info';
+import { WorksWith } from './sections/WorksWith';
+import { Modes } from './sections/Modes';
+import { Steps } from './sections/Steps';
+import { Faq, Features } from './sections/More';
+import { DownloadCta, Footer } from './sections/Closing';
+
+export default function App() {
+  return (
+    <div id="top" className="flex flex-col bg-[#F5F5F5]">
+      <div className="relative flex flex-col lg:h-screen lg:overflow-hidden">
+        <Navbar />
+        <Hero />
+      </div>
+      <main>
+        <Info />
+        <WorksWith />
+        <Modes />
+        <Steps />
+        <Features />
+        <Faq />
+        <DownloadCta />
+      </main>
+      <Footer />
+    </div>
+  );
+}
