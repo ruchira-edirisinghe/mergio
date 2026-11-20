@@ -422,15 +422,29 @@
 
     const el = build(m);
     const key = `${m.platform}:${m.user.id}`;
-    if (m.type === 'chat' && S.general.groupConsecutiveMessages && lastChat && lastChat.key === key && m.time - lastChat.time < 90000 && lastChat.el.isConnected && !m.flags?.reply) {
-      el.classList.add('grouped');
-    }
+    const grouped = m.type === 'chat' && S.general.groupConsecutiveMessages && lastChat && lastChat.key === key && m.time - lastChat.time < 90000 && lastChat.el.isConnected && !m.flags?.reply;
+    if (grouped) el.classList.add('grouped');
     if (animate && S.appearance.animation !== 'none') el.classList.add(`enter-${S.appearance.animation}`);
     insert(el);
     els.set(m.id, el);
-    lastChat = m.type === 'chat' ? { key, time: m.time, el } : null;
+    if (grouped) indentGrouped(el, lastChat.first);
+    lastChat = m.type === 'chat' ? { key, time: m.time, el, first: grouped ? lastChat.first : el } : null;
     const secs = hideAfter();
     if (secs) scheduleHide(el, m.event && m.type !== 'chat' ? secs * 2 : secs);
+  }
+
+  /** Follow-up messages from the same person: a bubble of their own, tucked in under the profile picture
+      (or under the name when pictures are off), like the first message's text column. */
+  function indentGrouped(el, first) {
+    const bubble = first?.querySelector('.bubble');
+    const anchor = bubble?.querySelector('.av') || bubble?.querySelector('.name');
+    if (!anchor) return;
+    // offsetLeft ignores the enter animation's transform, so this is right even mid-animation.
+    let px = anchor.offsetLeft;
+    if (!anchor.classList.contains('av')) px -= parseFloat(getComputedStyle(bubble).paddingLeft) || 0;
+    // Right-aligned chat mirrors the same indent from the right edge.
+    const side = S.appearance.align === 'right' ? 'margin-right' : 'margin-left';
+    el.style.setProperty(side, `${Math.max(0, Math.round(px))}px`);
   }
 
   /** Same id again = an update (gift combo count, like counter): patch in place with a little bump. */
