@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OmniChat</title>
+  <link rel="icon" href="/shared/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/dashboard/dashboard.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <img src="/shared/logo.svg" alt="" width="34" height="34">
+        <div><b>OmniChat</b><small id="version">v—</small></div>
+      </div>
+      <nav id="nav" aria-label="Sections"></nav>
+      <div class="side-foot">
+        <div class="live-sum" id="liveSum"><span class="dot"></span><span>Starting…</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <h1 id="pageTitle">Connections</h1>
+        <div class="top-actions">
+          <button class="btn ghost" id="btnTest" title="Send a few sample messages to the overlay"></button>
+          <button class="btn primary" id="btnCopy" title="Copy the overlay URL for OBS"></button>
+        </div>
+      </header>
+      <div class="content" id="content"></div>
+    </main>
+
+    <aside class="preview" id="previewPane">
+      <div class="preview-head">
+        <b>Live preview</b>
+        <div class="seg" id="bgSeg" role="group" aria-label="Preview background">
+          <button data-bg="game" class="on">Game</button><button data-bg="dark">Dark</button><button data-bg="light">Light</button>
+        </div>
+      </div>
+      <div class="stage bg-game" id="stage">
+        <iframe id="previewFrame" src="/overlay?preview=1" title="Overlay preview"></iframe>
+      </div>
+      <div class="preview-foot">
+        <button class="btn ghost sm" data-test="random">Message</button>
+        <button class="btn ghost sm" data-test="gift">TikTok gift</button>
+        <button class="btn ghost sm" data-test="superchat">Super Chat</button>
+        <button class="btn ghost sm" data-test="burst">All events</button>
+      </div>
+    </aside>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/shared/icons.js"></script>
+  <script src="/shared/glyphs.js"></script>
+  <script src="/dashboard/dashboard.js"></script>
+</body>
+</html>
