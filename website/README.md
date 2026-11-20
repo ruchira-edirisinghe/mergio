@@ -2,7 +2,7 @@
 
 The landing page for [Mergio](https://github.com/ruchira-edirisinghe/mergio), built with React, TypeScript, Vite, Tailwind CSS and lucide-react.
 
-Every demo on the page (the stream scene, chat overlay, alerts, gift pictures, control panel and OBS dock) is drawn in code; there are no videos or screenshots. Download buttons go to the latest GitHub release.
+The chat overlay, alerts, control panel and OBS demos on the page are drawn in code and animate live. The backgrounds are real stream footage. Download buttons go to the latest GitHub release.
 
 ## Develop
 
@@ -21,4 +21,21 @@ npm run preview  # serves the build locally
 
 ## Deploy on Vercel
 
-Import the repository and set the **Production Branch** to `website`. The `vercel.json` at the repository root tells Vercel to install and build from this folder, so no other settings are needed.
+1. In Vercel, choose **Add New → Project** and import this repository.
+2. Leave **Root Directory** empty and keep the default settings. The `vercel.json` at the repository root installs and builds this folder.
+3. Deploy. Vercel publishes the `main` branch, and every pull request gets a preview link.
+
+Commits that don't touch `website/` or `vercel.json` skip the deploy (`ignoreCommand` in `vercel.json`).
+
+## Media credits
+
+All media is free to use commercially, with no attribution required. Credit is given anyway.
+
+| File | Source | License |
+| --- | --- | --- |
+| `public/video/live-streamer*` | [Pexels 7914841](https://www.pexels.com/video/7914841/), [Pexels 7914828](https://www.pexels.com/video/7914828/) | [Pexels License](https://www.pexels.com/license/) |
+| `public/video/night-gamer` | [Pexels 10620281](https://www.pexels.com/video/10620281/) | [Pexels License](https://www.pexels.com/license/) |
+| `public/video/celebrate`, `neon-gamer`, `rgb-desk` | Mixkit clips 51612, 51619, 51616 | [Mixkit Stock Video Free License](https://mixkit.co/license/#videoFree) |
+| `public/faces/*` | Portraits from [Pexels](https://www.pexels.com) | [Pexels License](https://www.pexels.com/license/) |
+
+Platform and app logos come from [Simple Icons](https://simpleicons.org) (CC0). The trademarks belong to their owners.
