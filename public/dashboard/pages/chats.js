@@ -50,7 +50,7 @@
         onclick: () => { picked = p.id; MG.render(); } }, MG.colorIcon(p.id), h('span', { text: p.name }))));
 
     const note = picked === 'facebook' && !st.settings.advanced.facebookAccessToken
-      ? h('div', { class: 'note warn' }, icon('info'), h('span', {}, 'Facebook needs a free Page token before it can read comments. ', h('a', { href: '#settings', onclick: e => { e.preventDefault(); MG.go('settings'); } }, 'Add it in Settings'), '.'))
+      ? h('div', { class: 'note warn' }, icon('info'), h('span', {}, 'Facebook needs a free Page token before it can read comments. ', h('a', { href: '#', onclick: e => { e.preventDefault(); MG.openFbGuide(); } }, 'Show me how to get one'), ' (about 5 minutes).'))
       : picked === 'youtube' ? h('div', { class: 'note' }, icon('info'), h('span', { text: 'Tip: use your channel link (youtube.com/@you). Mergio then finds your stream by itself every time you go live.' }))
       : picked === 'tiktok' ? h('div', { class: 'note' }, icon('info'), h('span', { text: 'TikTok connects while you are LIVE. Add it now and it connects as soon as you start.' }))
       : picked === 'facebook' ? h('div', { class: 'note' }, icon('info'), h('span', { text: 'Tip: add your Page (facebook.com/yourpage) once. Mergio then finds your live video by itself every time you go live.' }))
