@@ -184,11 +184,11 @@ The **live preview** on the right updates instantly; use **Game / Dark / Light**
 
 | Section | What you can change |
 |---|---|
-| **Quick settings** | Text size and colour, profile pictures, platform icons, box behind each message (turn it off for plain text), alignment, disappearing messages and timer, newest at top or bottom |
+| **Quick settings** | Text size and colour, profile pictures, platform icons, box behind each message (turn it off for plain text), alignment, layout (name and message on one line, or the name on top with messages below), grouping (several messages in a row from one person go in their own boxes under the picture, or together in one box with one message per line), disappearing messages and timer, newest at top or bottom |
 | **What to show** | Badges, usernames, message text, pronouns, timestamps (12/24h) |
 | **Text & colours** | Font, thickness, spacing, username colours, text shadow |
 | **Message box & background** | Box colour, see-through, roundness, platform colour strip, overlay background |
-| **Motion & layout** | Animation, most messages on screen, emote size, big emotes, one-line layout, grouping |
+| **Motion & layout** | Animation, most messages on screen, emote size, big emotes |
 | **Alert look** | Alerts in the chat as calm lines with the gift picture or as big highlighted cards, follower alerts as alerts or small notes, how long "joined" notes stay |
 | **Filters** | `!command` filter, picture links, ignored bots, blocked words |
 | **Mentions & extras** | Highlight messages that mention you, extra names, UwU mode |
@@ -280,7 +280,7 @@ Add any Style option to the overlay link to override it for that browser source 
 http://localhost:8787/overlay?fontSize=28&theme=neon&align=right&maxMessages=12
 ```
 
-Useful options: `theme` (glass, neon, minimal, soft, retro), `fontSize`, `font`, `align` (left/right), `scrollDirection` (normal/reversed), `fadeMessages` (true/false) with `hideAfter` (seconds), `maxMessages`, `showAvatar`, `showPlatform`, `useChatBubbles`, `inlineChat`, `animation` (slide, pop, fade, none).
+Useful options: `theme` (glass, neon, minimal, soft, retro), `fontSize`, `font`, `align` (left/right), `scrollDirection` (normal/reversed), `fadeMessages` (true/false) with `hideAfter` (seconds), `maxMessages`, `showAvatar`, `showPlatform`, `useChatBubbles`, `inlineChat`, `groupStyle` (tuck, merge), `animation` (slide, pop, fade, none).
 
 The alerts overlay works the same way: `http://localhost:8787/alerts?size=1.3&position=top&duration=8` (`size`, `position` top/center/bottom, `duration` in seconds, `animation` pop/slide/fade, `showAvatar`, `showMessage`).
 
