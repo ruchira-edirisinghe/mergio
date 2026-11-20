@@ -50,18 +50,19 @@ export function Hero() {
             </div>
             <p className="word-in mt-4 text-sm text-white/45" style={{ '--d': '950ms' } as CSSProperties}>Windows · macOS · Linux</p>
 
-            <div className="mt-12 lg:mt-auto w-full max-w-md overflow-hidden marquee-mask" aria-label="Works with YouTube, Twitch, Kick, TikTok and Facebook">
-              <div className="marquee-track">
-                {[0, 1].map(copy => (
-                  <div key={copy} className="flex shrink-0" aria-hidden={copy === 1}>
-                    {PLATFORMS.map(p => (
-                      <span key={p.id} className="mx-6 inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-white/60 text-[15px] font-semibold tracking-tight">
-                        <PlatformIcon id={p.id} className="h-5 w-5" />{p.name}
-                      </span>
-                    ))}
-                  </div>
+            <div className="mt-10 lg:mt-auto lg:pt-10 w-full">
+              <p className="word-in mb-3.5 text-xs font-semibold uppercase tracking-[.18em] text-white/50" style={{ '--d': '1000ms' } as CSSProperties}>Works with</p>
+              <ul className="flex flex-wrap gap-2.5 sm:gap-3" aria-label="Works with YouTube, Twitch, Kick, TikTok and Facebook">
+                {PLATFORMS.map((p, i) => (
+                  <li key={p.id} className="word-in inline-flex items-center gap-2.5 rounded-2xl bg-white/[.06] py-2 pl-2 pr-4 ring-1 ring-white/10 backdrop-blur-sm transition-colors duration-200 hover:bg-white/[.11]"
+                    style={{ '--d': `${1080 + i * 80}ms` } as CSSProperties}>
+                    <span className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-xl" style={{ background: `${p.color}24`, boxShadow: `inset 0 0 0 1px ${p.color}55` }}>
+                      <PlatformIcon id={p.id} colored className="h-5 w-5 sm:h-[22px] sm:w-[22px]" />
+                    </span>
+                    <span className="text-base sm:text-[17px] font-semibold tracking-tight text-white">{p.name}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           </div>
 
