@@ -5,6 +5,7 @@ const path = require('node:path');
 const settings = require('./settings');
 const { Manager } = require('./manager');
 const { createServer } = require('./server');
+const updater = require('./updater');
 const { log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
 
@@ -61,6 +62,7 @@ server.on('error', e => {
 server.listen(port, '127.0.0.1', () => {
   log('app', `Mergio ${pkg.version} running. Dashboard: ${dashboard}  Overlay: http://localhost:${port}/overlay  Data: ${DATA_DIR}`);
   manager.startAll();
+  updater.start();
   if (shouldOpen) openDashboard(dashboard);
 });
 
