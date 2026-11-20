@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { AppWindow, Filter, Gift, Layers, Lock, MessageSquare, Palette, Radar, ShieldCheck, Smile, Timer, Zap, Plus, type LucideIcon } from 'lucide-react';
+import { AppWindow, Filter, Gift, Info, Layers, Lock, MessageSquare, Palette, Radar, ShieldCheck, Smile, Sparkles, Timer, Volume2, Zap, Plus, type LucideIcon } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { Eyebrow } from '../components/ui';
 import { readme } from '../lib/links';
 
 const ROW_A: [LucideIcon, string][] = [
-  [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'], [Palette, 'Any Google Font'],
-  [Timer, 'Fading messages'], [Layers, 'A look per scene'],
+  [Sparkles, 'Six alert styles'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'], [Palette, 'Any Google Font'],
+  [Timer, 'Fading messages'], [Layers, 'A look per scene'], [Volume2, 'Alert chime'],
 ];
 const ROW_B: [LucideIcon, string][] = [
-  [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'], [MessageSquare, 'Chat dock for OBS'],
-  [AppWindow, 'Installs as an app'], [Lock, 'Private, no cloud'],
+  [MessageSquare, 'Name-on-top layout'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
+  [Info, 'Plain-words tips'], [AppWindow, 'Installs as an app'], [Lock, 'Private, no cloud'],
 ];
 
 function ChipRow({ items, reverse }: { items: [LucideIcon, string][]; reverse?: boolean }) {
