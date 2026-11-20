@@ -1,7 +1,9 @@
 name: Release
 
 # Push a tag like v1.1.0 to build the Mergio installers for Windows, macOS and Linux and publish a GitHub release.
-# Run it by hand (workflow_dispatch) to get the installers as workflow artifacts without publishing.
+# Windows and Linux are published as soon as they're built. GitHub is sometimes short of Mac machines, so the
+# macOS disk image is built afterwards by mac.yml (which retries by itself) and added to the same release.
+# Run it by hand (workflow_dispatch) to get all the installers as workflow artifacts without publishing.
 on:
   push:
     tags: ['v*']
@@ -9,13 +11,15 @@ on:
 
 permissions:
   contents: write
+  actions: write # lets the macOS build start itself again when no Mac machine was free
 
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        # A release builds macOS separately (see the mac job); a run by hand builds all three here.
+        os: ${{ fromJSON(startsWith(github.ref, 'refs/tags/') && '["windows-latest", "ubuntu-latest"]' || '["windows-latest", "macos-latest", "ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -57,3 +61,20 @@ jobs:
         with:
           files: assets/*
           generate_release_notes: true
+      - name: Say that the macOS download is on its way
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json body -q .body > body.md
+          if ! grep -q 'mac-pending' body.md; then
+            { echo '> **macOS:** the Mac download is still being built and will be added to this release soon. <!-- mac-pending -->'; echo; cat body.md; } > notes.md
+            gh release edit "$TAG" -R "$GITHUB_REPOSITORY" --notes-file notes.md
+          fi
+
+  mac:
+    needs: release
+    uses: ./.github/workflows/mac.yml
+    with:
+      tag: ${{ github.ref_name }}
+    secrets: inherit

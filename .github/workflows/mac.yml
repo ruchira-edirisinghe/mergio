@@ -1,0 +1,79 @@
+name: macOS build
+
+# Builds the macOS disk image for a release that is already published and adds it to that release.
+# GitHub sometimes has no Mac machine free and cancels the job, so this workflow starts itself again
+# (up to 3 attempts in all) instead of holding back the Windows and Linux downloads.
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+      attempt:
+        type: number
+        default: 1
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build for (for example v1.4.2)
+        type: string
+        required: true
+      attempt:
+        description: Which attempt this is (it stops after 3)
+        type: number
+        default: 1
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  MAX_ATTEMPTS: 3
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - run: npm run package
+
+      - name: Add the disk image to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          gh release upload "$TAG" dist/release/* --clobber -R "$GITHUB_REPOSITORY"
+          # Remove the "macOS download is on its way" line the release started with.
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json body -q .body > body.md
+          if grep -q 'mac-pending' body.md; then
+            grep -v 'mac-pending' body.md | sed '/./,$!d' > notes.md
+            gh release edit "$TAG" -R "$GITHUB_REPOSITORY" --notes-file notes.md
+          fi
+
+  retry:
+    needs: build
+    if: always() && needs.build.result != 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Try again
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          ATTEMPT: ${{ inputs.attempt }}
+        run: |
+          if [ "$ATTEMPT" -ge "$MAX_ATTEMPTS" ]; then
+            echo "::error::The macOS build for $TAG did not finish after $ATTEMPT attempts. Run the macOS build workflow again by hand."
+            exit 1
+          fi
+          echo "Attempt $ATTEMPT did not finish (${{ needs.build.result }}). Starting attempt $((ATTEMPT + 1))."
+          gh workflow run mac.yml -R "$GITHUB_REPOSITORY" --ref "${{ github.event.repository.default_branch || 'main' }}" -f tag="$TAG" -f attempt="$((ATTEMPT + 1))"
