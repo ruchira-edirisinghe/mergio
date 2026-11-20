@@ -5,19 +5,35 @@ const { execFile } = require('node:child_process');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
-/* ---------- data directory (portable: next to the app when writable) ---------- */
+/* ---------- data directory ----------
+ * Portable by default: data/ next to the app, so a copied folder keeps its setup.
+ * Falls back to the user's settings folder when the app folder is read-only
+ * (Program Files, /opt, /usr) and always inside a macOS .app bundle. */
+function userConfigHome() {
+  const os = require('node:os');
+  if (process.platform === 'win32') return process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming');
+  if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support');
+  return process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config');
+}
+
+function writable(dir) {
+  fs.mkdirSync(dir, { recursive: true });
+  const probe = path.join(dir, `.write-test-${process.pid}`);
+  fs.writeFileSync(probe, '');
+  fs.rmSync(probe, { force: true });
+}
+
 function resolveDataDir() {
   const candidates = [];
   if (process.env.ZUNOCHAT_DATA) candidates.push(process.env.ZUNOCHAT_DATA);
   const exeDir = isSea() ? path.dirname(process.execPath) : path.resolve(__dirname, '..');
-  candidates.push(path.join(exeDir, 'data'));
-  const home = process.env.APPDATA || process.env.XDG_CONFIG_HOME || path.join(require('node:os').homedir(), '.config');
+  if (!/\.app[\\/]Contents[\\/]/.test(exeDir)) candidates.push(path.join(exeDir, 'data'));
+  const home = userConfigHome();
   candidates.push(path.join(home, 'ZUNO-CHAT'));
   for (const dir of candidates) {
     try {
-      fs.mkdirSync(dir, { recursive: true });
-      fs.accessSync(dir, fs.constants.W_OK);
-      migrateLegacy(dir, path.join(home, 'OmniChat'));
+      writable(dir);
+      migrateLegacy(dir, [path.join(home, 'OmniChat'), path.join(require('node:os').homedir(), '.config', 'OmniChat')]);
       return dir;
     } catch { /* try next */ }
   }
@@ -25,10 +41,14 @@ function resolveDataDir() {
 }
 
 /** Settings from versions released under the old name (OmniChat) are carried over once. */
-function migrateLegacy(dir, legacyDir) {
-  const from = path.join(legacyDir, 'config.json'), to = path.join(dir, 'config.json');
-  if (dir === legacyDir || fs.existsSync(to) || !fs.existsSync(from)) return;
-  try { fs.copyFileSync(from, to); } catch { /* start fresh */ }
+function migrateLegacy(dir, legacyDirs) {
+  const to = path.join(dir, 'config.json');
+  if (fs.existsSync(to)) return;
+  for (const legacy of legacyDirs) {
+    const from = path.join(legacy, 'config.json');
+    if (legacy === dir || !fs.existsSync(from)) continue;
+    try { fs.copyFileSync(from, to); return; } catch { /* start fresh */ }
+  }
 }
 
 function isSea() {
