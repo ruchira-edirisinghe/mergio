@@ -27,6 +27,11 @@
         h('li', {}, h('b', { text: 'Place it on your scene' }),
           h('span', { text: 'Drag and resize the chat like any other source. Press "Send test" at the top to see it in action.' })))));
 
+    if (st.settings.alerts.placement !== 'chat') c.append(MG.alertsSetup());
+    else c.append(h('details', { class: 'card fold' }, h('summary', {}, h('b', { text: 'Want alerts on their own overlay?' }), h('span', { text: 'Place subs and gifts anywhere on your scene' })),
+      h('p', { class: 'sub', text: 'Mergio can show alerts as a separate browser source instead of inside the chat.' }),
+      h('button', { class: 'btn', onclick: () => MG.go('alerts') }, icon('bell'), 'Choose on the Alerts page')));
+
     c.append(h('section', { class: 'card' }, h('h2', { text: 'Control Mergio from inside OBS (optional)' }),
       h('p', { class: 'sub', text: 'Put this control panel in an OBS dock to read every chat and change settings without leaving OBS.' }),
       h('ol', { class: 'big-steps compact' },

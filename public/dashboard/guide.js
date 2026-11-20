@@ -23,7 +23,7 @@
       title: '2. Make it yours',
       text: 'On the Style page, pick a ready-made look and adjust the text size, colours and more. The preview on the right updates as you go.',
       art: () => h('div', { class: 'ga-chat' }, mockMsg('twitch', 'PixelPanda', 'this overlay looks clean'), mockMsg('tiktok', 'LunaByte', 'hello from TikTok!'), mockMsg('youtube', 'NovaRider', 'GG that was insane')),
-      points: () => ['Alerts: choose which gifts, subs and follows appear, and press Try to see each one.', 'Send test (top right) shows sample messages at any time.'],
+      points: () => ['Alerts: show them in the chat or on their own overlay that you can place anywhere.', 'Send test (top right) shows sample messages at any time.'],
     },
     {
       title: '3. Add it to OBS',
