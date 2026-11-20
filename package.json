@@ -1,0 +1,51 @@
+{
+  "name": "omnichat",
+  "version": "1.0.0",
+  "description": "One lightweight overlay for every live chat: YouTube, Twitch, Kick, TikTok and Facebook in a single OBS browser source.",
+  "main": "src/main.js",
+  "bin": {
+    "omnichat": "src/main.js"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "node --watch src/main.js --no-open",
+    "icons": "node scripts/gen-icons.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "keywords": [
+    "obs",
+    "overlay",
+    "chat",
+    "multichat",
+    "twitch",
+    "youtube",
+    "kick",
+    "tiktok",
+    "facebook",
+    "streaming",
+    "stream-overlay"
+  ],
+  "author": "Ruchira Edirisinghe",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruchira-edirisinghe/omnichat.git"
+  },
+  "homepage": "https://github.com/ruchira-edirisinghe/omnichat#readme",
+  "bugs": {
+    "url": "https://github.com/ruchira-edirisinghe/omnichat/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "tiktok-live-connector": "^2.5.0",
+    "ws": "^8.23.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "postject": "^1.0.0-alpha.6",
+    "rcedit": "^5.0.2",
+    "simple-icons": "^16.38.0"
+  }
+}
