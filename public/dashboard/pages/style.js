@@ -21,7 +21,8 @@
     [A, { key: 'showPlatform', label: 'Platform icons', hint: 'Shows where each message came from', type: 'toggle' }],
     [A, { key: 'useChatBubbles', label: 'Bubbles behind messages', type: 'toggle' }],
     [A, { key: 'align', label: 'Line up messages on the', type: 'select', options: [['left', 'Left'], ['right', 'Right']] }],
-    [G, { key: 'hideAfter', label: 'Hide messages after', hint: '0 = keep them on screen', type: 'range', min: 0, max: 120, unit: 's', keywords: 'fade disappear timeout' }],
+    [G, { key: 'fadeMessages', label: 'Messages disappear after a while', hint: 'Only the newest messages stay on screen', type: 'toggle', keywords: 'fade disappear hide timeout timer' }],
+    [G, { key: 'hideAfter', label: 'Disappear after', hint: 'Alerts stay twice as long', type: 'range', min: 5, max: 300, step: 5, unit: 's', keywords: 'fade disappear hide timeout timer', when: s => s.general.fadeMessages }],
     [G, { key: 'scrollDirection', label: 'New messages appear at the', type: 'select', options: [['normal', 'Bottom'], ['reversed', 'Top']], keywords: 'direction order' }],
   ];
   const GROUPS = [
