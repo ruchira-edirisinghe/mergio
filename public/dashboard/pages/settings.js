@@ -21,13 +21,13 @@
     }
     if (MG.install) app.push(MG.install.row());
     c.append(MG.card('Mergio app', null, h('div', { class: 'fields one' }, ...app.filter(Boolean),
-      MG.field('advanced', { key: 'port', label: 'Port', hint: 'Only change this if another app uses 8787. Restart Mergio afterwards and update the link in OBS.', type: 'number', min: 1024, max: 65535 }))));
+      MG.field('advanced', { key: 'port', label: 'Port', hint: 'Leave it at 8787 unless another app uses it', help: 'The number at the end of your overlay link (localhost:8787). If you change it, restart Mergio and paste the new link into OBS.', type: 'number', min: 1024, max: 65535 }))));
 
     // ----- accounts -----
     c.append(MG.card('Accounts & keys', 'Only needed for some platforms. Saved on this computer only.',
       h('div', { class: 'fields one' },
-        MG.field('advanced', { key: 'facebookAccessToken', label: 'Facebook Page token', hint: 'Needed to read Facebook comments. See Help → Facebook for the 2-minute setup.', type: 'secret', wide: true, placeholder: 'Paste your token here' }),
-        MG.field('advanced', { key: 'tiktokSignApiKey', label: 'Euler Stream key for TikTok (optional)', hint: 'TikTok works without it. A free key from eulerstream.com removes connection limits.', type: 'secret', wide: true, placeholder: 'Optional' }))));
+        MG.field('advanced', { key: 'facebookAccessToken', label: 'Facebook Page token', hint: 'Needed for Facebook comments', help: 'Facebook only lets apps read Live comments with a free token from your Page. Help → Facebook walks you through it in about 2 minutes.', type: 'secret', placeholder: 'Paste your token here' }),
+        MG.field('advanced', { key: 'tiktokSignApiKey', label: 'TikTok key (optional)', hint: 'TikTok works without it', help: 'A free key from eulerstream.com. TikTok limits how often apps can connect; with a key Mergio skips that limit.', type: 'secret', placeholder: 'Optional' }))));
 
     // ----- backup -----
     const file = h('input', { type: 'file', accept: '.json,application/json', hidden: true, onchange: async e => {
