@@ -50,7 +50,7 @@ export function Info() {
           <Card tone="light" wide delay={200} title="Alerts where you want them" body="In the chat, on their own overlay, or both.">
             {a => <Placement active={a} />}
           </Card>
-          <Card tone="plum" title={'Calm and\ntidy chat.'} body="Old messages fade, so only the newest stay.">
+          <Card tone="plum" title={'Calm and\ntidy chat.'} body="One person's messages share a box, and old ones fade.">
             {a => <TidyChat active={a} />}
           </Card>
         </div>
