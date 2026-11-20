@@ -355,6 +355,8 @@
   }
 
   /* ---------------- placement ---------------- */
+  const hideAfter = () => (S.general.fadeMessages ? Math.max(1, S.general.hideAfter) : 0);
+
   function insert(el) {
     if (S.general.scrollDirection === 'reversed') chat.prepend(el); else chat.appendChild(el);
     const max = Math.max(5, S.appearance.maxMessages | 0);
@@ -404,8 +406,8 @@
     insert(el);
     els.set(m.id, el);
     lastChat = m.type === 'chat' ? { key, time: m.time, el } : null;
-    const hideAfter = S.general.hideAfter;
-    if (hideAfter > 0) scheduleHide(el, m.event && m.type !== 'chat' ? hideAfter * 2 : hideAfter);
+    const secs = hideAfter();
+    if (secs) scheduleHide(el, m.event && m.type !== 'chat' ? secs * 2 : secs);
   }
 
   /** Same id again = an update (gift combo count, like counter): patch in place with a little bump. */
@@ -417,14 +419,14 @@
     }
     const card = el.querySelector('.card');
     if (card) card.classList.toggle('live-combo', !!m.event?.live);
-    if (S.general.hideAfter > 0) scheduleHide(el, S.general.hideAfter * 2);
+    if (hideAfter()) scheduleHide(el, hideAfter() * 2);
   }
 
   function rerender() {
     chat.textContent = ''; els.clear(); lastChat = null; joinPill = null;
     const now = Date.now();
     const max = Math.max(5, S.appearance.maxMessages | 0);
-    const keep = history.filter(m => m.type !== 'join' && (!S.general.hideAfter || now - m.time < S.general.hideAfter * 1000));
+    const keep = history.filter(m => m.type !== 'join' && (!hideAfter() || now - m.time < hideAfter() * 1000));
     for (const m of keep.slice(-max)) show(m, false);
   }
 

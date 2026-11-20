@@ -42,7 +42,8 @@ const DEFAULTS = {
     followStyle: 'card',        // card | pill
   },
   general: {
-    hideAfter: 0,
+    fadeMessages: false,        // messages disappear after hideAfter seconds
+    hideAfter: 30,
     excludeCommands: true,
     ignoreChatters: 'StreamElements,Streamlabs,Nightbot,Fossabot,Moobot,Sery_Bot,BotRixOficial',
     blockedWords: '',
@@ -77,11 +78,22 @@ function merge(base, over) {
   return typeof base === 'string' ? String(over) : over;
 }
 
+/** Brings configs from older versions up to date. */
+function migrate(raw) {
+  const g = raw?.general;
+  // Before 1.2, "hide after 0 seconds" meant "never hide"; now there is a separate switch.
+  if (g && !('fadeMessages' in g)) {
+    g.fadeMessages = Number(g.hideAfter) > 0;
+    if (!g.fadeMessages) delete g.hideAfter;
+  }
+  return raw;
+}
+
 let current = load();
 let saveTimer = null;
 
 function load() {
-  try { return merge(DEFAULTS, JSON.parse(fs.readFileSync(FILE, 'utf8'))); }
+  try { return merge(DEFAULTS, migrate(JSON.parse(fs.readFileSync(FILE, 'utf8')))); }
   catch (e) { if (e.code !== 'ENOENT') log('settings', 'could not read config, using defaults:', e.message); return structuredClone(DEFAULTS); }
 }
 

@@ -39,7 +39,7 @@
     c.append(h('details', { class: 'card fold' }, h('summary', {}, h('b', { text: 'Different look for one scene' }), h('span', { text: 'Bigger text in "Just Chatting", for example' })),
       h('p', { class: 'sub', text: 'Add options to the end of the link. They only change that one browser source:' }),
       h('div', { class: 'urlbox' }, h('code', { text: scene }), h('button', { class: 'btn sm', onclick: () => MG.copy(scene) }, icon('copy'), 'Copy')),
-      h('p', { class: 'hint', text: 'Works with fontSize, theme (glass, neon, minimal, soft, retro), align, maxMessages, hideAfter, scrollDirection, showAvatar and more.' })));
+      h('p', { class: 'hint', text: 'Works with fontSize, theme (glass, neon, minimal, soft, retro), align, maxMessages, fadeMessages, hideAfter, scrollDirection, showAvatar and more.' })));
 
     c.append(h('details', { class: 'card fold' }, h('summary', {}, h('b', { text: 'Using Streamlabs, Meld, vMix or TikTok LIVE Studio?' }), h('span', { text: 'Same link, slightly different menus' })),
       h('p', { class: 'sub', text: 'Add a "Browser source" (Streamlabs, Meld), "Web Browser" input (vMix) or "Link" source (TikTok LIVE Studio) and paste the same overlay link.' })));
