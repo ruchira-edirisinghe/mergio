@@ -388,7 +388,7 @@ npm run package      # -> installers for this OS in dist/release
 
 `npm run build` bundles the code with esbuild and packs it, together with the web files, into a single executable using Node's built-in [Single Executable Applications](https://nodejs.org/api/single-executable-applications.html) feature. On Windows it also sets the icon and makes it a windowless app.
 
-`npm run package` makes the installers for the system you run it on: the Windows installer needs [Inno Setup 6](https://jrsoftware.org/isinfo.php); the macOS disk image and Linux packages use the tools that come with those systems. Pushing a tag like `v1.2.0` builds everything for all three systems with GitHub Actions and publishes a release.
+`npm run package` makes the installers for the system you run it on: the Windows installer needs [Inno Setup 6](https://jrsoftware.org/isinfo.php); the macOS disk image and Linux packages use the tools that come with those systems. Pushing a tag like `v1.2.0` builds everything for all three systems with GitHub Actions and publishes a release. Windows and Linux are published as soon as they're built; the macOS disk image is built right after and added to the same release. If GitHub has no Mac machine free, that build starts itself again (up to 3 attempts), and you can always run the **macOS build** workflow by hand with the release tag.
 
 ## How it works
 
