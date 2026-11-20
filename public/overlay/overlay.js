@@ -420,9 +420,11 @@
       return;
     }
 
-    const el = build(m);
     const key = `${m.platform}:${m.user.id}`;
     const grouped = m.type === 'chat' && S.general.groupConsecutiveMessages && lastChat && lastChat.key === key && m.time - lastChat.time < 90000 && lastChat.el.isConnected && !m.flags?.reply;
+    if (grouped && S.general.groupStyle === 'merge' && S.appearance.showMessage) return mergeInto(lastChat.first, m, key, animate);
+
+    const el = build(m);
     if (grouped) el.classList.add('grouped');
     if (animate && S.appearance.animation !== 'none') el.classList.add(`enter-${S.appearance.animation}`);
     insert(el);
@@ -431,6 +433,28 @@
     lastChat = m.type === 'chat' ? { key, time: m.time, el, first: grouped ? lastChat.first : el } : null;
     const secs = hideAfter();
     if (secs) scheduleHide(el, m.event && m.type !== 'chat' ? secs * 2 : secs);
+  }
+
+  /** Follow-up messages from the same person, "same box" style: the message becomes another line in
+      the first message's box, with only the line spacing between them. */
+  const MAX_LINES = 8;
+  function mergeInto(group, m, key, animate) {
+    const bubble = group.querySelector('.bubble');
+    const line = body(m);
+    line.classList.add('more');
+    line.dataset.id = m.id;
+    line.dataset.user = `${m.sourceId}:${m.user.id}`;
+    if (S.appearance.bigEmotes && isEmoteOnly(m)) line.classList.add('emote-only');
+    if (hasMention(m)) line.classList.add('mention');
+    if (animate && S.appearance.animation !== 'none') line.classList.add('line-in');
+    bubble.appendChild(line);
+    els.set(m.id, line);
+    // A long run from one person keeps only the newest lines in the box.
+    const lines = bubble.querySelectorAll(':scope > .body');
+    for (let i = 0; i < lines.length - MAX_LINES; i++) { els.delete(lines[i].dataset.id); lines[i].remove(); }
+    lastChat = { key, time: m.time, el: group, first: group };
+    const secs = hideAfter();
+    if (secs) scheduleHide(group, secs);
   }
 
   /** Follow-up messages from the same person: a bubble of their own, tucked in under the profile picture
@@ -480,6 +504,10 @@
       const hit = d.all ? el.dataset.source === d.sourceId
         : d.ids ? d.ids.includes(el.dataset.id)
         : d.userId ? el.dataset.user === `${d.sourceId}:${d.userId}` : false;
+      const merged = el.querySelectorAll('.bubble > .body.more');
+      if (d.ids) for (const line of merged) if (d.ids.includes(line.dataset.id)) removeEl(line);
+      // Deleting the first message of a "same box" group only takes out its own line.
+      if (hit && d.ids && merged.length) { el.querySelector('.bubble > .body:not(.more)')?.remove(); continue; }
       if (hit) removeEl(el);
     }
   }

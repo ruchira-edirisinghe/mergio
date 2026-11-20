@@ -49,6 +49,7 @@ const DEFAULTS = {
     blockedWords: '',
     scrollDirection: 'normal',  // normal (newest at bottom) | reversed (newest on top)
     groupConsecutiveMessages: true,
+    groupStyle: 'tuck',         // tuck (own box under the picture) | merge (same box, one message per line)
     inlineChat: true,
     highlightMentions: true,
     mentionNames: '',
