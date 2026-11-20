@@ -326,15 +326,17 @@ Uses the open-source [TikTok-Live-Connector](https://github.com/zerodytrash/TikT
 TikTok connections are signed by the free [Euler Stream](https://www.eulerstream.com) service. If you ever see a rate-limit message, create a free key there and paste it into **Settings → Accounts & keys → Euler Stream key for TikTok**.
 
 ### Facebook
-Facebook only shares live comments with apps that have a **Page access token**. It's free:
+Facebook only shares live comments with apps that have a **Page access token**. It's free and takes about 5 minutes, once. The same steps are in Mergio under **Settings → Accounts & keys**. Use the Facebook account that manages your Page.
 
-1. Open the [Graph API Explorer](https://developers.facebook.com/tools/explorer/) and log in with the account that manages your Page.
-2. On the right, under **User or Page**, pick **Get Page Access Token** and choose your Page.
-3. Add the permissions `pages_read_engagement` and `pages_show_list`, then click **Generate Access Token**.
-4. Copy the token into **Mergio → Settings → Accounts & keys → Facebook Page token**.
-5. On the Chats page, pick **Facebook** and type your Page name (or paste `facebook.com/yourpage`). Do this once: Mergio checks every 30 seconds whether your Page is live, connects to the live video's comments, and waits again when the stream ends. (You can still paste a single live video link instead.)
+1. **Create a free app.** Open [Meta for Developers](https://developers.facebook.com/apps/creation/) and log in (register as a developer first if it asks). Name the app `Mergio`, pick the use case **Content management → Manage everything on your Page**, choose **I don't want to connect a business portfolio yet**, then **Create app**.
+2. **Turn on the permissions.** In the app open **Use cases → Manage everything on your Page → Customize** and click **Add** next to `pages_read_engagement`, `pages_read_user_content`, **Live Video API** and **Business Asset User Profile Access** (this one shows viewers' names and pictures).
+3. **Generate a token.** Open the [Graph API Explorer](https://developers.facebook.com/tools/explorer/), set **Meta App** to Mergio and add the permissions `pages_show_list`, `pages_read_engagement` and `pages_read_user_content`. Click **Generate Access Token**; in the popup click **Continue**, choose **Opt in to current Pages only**, tick your Page, then **Continue** and **Save**. (If Facebook asks you to switch accounts, click Continue: the token comes from your own profile, not the Page profile.)
+4. **Make it last.** Paste that token into the [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/), click **Debug**, then **Extend Access Token** at the bottom, and copy the long-lived token it shows.
+5. **Get the Page token.** Back in the Graph API Explorer, paste the long-lived token into the **Access Token** box, type `yourpage?fields=access_token` in the query bar (your Page name or ID) and click **Submit**. Copy the `access_token` value.
+6. **Paste it into Mergio** under **Settings → Accounts & keys → Facebook Page token**. Mergio reconnects by itself.
+7. On the Chats page, pick **Facebook** and type your Page name (or paste `facebook.com/yourpage`). Do this once: Mergio checks every 30 seconds whether your Page is live, connects to the live video's comments, and waits again when the stream ends. (You can still paste a single live video link instead.)
 
-Tokens from the Explorer expire after about an hour. For one that lasts: open the [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/), paste the token, click **Extend Access Token**, then use that long-lived *user* token in the Explorer again to get a Page token. Page tokens made from a long-lived user token don't expire.
+A Page token made this way doesn't expire (the Access Token Debugger shows **Expires: Never**). If Facebook ever asks you to log in again, roughly every 3 months, repeat steps 3 to 6.
 
 ## Build it yourself
 
