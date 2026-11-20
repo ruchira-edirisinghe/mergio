@@ -62,15 +62,15 @@
 
   /* ---------- alert styles, each with a little looping preview ---------- */
   const STYLES = [
-    ['spotlight', 'Spotlight', 'Big picture, light rays and confetti'],
-    ['banner', 'Banner', 'A ribbon that sweeps across'],
-    ['neon', 'Neon', 'A glowing sign with a moving edge'],
-    ['bubble', 'Bubbly', 'Soft, bouncy and cute'],
-    ['card', 'Card', 'The classic card'],
-    ['toast', 'Minimal', 'A small, quiet pill'],
+    ['spotlight', 'Spotlight', 'The picture big, with the name rising in'],
+    ['banner', 'Banner', 'A TV-style lower third that wipes in'],
+    ['neon', 'Neon', 'A glowing sign that lights up'],
+    ['bubble', 'Bubbly', 'A bright sticker that slaps on'],
+    ['card', 'Card', 'Frosted glass that tilts into place'],
+    ['toast', 'Minimal', 'A small black pill that grows open'],
   ];
   const mini = id => h('div', { class: `ast ast-${id}`, 'aria-hidden': 'true' },
-    h('i', { class: 'a1' }), h('i', { class: 'a2' }), h('i', { class: 'a3' }), h('b'), h('b'), h('b'), h('b'), h('b'), h('b'));
+    h('i', { class: 'a1' }), h('i', { class: 'a2' }), h('i', { class: 'a3' }));
   function stylePicker() {
     const cur = MG.st.settings.alerts.style;
     const grid = h('div', { class: 'astyles', role: 'radiogroup', 'aria-label': 'Alert style' });
@@ -123,7 +123,7 @@
         MG.field(A, { key: 'duration', label: 'Each alert stays for', type: 'range', min: 2, max: 20, unit: 's', keywords: 'time seconds' }),
         MG.field(A, { key: 'size', label: 'Size', type: 'range', min: 0.6, max: 2, step: 0.1, unit: '×', keywords: 'scale bigger smaller' }),
         MG.field(A, { key: 'position', label: 'Where in its box', hint: 'Within the browser source', type: 'select', options: [['top', 'Top'], ['center', 'Middle'], ['bottom', 'Bottom']] }),
-        MG.field(A, { key: 'animation', label: 'How alerts appear', hint: 'The other styles have their own entrance', type: 'select', options: [['pop', 'Pop'], ['slide', 'Slide up'], ['fade', 'Fade in']], when: s => ['card', 'toast'].includes(s.alerts.style) }),
+        MG.field(A, { key: 'animation', label: 'How alerts appear', hint: 'The other styles have their own entrance', type: 'select', options: [['pop', 'Tilt up'], ['slide', 'Slide up'], ['fade', 'Fade in']], when: s => s.alerts.style === 'card' }),
         MG.field(A, { key: 'showAvatar', label: 'Profile picture', type: 'toggle' }),
         MG.field(A, { key: 'showMessage', label: 'Their message', hint: 'Super Chats, resubs and more', type: 'toggle' }),
         MG.field(A, { key: 'sound', label: 'Play a chime', hint: 'A short sound with each alert, made by Mergio', type: 'toggle', keywords: 'sound audio chime volume' }),

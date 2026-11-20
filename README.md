@@ -52,7 +52,7 @@ Multistreaming means your viewers chat in five different places. Mergio reads al
   - **In the chat** as a calm line with the gift picture, so they don't take over your chat
   - **On their own overlay**: a separate browser source you can put anywhere on your scene, showing one big animated alert at a time (**NEW SUBSCRIBER · on Twitch**, **GIFT · on TikTok**…)
   - **Or both**
-- ✨ **Six alert styles:** Spotlight (light rays and confetti), Banner, Neon, Bubbly, Card and Minimal, picked from tiles that play a live preview, with an optional chime.
+- ✨ **Six alert styles:** Spotlight, a TV-style Banner, Neon, a Bubbly sticker, a frosted-glass Card and a Minimal pill, each with its own entrance, picked from tiles that play a live preview, with an optional chime.
 - 🎉 **Every alert type:**
   - TikTok gifts, follows, subscriptions, joins, likes and shares
   - Twitch Bits with animated cheermotes, subs, gift subs, raids, Hype Chats, announcements, Power-ups and watch streaks
@@ -211,14 +211,14 @@ If you pick an overlay, choose an **alert style**. Each tile plays a little prev
 
 | Style | What it looks like |
 |---|---|
-| **Spotlight** (default) | The picture or gift, big, with spinning light rays, pulsing rings and a confetti shower |
-| **Banner** | A ribbon that sweeps in from the side with a shine running across it |
-| **Neon** | A glowing sign that flickers on, with a light running round its edge |
-| **Bubbly** | A soft, bouncy bubble with floating hearts |
-| **Card** | The classic card with the picture on top |
-| **Minimal** | A small, quiet pill |
+| **Spotlight** (default) | The picture or gift, big and centred, with a light circling it and the name rising into place. No box, so it sits right on your game |
+| **Banner** | A TV-style lower third: a colour block wipes in, the panel unrolls from it and the text slides in |
+| **Neon** | A dark sign whose glowing tube draws itself round the edge before the name switches on |
+| **Bubbly** | A bright, die-cut sticker that slaps onto the scene, then catches the light |
+| **Card** | Frosted glass with a soft glow of the platform's colour, tilting up into place |
+| **Minimal** | A small black pill that grows open from the middle, like a phone's live activity, and shrinks away |
 
-In every style the viewer's name animates in letter by letter, a thin bar shows how long the alert stays, and gift combos count up live. Below the styles you can set how long each alert stays, its size, where it sits in its box, whether it shows the viewer's picture and message, and an optional **chime** (made by Mergio, no sound files needed) with its volume.
+Every style uses the colour of the platform or event, a thin bar shows how long the alert stays, and gift combos count up live. There's no confetti or other clutter, so alerts stay clean on stream. Below the styles you can set how long each alert stays, its size, where it sits in its box, whether it shows the viewer's picture and message, and an optional **chime** (made by Mergio, no sound files needed) with its volume.
 
 <div align="center"><img src="docs/guide/10-alert-styles.png" alt="The six alert styles: Spotlight, Banner, Neon, Bubbly, Card and Minimal" width="820"></div>
 
@@ -299,7 +299,7 @@ http://localhost:8787/overlay?fontSize=28&theme=neon&align=right&maxMessages=12
 
 Useful options: `theme` (glass, neon, minimal, soft, retro), `fontSize`, `font`, `align` (left/right), `scrollDirection` (normal/reversed), `fadeMessages` (true/false) with `hideAfter` (seconds), `maxMessages`, `showAvatar`, `showPlatform`, `useChatBubbles`, `inlineChat`, `groupStyle` (tuck, merge), `animation` (slide, pop, fade, none).
 
-The alerts overlay works the same way: `http://localhost:8787/alerts?size=1.3&position=top&duration=8` (`style` spotlight/banner/neon/bubble/card/toast, `size`, `position` top/center/bottom, `duration` in seconds, `animation` pop/slide/fade for Card and Minimal, `showAvatar`, `showMessage`, `sound`, `volume`).
+The alerts overlay works the same way: `http://localhost:8787/alerts?size=1.3&position=top&duration=8` (`style` spotlight/banner/neon/bubble/card/toast, `size`, `position` top/center/bottom, `duration` in seconds, `animation` pop/slide/fade for Card, `showAvatar`, `showMessage`, `sound`, `volume`).
 
 ## Platform notes
 
