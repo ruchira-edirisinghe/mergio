@@ -205,6 +205,19 @@
     setTimeout(fitPreview, 60);
   }
 
+  /** Settings changed somewhere else (another open control panel, an OBS dock): show them here too.
+      Our own saves come back unchanged, so they never redraw the page while you drag a slider. */
+  function syncSettings(incoming) {
+    if (Object.keys(pending).length) return; // our own change is about to be saved
+    let changed = false;
+    for (const [sec, vals] of Object.entries(incoming || {})) {
+      if (!MG.st.settings[sec] || JSON.stringify(MG.st.settings[sec]) === JSON.stringify(vals)) continue;
+      MG.st.settings[sec] = { ...MG.st.settings[sec], ...vals };
+      changed = true;
+    }
+    if (changed && !document.activeElement?.closest('input, textarea, select')) MG.render();
+  }
+
   /* ---------------- live updates ---------------- */
   function connectWs() {
     const ws = new WebSocket(`ws://${location.host}/ws?client=panel`);
@@ -219,6 +232,7 @@
         emit('msg', { msg: d.msg, updated: i >= 0 });
       }
       if (d.op === 'clear') { MG.feed = []; emit('feed'); }
+      if (d.op === 'settings') syncSettings(d.settings);
       if (d.op === 'overlays') { MG.overlays = { count: d.count, obs: d.obs, alerts: d.alerts || { count: 0, obs: false } }; if (d.count) MG.st.settings.advanced.overlaySeen = true; emit('overlays'); renderNav(); }
     };
     ws.onclose = () => {
