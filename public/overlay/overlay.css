@@ -46,6 +46,8 @@ body.align-right:not(.inline) .head { justify-content: flex-end; }
 body.inline .head > * { vertical-align: middle; margin-right: .28em; }
 .body { display: inline; }
 body:not(.inline) .body { display: block; }
+/* Name on top: the text starts under the badges or name, not under the profile picture (set by alignText). */
+body:not(.inline) .bubble > .body { margin-left: var(--text-x, 0); }
 .msg.grouped .head { display: none; }
 /* "Same box" grouping: follow-up messages are extra lines in the first message's box */
 .bubble > .body.more { display: block; margin-top: calc(.2em + var(--gap) * .6); }
