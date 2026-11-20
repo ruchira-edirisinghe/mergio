@@ -24,7 +24,7 @@ AppPublisher=Ruchira Edirisinghe
 AppPublisherURL={#AppUrl}
 AppSupportURL={#AppUrl}/issues
 AppUpdatesURL={#AppUrl}/releases
-AppCopyright=MIT License
+AppCopyright=Copyright (c) 2026 Ruchira Edirisinghe (MIT License with credit to the creator)
 VersionInfoVersion={#AppVersion}
 VersionInfoDescription={#AppName} installer
 ; Installs for the current user by default (no admin prompt); the first page lets people choose "all users".

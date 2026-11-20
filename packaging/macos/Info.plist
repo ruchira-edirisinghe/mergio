@@ -13,7 +13,7 @@
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
   <key>LSMinimumSystemVersion</key><string>11.0</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.video</string>
-  <key>NSHumanReadableCopyright</key><string>MIT License, Ruchira Edirisinghe</string>
+  <key>NSHumanReadableCopyright</key><string>© 2026 Ruchira Edirisinghe. Created by Ruchira Edirisinghe; MIT License with credit to the creator.</string>
   <key>NSHighResolutionCapable</key><true/>
 </dict>
 </plist>
