@@ -5,7 +5,8 @@ import { Eyebrow } from '../components/ui';
 import { useInView } from '../lib/hooks';
 import { readme } from '../lib/links';
 import { VideoBackdrop, type ClipName } from '../visuals/Backdrop';
-import { AlertStage, ObsDock, PanelMock, ThemeStage } from '../visuals/ModeVisuals';
+import { ALERT_DEMO_LIFE, AlertStage, ObsDock, PanelMock, ThemeStage } from '../visuals/ModeVisuals';
+import { ALERT_LOOKS } from '../components/Overlay';
 
 interface Mode { id: string; icon: LucideIcon; tab: string; blurb: string; title: string; text: string; link: string; clip: ClipName; dim?: boolean }
 const MODES: Mode[] = [
@@ -19,6 +20,8 @@ const MODES: Mode[] = [
     text: 'Read every chat in one list, right inside OBS.' },
 ];
 const AUTO_MS = 9000;
+// The alerts tab stays until it has shown every alert look once.
+const msFor = (id: string) => (id === 'alerts' ? ALERT_LOOKS.length * ALERT_DEMO_LIFE * 1000 : AUTO_MS);
 
 export function Modes() {
   const [i, setI] = useState(0);
@@ -27,7 +30,7 @@ export function Modes() {
   // Moves on to the next part after a while; picking one restarts the wait.
   useEffect(() => {
     if (!inView) return;
-    const id = window.setTimeout(() => { setI(v => (v + 1) % MODES.length); setTick(t => t + 1); }, AUTO_MS);
+    const id = window.setTimeout(() => { setI(v => (v + 1) % MODES.length); setTick(t => t + 1); }, msFor(MODES[i].id));
     return () => window.clearTimeout(id);
   }, [i, tick, inView]);
   const m = MODES[i];
@@ -56,7 +59,7 @@ export function Modes() {
                       <span className="block text-sm text-white/55">{mode.blurb}</span>
                     </span>
                   </span>
-                  {on && inView && <span key={tick} className="absolute bottom-0 left-0 h-[3px] w-full origin-left bg-gradient-to-r from-violet to-pink" style={{ animation: `fill-x ${AUTO_MS}ms linear both` }} />}
+                  {on && inView && <span key={tick} className="absolute bottom-0 left-0 h-[3px] w-full origin-left bg-gradient-to-r from-violet to-pink" style={{ animation: `fill-x ${msFor(mode.id)}ms linear both` }} />}
                 </button>
               );
             })}

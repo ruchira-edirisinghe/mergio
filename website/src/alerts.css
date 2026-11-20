@@ -1,0 +1,173 @@
+/* The six alert looks of Mergio's alerts overlay, for the website demos.
+   Made from the app's public/alerts/alerts.css by make_site_alerts_css.py (scoped under .mga). */
+.mga { --out: cubic-bezier(.16, 1, .3, 1); --spring: cubic-bezier(.34, 1.4, .64, 1); font-size: 22px; line-height: 1.25; color: #fff; display: flex; justify-content: center; }
+.mga .alert { --ev: var(--pc); position: relative; display: flex; isolation: isolate; max-width: 100%; }
+.mga .fx { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit; }
+.mga .art { position: relative; flex: none; display: grid; place-items: center; }
+.mga .art .av { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.mga .art .gift-img { width: 100%; height: 100%; object-fit: contain; }
+.mga .art .av-mini { position: absolute; right: -.15em; bottom: -.15em; width: 1.4em; height: 1.4em; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 .12em #101018; }
+.mga .art .glyph { display: grid; place-items: center; width: 52%; height: 52%; }
+.mga .art .glyph svg { width: 100%; height: 100%; }
+.mga .art .glyph.corner { position: absolute; right: -.2em; bottom: -.2em; width: 1.35em; height: 1.35em; padding: .27em; border-radius: 50%; background: var(--ev); color: #fff; box-shadow: 0 0 0 .12em #101018; }
+.mga .art .ring { display: none; }
+.mga .info { display: flex; flex-direction: column; gap: .12em; min-width: 0; }
+.mga .label { display: flex; align-items: center; gap: .55em; flex-wrap: wrap; font-size: .56em; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.mga .label .pchip { display: inline-flex; align-items: center; gap: .35em; letter-spacing: .02em; text-transform: none; font-weight: 700; opacity: .85; }
+.mga .label .pchip svg { width: 1.2em; height: 1.2em; }
+.mga .name { font-size: 1.3em; font-weight: 900; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.mga .name .l { display: inline-block; white-space: pre; }
+.mga .title { font-weight: 600; opacity: .9; }
+.mga .amount { align-self: flex-start; margin-top: .25em; padding: .1em .55em; border-radius: .45em; font-weight: 900; font-variant-numeric: tabular-nums; background: var(--ev); color: #fff; }
+.mga .p-kick .amount { color: #0b0b0f; }
+.mga .amount.bump { animation: mga-bump .45s var(--spring); }
+.mga .msg { margin-top: .4em; font-size: .86em; font-weight: 500; overflow-wrap: anywhere; max-height: 4.2em; overflow: hidden; }
+.mga .msg .emote { height: 1.4em; vertical-align: middle; margin: -.2em .05em; }
+.mga .timer { position: absolute; left: 0; right: 0; bottom: 0; height: .14em; overflow: hidden; animation: mga-fade .5s .7s both; }
+.mga .timer i { display: block; height: 100%; background: var(--ev); transform-origin: left; animation: mga-timer var(--hold, 6s) linear forwards; }
+@keyframes mga-timer { to { transform: scaleX(0); } }
+@keyframes mga-bump { 40% { transform: scale(1.22); } }
+@keyframes mga-rise { from { opacity: 0; transform: translateY(.5em); } }
+@keyframes mga-fade { from { opacity: 0; } }
+@keyframes mga-spin { to { rotate: 360deg; } }
+.mga.st-spotlight .alert { width: min(100%, 24em); flex-direction: column; align-items: center; text-align: center; padding: .4em 1em 1em; }
+.mga.st-spotlight .art { width: 4.8em; height: 4.8em; margin-bottom: .75em; border-radius: 50%; background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--ev) 50%, #1d1d2b), #0d0d15 78%); box-shadow: inset 0 0 0 .08em rgba(255, 255, 255, .18), 0 1.2em 2.6em -1em color-mix(in srgb, var(--ev) 90%, transparent); animation: mga-sp-art .9s var(--out) both; }
+.mga.st-spotlight .art.gift { width: 5.4em; height: 5.4em; background: radial-gradient(circle, color-mix(in srgb, var(--ev) 40%, transparent), transparent 68%); box-shadow: none; }
+.mga.st-spotlight .art .gift-img { filter: drop-shadow(0 .4em .8em rgba(0, 0, 0, .55)); }
+.mga.st-spotlight .art .glyph { color: #fff; filter: drop-shadow(0 0 .35em color-mix(in srgb, var(--ev) 90%, #fff)); }
+.mga.st-spotlight .art .ring { display: block; position: absolute; inset: -.32em; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 62%, color-mix(in srgb, var(--ev) 70%, transparent) 82%, #fff 86%, transparent 86.5%); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - .14em), #000 calc(100% - .12em)); mask: radial-gradient(farthest-side, transparent calc(100% - .14em), #000 calc(100% - .12em)); animation: mga-fade .6s .35s both, mga-spin 2.8s linear infinite; }
+.mga.st-spotlight .art.gift .ring { display: none; }
+.mga.st-spotlight .label { justify-content: center; margin-bottom: .45em; color: color-mix(in srgb, var(--ev) 35%, #fff); text-shadow: 0 1px .4em rgba(0, 0, 0, .8); }
+.mga.st-spotlight .label .what-kind { display: inline-flex; align-items: center; gap: .8em; }
+.mga.st-spotlight .label .what-kind::before, .mga.st-spotlight .label .what-kind::after { content: ''; width: 2.4em; height: .14em; border-radius: 99px; background: linear-gradient(90deg, transparent, currentColor); animation: mga-sp-line .7s .35s var(--out) both; }
+.mga.st-spotlight .label .what-kind::after { transform-origin: left; background: linear-gradient(270deg, transparent, currentColor); }
+.mga.st-spotlight .label .what-kind::before { transform-origin: right; }
+.mga.st-spotlight .label .pchip { display: none; }
+.mga.st-spotlight .label { animation: mga-fade .5s .3s both; }
+.mga.st-spotlight .name { font-size: 1.85em; line-height: 1.1; padding-bottom: .08em; overflow: hidden; text-shadow: 0 .06em .5em rgba(0, 0, 0, .7); }
+.mga.st-spotlight .name .l { animation: mga-up .7s calc(.42s + var(--i) * 24ms) var(--out) both; }
+.mga.st-spotlight .title { margin-top: .2em; text-shadow: 0 1px .4em rgba(0, 0, 0, .85); animation: mga-rise .6s .7s var(--out) both; }
+.mga.st-spotlight .amount { align-self: center; padding: .14em .75em; border-radius: 99px; box-shadow: 0 .4em 1.2em -.4em color-mix(in srgb, var(--ev) 90%, transparent); animation: mga-rise .6s .78s var(--out) both; }
+.mga.st-spotlight .msg { padding: .5em .95em; border-radius: .8em; background: rgba(10, 10, 16, .66); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); animation: mga-rise .6s .86s var(--out) both; }
+.mga.st-spotlight .timer { left: 38%; right: 38%; bottom: .1em; border-radius: 99px; background: rgba(255, 255, 255, .14); }
+.mga.st-spotlight .timer i { border-radius: inherit; }
+.mga.st-spotlight .alert.out { animation: mga-sp-out .5s cubic-bezier(.7, 0, .84, 0) forwards; }
+@keyframes mga-sp-art { from { opacity: 0; transform: scale(.55); filter: blur(10px); } }
+@keyframes mga-sp-line { from { transform: scaleX(0); opacity: 0; } }
+@keyframes mga-up { from { transform: translateY(110%); } }
+@keyframes mga-sp-out { to { opacity: 0; transform: translateY(-.6em) scale(.97); filter: blur(8px); } }
+.mga.st-banner .alert { width: min(100%, 30em); align-items: stretch; text-align: left; filter: drop-shadow(0 .7em 1.2em rgba(0, 0, 0, .45)); }
+.mga.st-banner .art { width: 4.4em; border-radius: .55em 0 0 .55em; background: linear-gradient(160deg, color-mix(in srgb, var(--ev) 85%, #fff 15%), var(--ev) 55%, color-mix(in srgb, var(--ev) 70%, #000)); transform-origin: left; animation: mga-bn-block .5s var(--out) both; }
+.mga.st-banner .art .av, .mga.st-banner .art .gift-img { width: 3.1em; height: 3.1em; border-radius: .45em; box-shadow: 0 0 0 .12em rgba(255, 255, 255, .9), 0 .3em .7em rgba(0, 0, 0, .35); }
+.mga.st-banner .art .av { border-radius: 50%; }
+.mga.st-banner .art .glyph.corner, .mga.st-banner .art .av-mini { display: none; }
+.mga.st-banner .art .gift-img { box-shadow: none; filter: drop-shadow(0 .2em .35em rgba(0, 0, 0, .4)); }
+.mga.st-banner .art .glyph { color: #fff; }
+.mga.st-banner .alert.p-kick .art .glyph { color: #0b0b0f; }
+.mga.st-banner .art > * { animation: mga-fade .4s .35s both; }
+.mga.st-banner .info { flex: 1; position: relative; justify-content: center; padding: .7em 1.3em .85em 1.15em; border-radius: 0 .55em .55em 0; background: linear-gradient(90deg, #15151f, rgba(16, 16, 24, .95)); overflow: hidden; animation: mga-bn-panel .65s .18s var(--out) both; }
+.mga.st-banner .info::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: .22em; background: color-mix(in srgb, var(--ev) 45%, #fff); }
+.mga.st-banner .info > * { animation: mga-bn-text .55s var(--out) both; }
+.mga.st-banner .label { animation-delay: .38s; color: color-mix(in srgb, var(--ev) 30%, #fff); }
+.mga.st-banner .label .what-kind { color: inherit; }
+.mga.st-banner .name { font-size: 1.35em; animation-delay: .45s; }
+.mga.st-banner .title { font-size: .9em; animation-delay: .52s; }
+.mga.st-banner .amount { animation-delay: .58s; }
+.mga.st-banner .msg { font-size: .8em; opacity: .9; animation-delay: .62s; }
+.mga.st-banner .timer { left: 0; right: 0; height: .16em; border-radius: 0 0 .55em 0; background: rgba(255, 255, 255, .07); }
+.mga.st-banner .alert.out .info { animation: mga-bn-panel-out .45s cubic-bezier(.7, 0, .84, 0) forwards; }
+.mga.st-banner .alert.out .art { animation: mga-bn-block-out .35s .3s cubic-bezier(.7, 0, .84, 0) forwards; }
+@keyframes mga-bn-block { from { transform: scaleX(0); } }
+@keyframes mga-bn-panel { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes mga-bn-text { from { opacity: 0; transform: translateX(-1.2em); } }
+@keyframes mga-bn-panel-out { from { clip-path: inset(0 0 0 0); } to { clip-path: inset(0 100% 0 0); } }
+@keyframes mga-bn-block-out { to { transform: scaleX(0); } }
+.mga.st-neon .alert { width: min(100%, 24em); flex-direction: column; align-items: center; text-align: center; padding: 1.15em 1.5em 1.25em; border-radius: 1em; background: rgba(7, 6, 13, .86); box-shadow: 0 0 3em -1.2em color-mix(in srgb, var(--ev) 80%, transparent); animation: mga-fade .4s both; }
+.mga.st-neon .fx { z-index: 0; }
+.mga.st-neon .tube { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.mga.st-neon .tube rect { x: 1px; y: 1px; width: calc(100% - 2px); height: calc(100% - 2px); rx: 1em; fill: none; stroke-dasharray: 0 1; animation: mga-draw .8s .05s cubic-bezier(.65, 0, .35, 1) forwards; }
+.mga.st-neon .tube .glow { stroke: var(--ev); stroke-width: 3.5px; filter: drop-shadow(0 0 4px var(--ev)) drop-shadow(0 0 12px var(--ev)); }
+.mga.st-neon .tube .core { stroke: #fff; stroke-width: 1.2px; opacity: .85; }
+.mga.st-neon .art, .mga.st-neon .info, .mga.st-neon .timer { position: relative; z-index: 1; }
+.mga.st-neon .info { align-items: center; }
+.mga.st-neon .art { width: 3.6em; height: 3.6em; margin-bottom: .6em; border-radius: 50%; background: #07060d; box-shadow: 0 0 0 .1em var(--ev), 0 0 .9em var(--ev), inset 0 0 .8em color-mix(in srgb, var(--ev) 50%, transparent); animation: mga-neon-on .9s .45s steps(1) both; }
+.mga.st-neon .art.gift { width: 4.2em; height: 4.2em; background: none; box-shadow: none; }
+.mga.st-neon .art .gift-img { filter: drop-shadow(0 0 .5em color-mix(in srgb, var(--ev) 80%, transparent)); }
+.mga.st-neon .art .glyph { color: #fff; filter: drop-shadow(0 0 .25em var(--ev)) drop-shadow(0 0 .6em var(--ev)); }
+.mga.st-neon .label { justify-content: center; color: color-mix(in srgb, var(--ev) 40%, #fff); text-shadow: 0 0 .6em var(--ev); animation: mga-fade .5s .6s both; }
+.mga.st-neon .name { font-size: 1.6em; color: #fff; text-shadow: 0 0 .06em #fff, 0 0 .3em var(--ev), 0 0 .8em var(--ev), 0 0 1.6em color-mix(in srgb, var(--ev) 60%, transparent); animation: mga-neon-on 1s .55s steps(1) both; }
+.mga.st-neon .title { opacity: .9; animation: mga-fade .5s .8s both; }
+.mga.st-neon .amount { align-self: center; background: transparent; color: #fff; box-shadow: 0 0 0 .09em var(--ev), 0 0 .8em color-mix(in srgb, var(--ev) 70%, transparent), inset 0 0 .6em color-mix(in srgb, var(--ev) 50%, transparent); text-shadow: 0 0 .4em var(--ev); animation: mga-fade .5s .85s both; }
+.mga.st-neon .msg { opacity: .9; animation: mga-fade .5s .9s both; }
+.mga.st-neon .timer { position: absolute; left: 30%; right: 30%; bottom: .45em; border-radius: 99px; background: rgba(255, 255, 255, .08); }
+.mga.st-neon .timer i { border-radius: inherit; box-shadow: 0 0 .5em var(--ev); }
+.mga.st-neon .alert.out { animation: mga-neon-off .5s steps(1) forwards; }
+@keyframes mga-draw { to { stroke-dasharray: 1 0; } }
+@keyframes mga-neon-on { 0% { opacity: 0; } 8% { opacity: 1; } 14% { opacity: .2; } 22% { opacity: 1; } 28% { opacity: .5; } 34%, 100% { opacity: 1; } }
+@keyframes mga-neon-off { 0% { opacity: 1; } 20% { opacity: .2; } 35% { opacity: .9; } 50%, 100% { opacity: 0; } }
+.mga.st-bubble .alert { width: min(100%, 23em); align-items: center; gap: .85em; text-align: left; padding: .85em 1.3em .95em .85em; border-radius: 1.4em; color: #1c1530; background: linear-gradient(150deg, color-mix(in srgb, var(--ev) 20%, #fff), #fff 55%); box-shadow: 0 0 0 .28em #fff, 0 .15em 0 .28em color-mix(in srgb, var(--ev) 25%, #ddd), 0 1em 1.6em -.5em rgba(0, 0, 0, .55); rotate: -2deg; animation: mga-slap .75s var(--out) both; }
+.mga.st-bubble .fx { overflow: hidden; }
+.mga.st-bubble .shine { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .9) 48%, transparent 60%); transform: translateX(-120%); animation: mga-glint 1s .55s ease-in-out both; }
+.mga.st-bubble .art { width: 3.8em; height: 3.8em; border-radius: 1.05em; background: var(--ev); box-shadow: 0 0 0 .16em #fff, 0 .3em .6em rgba(0, 0, 0, .2); rotate: 5deg; animation: mga-tilt .8s .2s var(--spring) both; }
+.mga.st-bubble .art.gift { background: color-mix(in srgb, var(--ev) 18%, #fff); }
+.mga.st-bubble .art .glyph { color: #fff; }
+.mga.st-bubble .art .gift-img { width: 115%; height: 115%; filter: drop-shadow(0 .2em .3em rgba(0, 0, 0, .25)); }
+.mga.st-bubble .label { gap: .45em; letter-spacing: .1em; }
+.mga.st-bubble .label .what-kind { padding: .3em .7em; border-radius: 99px; background: #1c1530; color: #fff; }
+.mga.st-bubble .label .pchip { color: color-mix(in srgb, var(--ev) 70%, #1c1530); opacity: 1; }
+.mga.st-bubble .name { font-size: 1.4em; margin-top: .1em; }
+.mga.st-bubble .name .l { animation: mga-hop .5s calc(.3s + var(--i) * 28ms) var(--spring) both; }
+.mga.st-bubble .title { opacity: .75; }
+.mga.st-bubble .amount { box-shadow: 0 .14em 0 color-mix(in srgb, var(--ev) 60%, #000); }
+.mga.st-bubble .msg { opacity: .8; }
+.mga.st-bubble .timer { left: 1.6em; right: 1.6em; bottom: .4em; border-radius: 99px; background: color-mix(in srgb, var(--ev) 14%, #eee); }
+.mga.st-bubble .timer i { border-radius: inherit; }
+.mga.st-bubble .alert.out { animation: mga-peel .5s cubic-bezier(.6, 0, .9, .4) forwards; }
+@keyframes mga-slap { 0% { opacity: 0; transform: scale(1.45) rotate(-9deg); } 45% { opacity: 1; transform: scale(.95) rotate(1deg); } 70% { transform: scale(1.02); } 100% { transform: none; } }
+@keyframes mga-glint { to { transform: translateX(120%); } }
+@keyframes mga-tilt { from { rotate: -14deg; scale: .6; } }
+@keyframes mga-hop { 0% { opacity: 0; transform: translateY(.45em) scale(.7); } 100% { opacity: 1; transform: none; } }
+@keyframes mga-peel { to { opacity: 0; transform: translate(.6em, -.9em) rotate(7deg) scale(.92); } }
+.mga.st-card .alert { width: min(100%, 25em); align-items: center; gap: .9em; text-align: left; padding: .95em 1.3em 1.05em .95em; border-radius: 1.1em; background: linear-gradient(135deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .03) 60%), rgba(16, 16, 26, .78); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), inset 0 1px 0 rgba(255, 255, 255, .28), 0 1.2em 2.4em -1em rgba(0, 0, 0, .7); transform-origin: 50% 100%; animation: mga-glass-in .85s var(--out) both; }
+.mga.anim-slide.st-card .alert { animation-name: mga-glass-slide; }
+.mga.anim-fade.st-card .alert { animation: mga-fade .6s ease-out both; }
+.mga.st-card .fx { overflow: hidden; }
+.mga.st-card .blob { position: absolute; width: 9em; height: 9em; left: -3em; top: -4.5em; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--ev) 70%, transparent), transparent 68%); opacity: .55; animation: mga-drift 7s ease-in-out infinite alternate; }
+.mga.st-card .blob + .blob { left: auto; right: -4em; top: auto; bottom: -5.5em; opacity: .3; animation-duration: 9s; }
+.mga.st-card .art { width: 3.7em; height: 3.7em; border-radius: .9em; background: linear-gradient(150deg, color-mix(in srgb, var(--ev) 70%, #fff 10%), color-mix(in srgb, var(--ev) 60%, #000 20%)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25), 0 .5em 1em -.4em color-mix(in srgb, var(--ev) 90%, transparent); animation: mga-rise .6s .15s var(--out) both; }
+.mga.st-card .art.gift { background: rgba(255, 255, 255, .06); }
+.mga.st-card .art .glyph { color: #fff; }
+.mga.st-card .info > * { animation: mga-rise .55s var(--out) both; }
+.mga.st-card .label { animation-delay: .25s; color: color-mix(in srgb, var(--ev) 35%, #fff); }
+.mga.st-card .label .what-kind { color: inherit; }
+.mga.st-card .name { animation-delay: .32s; }
+.mga.st-card .title { font-size: .92em; opacity: .85; animation-delay: .39s; }
+.mga.st-card .amount { animation-delay: .45s; }
+.mga.st-card .msg { font-size: .82em; opacity: .9; animation-delay: .5s; }
+.mga.st-card .timer { left: 1.3em; right: 1.3em; bottom: .38em; border-radius: 99px; background: rgba(255, 255, 255, .1); }
+.mga.st-card .timer i { border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, var(--ev) 60%, #fff), var(--ev)); }
+.mga.st-card .alert.out { animation: mga-glass-out .5s cubic-bezier(.7, 0, .84, 0) forwards; }
+@keyframes mga-glass-in { from { opacity: 0; transform: perspective(30em) rotateX(28deg) translateY(1.2em) scale(.95); } }
+@keyframes mga-glass-slide { from { opacity: 0; transform: translateY(1.6em); } }
+@keyframes mga-glass-out { to { opacity: 0; transform: translateY(-.5em) scale(.97); } }
+@keyframes mga-drift { to { transform: translate(1.5em, 1em) scale(1.15); } }
+.mga.st-toast .alert { align-items: center; gap: .7em; text-align: left; max-width: min(100%, 26em); padding: .42em 1.35em .42em .42em; border-radius: 99px; font-size: .88em; background: #050507; box-shadow: 0 0 0 1px rgba(255, 255, 255, .07), 0 .6em 1.6em -.4em rgba(0, 0, 0, .7); animation: mga-island 1s var(--out) both; }
+.mga.st-toast .art { width: 2.5em; height: 2.5em; border-radius: 50%; background: color-mix(in srgb, var(--ev) 30%, #15151d); animation: mga-fade .3s .15s both; }
+.mga.st-toast .art.gift { background: radial-gradient(circle, color-mix(in srgb, var(--ev) 40%, transparent), transparent 70%); }
+.mga.st-toast .art .glyph { color: color-mix(in srgb, var(--ev) 40%, #fff); }
+.mga.st-toast .art .av-mini, .mga.st-toast .label .pchip, .mga.st-toast .timer { display: none; }
+.mga.st-toast .info { gap: 0; }
+.mga.st-toast .info > * { animation: mga-rise .45s var(--out) both; }
+.mga.st-toast .label { font-size: .52em; color: color-mix(in srgb, var(--ev) 45%, #fff); animation-delay: .42s; }
+.mga.st-toast .name { font-size: 1.05em; animation-delay: .48s; }
+.mga.st-toast .title { font-size: .82em; opacity: .75; animation-delay: .54s; }
+.mga.st-toast .amount { margin-top: .15em; font-size: .85em; animation-delay: .58s; }
+.mga.st-toast .msg { margin-top: .15em; font-size: .78em; max-height: 2.6em; animation-delay: .6s; }
+.mga.st-toast .alert.out { animation: mga-island-out .55s cubic-bezier(.7, 0, .3, 1) forwards; }
+@keyframes mga-island { 0% { opacity: 0; transform: scale(.6); clip-path: inset(0 calc(50% - 2em) round 99px); } 22% { opacity: 1; transform: none; clip-path: inset(0 calc(50% - 2em) round 99px); } 100% { clip-path: inset(0 0 round 99px); } }
+@keyframes mga-island-out { 0% { clip-path: inset(0 0 round 99px); } 60% { opacity: 1; transform: none; clip-path: inset(0 calc(50% - 2em) round 99px); } 100% { opacity: 0; transform: scale(.6); clip-path: inset(0 calc(50% - 2em) round 99px); } }
+@media (prefers-reduced-motion: reduce) {
+  .mga .alert, .mga .alert *, .mga .alert *::before, .mga .alert *::after { animation: none !important; }
+  .mga.st-neon .tube rect { stroke-dasharray: 1 0; }
+  .mga .alert.out { opacity: 0; transition: opacity .3s; }
+}

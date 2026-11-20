@@ -1,7 +1,7 @@
 import { ArrowUpRight } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { GithubIcon, PlatformIcon, PLATFORMS } from '../components/brand';
-import { AlertCard, ChatFeed } from '../components/Overlay';
+import { ALERT_LOOKS, AlertShow, ChatFeed } from '../components/Overlay';
 import { PillLink } from '../components/ui';
 import { ALERTS, SCRIPT } from '../lib/chat';
 import { useCycle, useFeed, useInView, useLatestVersion } from '../lib/hooks';
@@ -69,7 +69,7 @@ export function Hero() {
           {/* The overlays, sitting on the stream like OBS browser sources */}
           <div className="relative h-[520px] sm:h-[580px] lg:h-auto px-4 pb-16 sm:px-6 lg:pl-0 lg:pr-6 lg:pb-20 lg:pt-6">
             <div className="absolute inset-x-4 top-12 sm:inset-x-6 lg:left-0 lg:right-6 lg:top-16 flex justify-center z-10 pointer-events-none">
-              <AlertCard key={ai} item={ALERTS[ai]} life={ALERT_LIFE} size={0.9} />
+              <AlertShow key={ai} item={ALERTS[ai]} look={ALERT_LOOKS[ai % ALERT_LOOKS.length].id} life={ALERT_LIFE} size={0.62} />
             </div>
             <div className="relative h-full pt-[210px] lg:pt-[250px]">
               <div className="relative h-full rounded-[3px] outline outline-[1.5px] outline-[#ff4d4d]/75">

@@ -159,17 +159,20 @@ export function Placement({ active }: { active: boolean }) {
         <VideoBackdrop clip="night-gamer" active={active} />
         <div className="absolute inset-0 bg-black/25" />
         {place !== 'chat' && (
-          <div key={`ov-${i}`} className="absolute left-1/2 top-[10%] w-[34%] -translate-x-1/2">
-            <div className="anim-pop rounded-lg border border-[#fe2c55] bg-[#1a1530]/95 px-2 pb-2 pt-4 text-center shadow-[0_0_24px_rgba(254,44,85,.45)]">
-              <GiftArt gift="galaxy" className="absolute left-1/2 top-0 h-8 w-8 -translate-x-1/2 -translate-y-1/2" />
-              <div className="mx-auto h-1.5 w-1/2 rounded bg-[#fe2c55]/70" />
-              <div className="mx-auto mt-1.5 h-2 w-4/5 rounded bg-white/80" />
+          <div key={`ov-${i}`} className="absolute left-1/2 top-[10%] w-[24%] -translate-x-1/2">
+            <div className="anim-pop flex flex-col items-center text-center">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-[radial-gradient(circle,rgba(254,44,85,.45),transparent_68%)]">
+                <GiftArt gift="galaxy" className="h-9 w-9 drop-shadow-[0_4px_8px_rgba(0,0,0,.5)]" />
+              </span>
+              <div className="mt-1.5 h-1 w-2/5 rounded bg-[#ff9ab0]/80" />
+              <div className="mt-1.5 h-2 w-4/5 rounded bg-white/85" />
+              <div className="mt-1.5 h-1.5 w-1/4 rounded-full bg-[#fe2c55]" />
             </div>
           </div>
         )}
         <div className="absolute bottom-[7%] right-[4%] flex w-[36%] flex-col gap-[5%]">
           {lines.map((l, k) => (
-            <div key={`${k}-${l.alert ? i : 'x'}`} className={`flex h-[18px] items-center gap-1.5 rounded-[5px] bg-[#12121a]/90 px-1.5 ${l.alert ? 'anim-pop' : ''}`} style={{ boxShadow: `inset 2px 0 0 ${l.c}`, width: `${l.w}%`, background: l.alert ? 'linear-gradient(90deg, rgba(254,44,85,.35), rgba(18,18,26,.85))' : undefined }}>
+            <div key={`${k}-${l.alert ? i : 'x'}`} className={`flex h-[18px] items-center gap-1.5 rounded-[5px] bg-[#12121a]/90 px-1.5 ${l.alert ? 'anim-pop' : ''}`} style={{ width: `${l.w}%`, background: l.alert ? 'linear-gradient(90deg, rgba(254,44,85,.35), rgba(18,18,26,.85))' : undefined }}>
               <span className="h-2 w-2 rounded-full" style={{ background: l.c }} />
               <span className="h-1.5 flex-1 rounded bg-white/55" />
             </div>
