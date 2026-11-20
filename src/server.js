@@ -6,7 +6,8 @@ const { WebSocketServer } = require('ws');
 const settings = require('./settings');
 const testdata = require('./testdata');
 const autostart = require('./autostart');
-const { isSea, fetchText, fetchJson, curlJson, log, DATA_DIR } = require('./util');
+const avatars = require('./avatars');
+const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
 
 const PUBLIC = path.resolve(__dirname, '..', 'public');
@@ -20,38 +21,6 @@ function readAsset(rel) {
     try { return Buffer.from(require('node:sea').getAsset(`public/${rel}`)); } catch { return null; }
   }
   try { return fs.readFileSync(path.join(PUBLIC, rel)); } catch { return null; }
-}
-
-/* ---------- avatar resolving (cached redirects so the overlay never waits on it) ---------- */
-const avatarCache = new Map();
-const pending = new Map();
-/* At most 4 lookups at once; busy chats queue up instead of firing hundreds of requests. */
-let active = 0;
-const queue = [];
-const slot = () => new Promise(res => { if (active < 4) { active++; res(); } else queue.push(res); });
-const release = () => { const next = queue.shift(); if (next) next(); else active--; };
-
-async function resolveAvatar(platform, login) {
-  const key = `${platform}:${login}`;
-  if (avatarCache.has(key)) return avatarCache.get(key);
-  if (pending.has(key)) return pending.get(key);
-  const p = (async () => {
-    if (queue.length > 40) return null; // under heavy load use the letter avatar now, try again later
-    await slot();
-    try {
-      if (platform === 'twitch') {
-        const url = (await fetchText(`https://decapi.me/twitch/avatar/${encodeURIComponent(login)}`, { timeout: 5000 })).trim();
-        return /^https:\/\//.test(url) ? url : '';
-      }
-      if (platform === 'kick') {
-        const ch = await curlJson(`https://kick.com/api/v2/channels/${encodeURIComponent(login)}`);
-        return ch?.user?.profile_pic || '';
-      }
-    } catch { /* fall through */ } finally { release(); }
-    return '';
-  })().then(url => { pending.delete(key); if (url === null) return ''; avatarCache.set(key, url); if (avatarCache.size > 5000) avatarCache.delete(avatarCache.keys().next().value); return url; });
-  pending.set(key, p);
-  return p;
 }
 
 const AVATAR_COLORS = ['#ff6b6b', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#a855f7', '#ec4899', '#84cc16'];
@@ -154,8 +123,9 @@ function createServer(manager, { onQuit }) {
 
       let m;
       if ((m = /^\/avatar\/(twitch|kick)\/([\w.-]+)$/.exec(p))) {
-        const u = await resolveAvatar(m[1], m[2].toLowerCase());
-        return send(res, 302, '', 'text/plain', { Location: u || `/avatar/default/${m[2]}`, 'Cache-Control': 'max-age=3600' });
+        // Wait a little for the lookup (the image simply loads a moment later); give up after 10s.
+        const u = await Promise.race([avatars.resolve(m[1], m[2].toLowerCase()), new Promise(r => setTimeout(r, 10000, ''))]);
+        return send(res, 302, '', 'text/plain', u ? { Location: u, 'Cache-Control': 'max-age=3600' } : { Location: `/avatar/default/${m[2]}`, 'Cache-Control': 'no-store' });
       }
       if ((m = /^\/avatar\/default\/(.+)$/.exec(p))) return send(res, 200, defaultAvatar(m[1]), 'image/svg+xml', { 'Cache-Control': 'max-age=86400' });
 
