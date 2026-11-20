@@ -96,6 +96,7 @@ function createServer(manager, { onQuit }) {
     overlayUrl: `http://localhost:${settings.get().advanced.port}/overlay`,
     testKinds: testdata.KINDS,
     autostart: { supported: autostart.supported(), enabled: autostart.isEnabled() },
+    overlays: overlayStatus(),
   });
 
   const server = http.createServer(async (req, res) => {
@@ -170,6 +171,11 @@ function createServer(manager, { onQuit }) {
   const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
   // ws re-emits the HTTP server's errors (e.g. port already in use); main.js handles those on the server itself.
   wss.on('error', () => {});
+  /** Open overlays (not previews): how many, and whether one of them runs inside OBS. */
+  function overlayStatus() {
+    const list = [...wss.clients].filter(c => c.overlay && c.readyState === 1);
+    return { count: list.length, obs: list.some(c => c.overlay.obs) };
+  }
   const broadcast = obj => {
     const data = JSON.stringify(obj);
     for (const c of wss.clients) if (c.readyState === 1) c.send(data);
@@ -177,6 +183,14 @@ function createServer(manager, { onQuit }) {
   wss.on('connection', (ws, req) => {
     const host = (req.headers.host || '').split(':')[0];
     if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) return ws.close();
+    // Overlays identify themselves so the control panel can show "Mergio is in OBS".
+    const client = new URL(req.url, 'http://localhost').searchParams.get('client');
+    if (client === 'overlay') {
+      ws.overlay = { obs: /OBS\//.test(req.headers['user-agent'] || '') };
+      if (!settings.get().advanced.overlaySeen) settings.update({ advanced: { overlaySeen: true } });
+      ws.on('close', () => broadcast({ op: 'overlays', ...overlayStatus() }));
+      broadcast({ op: 'overlays', ...overlayStatus() });
+    }
     ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(-60) }));
   });
   manager.on('message', m => broadcast({ op: 'msg', msg: m }));
