@@ -101,7 +101,7 @@
     let group = null;
     for (const p of PAGES) {
       if (p.group !== group) { group = p.group; if (GROUPS[group]) nav.append(h('div', { class: 'nav-h', text: GROUPS[group] })); }
-      const b = h('button', { class: p.id === page ? 'on' : '', onclick: () => MG.go(p.id), 'aria-current': p.id === page ? 'page' : null },
+      const b = h('button', { class: p.id === page ? 'on' : '', style: `--n:${PAGES.indexOf(p)}`, onclick: () => MG.go(p.id), 'aria-current': p.id === page ? 'page' : null },
         icon(p.icon), h('span', { class: 'lbl', text: p.label }));
       const badge = p.badge?.();
       if (badge) b.append(h('span', { class: `count ${badge.cls || ''}`, text: badge.text }));
@@ -109,6 +109,7 @@
     }
   }
   MG.renderNav = renderNav;
+  const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   MG.go = id => { page = id; history.replaceState(null, '', `#${id}`); MG.render(); $('#content').scrollTop = 0; };
   MG.render = () => {
     const p = PAGES.find(x => x.id === page) || PAGES[0];
@@ -387,8 +388,24 @@
     window.addEventListener('hashchange', () => { page = (location.hash || '#home').slice(1); MG.render(); });
     setPreview(store.get('mg-preview') !== '0' && window.innerWidth > 1020);
     MG.render(); updateSummary(); connectWs(); fitPreview();
+    await reveal();
     emit('ready');
   }
+
+  /** Lets the logo finish drawing, then lifts the splash and slides the panel in. */
+  async function reveal() {
+    const boot = $('#boot');
+    if (!boot) return;
+    let seen = false;
+    try { seen = sessionStorage.getItem('mg-booted') === '1'; sessionStorage.setItem('mg-booted', '1'); } catch { /* private mode */ }
+    if (seen) boot.classList.add('quick');
+    const wait = calm() ? 0 : Math.max(0, (seen ? 350 : 1500) - performance.now());
+    await new Promise(r => setTimeout(r, wait));
+    document.body.classList.add('entering');
+    $('#content').classList.add('enter');
+    boot.classList.add('done');
+    setTimeout(() => { boot.remove(); document.body.classList.remove('entering'); $('#content').classList.remove('enter'); }, calm() ? 0 : 1300);
+  }
   // Page scripts load after this file; start once they've all registered.
-  document.addEventListener('DOMContentLoaded', () => boot().catch(e => { document.body.textContent = `Could not load Mergio: ${e.message}`; }));
+  document.addEventListener('DOMContentLoaded', () => boot().catch(e => { document.body.classList.remove('entering'); document.body.textContent = `Could not load Mergio: ${e.message}`; }));
 })();
