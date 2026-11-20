@@ -10,7 +10,11 @@ export type ChatItem =
   | { kind: 'superchat'; user: ChatUser; amount: string; text: string }
   | { kind: 'follow'; user: ChatUser }
   | { kind: 'raid'; user: ChatUser; viewers: number }
-  | { kind: 'kicks'; user: ChatUser; amount: number };
+  | { kind: 'kicks'; user: ChatUser; amount: number }
+  | { kind: 'like'; user: ChatUser; count: number };
+
+/** Everything that can pop up on the alerts overlay (likes stay in the chat, like in the app). */
+export type AlertItem = Exclude<ChatItem, { kind: 'chat' } | { kind: 'like' }>;
 
 export const GIFTS: Record<GiftId, { name: string; diamonds: number }> = {
   rose: { name: 'Rose', diamonds: 1 },
@@ -47,6 +51,7 @@ export const SCRIPT: ChatItem[] = [
   { kind: 'chat', user: U.zen, text: 'all chats in one place, love it' },
   { kind: 'superchat', user: U.chomp, amount: '$20.00', text: 'keep it up!' },
   { kind: 'chat', user: U.echo, text: 'LMAO that jump 😂' },
+  { kind: 'like', user: U.kira, count: 24 },
   { kind: 'follow', user: U.taco },
   { kind: 'chat', user: U.rangi, text: 'GG!!' },
   { kind: 'gift', user: U.kira, gift: 'galaxy', count: 1 },
@@ -61,8 +66,8 @@ export const SCRIPT: ChatItem[] = [
   { kind: 'chat', user: U.taco, text: 'Mergio 💜' },
 ];
 
-/** Only the alerts (no plain chat), for the alerts overlay demos. */
-export const ALERTS = SCRIPT.filter(i => i.kind !== 'chat');
+/** Only the alerts (no plain chat or likes), for the alerts overlay demos. */
+export const ALERTS = SCRIPT.filter((i): i is AlertItem => i.kind !== 'chat' && i.kind !== 'like');
 /** Only plain chat. */
 export const CHATS = SCRIPT.filter(i => i.kind === 'chat');
 

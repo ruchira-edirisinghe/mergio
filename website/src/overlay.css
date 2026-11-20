@@ -1,4 +1,5 @@
-/* The Mergio chat overlay and alerts overlay, redrawn for the website demos (mirrors the app's overlay looks). */
+/* The Mergio chat overlay, redrawn for the website demos (mirrors the app's overlay looks, without the platform-colour edge).
+   The alerts overlay's six looks are in alerts.css. */
 
 .mg-feed { --padx: .7em; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: .38em; color: #fff; font-weight: 500; line-height: 1.35; overflow: hidden; }
 .mg-feed[data-align='right'] { align-items: flex-end; text-align: right; }
@@ -23,7 +24,7 @@
 .mg-chip { display: inline-block; background: var(--ev); color: #fff; padding: .02em .42em; border-radius: .4em; font-weight: 800; font-size: .86em; text-shadow: none; }
 
 /* themes (with the box on) */
-.mg-feed[data-box='1'][data-theme='glass'] .mg-bubble { background: rgba(18, 18, 26, .8) linear-gradient(180deg, rgba(255, 255, 255, .07), transparent 60%); border: 1px solid rgba(255, 255, 255, .08); box-shadow: inset 3px 0 0 var(--pc); }
+.mg-feed[data-box='1'][data-theme='glass'] .mg-bubble { background: rgba(18, 18, 26, .8) linear-gradient(180deg, rgba(255, 255, 255, .07), transparent 60%); border: 1px solid rgba(255, 255, 255, .08); }
 .mg-feed[data-theme='neon'] { font-family: 'Rajdhani', 'Inter Variable', sans-serif; font-weight: 600; font-size: 1.08em; }
 .mg-feed[data-box='1'][data-theme='neon'] .mg-bubble { background: rgba(11, 11, 20, .88); border: 1px solid var(--pc); border-radius: 10px; box-shadow: 0 0 10px -2px var(--pc), inset 0 0 12px -6px var(--pc); }
 .mg-feed[data-theme='neon'] .mg-name { text-shadow: 0 0 8px currentColor; }
@@ -38,49 +39,30 @@
 /* no box: plain text */
 .mg-feed[data-box='0'] .mg-bubble { background: none; border: 0; box-shadow: none; padding-top: .12em; padding-bottom: .12em; text-shadow: 0 1px 3px rgba(0, 0, 0, .9), 0 0 10px rgba(0, 0, 0, .35); }
 
-/* calm alert line in the chat */
-.mg-feed[data-box='1'] .mg-alert .mg-bubble { background-image: linear-gradient(90deg, color-mix(in srgb, var(--ev) 18%, transparent), transparent 75%); box-shadow: inset 3px 0 0 var(--ev); }
+/* calm alert line in the chat: picture or icon, what happened, the amount */
+.mg-feed[data-box='1'] .mg-alert .mg-bubble { background-image: linear-gradient(90deg, color-mix(in srgb, var(--ev) 18%, transparent), transparent 75%); }
+.mg-alert .mg-name { margin-right: .3em; }
+.mg-alert .mg-evic { margin-right: .3em; color: color-mix(in srgb, var(--ev) 70%, #fff); }
+.mg-evt { font-weight: 600; opacity: .85; }
+.mg-alert .mg-amt { margin-left: .3em; color: color-mix(in srgb, var(--ev) 45%, #fff); font-variant-numeric: tabular-nums; }
+.mg-evmsg { display: block; margin-top: .15em; }
+
+/* TikTok likes: a normal message with a red-pink glow and a beating heart */
+.mg-feed[data-box='1'] .mg-like .mg-bubble { background: linear-gradient(90deg, rgba(254, 44, 85, .34), rgba(255, 79, 154, .14) 55%, transparent), rgba(18, 18, 26, .8); box-shadow: inset 0 0 0 1px rgba(255, 79, 139, .38), 0 0 .9em -.3em rgba(254, 44, 85, .55); }
+.mg-feed[data-box='1'][data-theme='soft'] .mg-like .mg-bubble { background: linear-gradient(90deg, rgba(254, 44, 85, .2), rgba(255, 255, 255, .95) 60%); }
+.mg-heart { display: inline-flex; width: 1.05em; height: 1.05em; margin-right: .3em; vertical-align: -.17em; color: #ff2d6f; filter: drop-shadow(0 0 .25em rgba(254, 44, 85, .8)); animation: mg-beat .9s ease-in-out .3s; }
+.mg-heart svg { width: 100%; height: 100%; }
+.mg-lk { color: #ffb3c8; }
+.mg-feed[data-box='0'] .mg-lk, .mg-feed[data-theme='soft'] .mg-lk { color: #ff4f8b; }
+.mg-like .mg-amt { margin-left: .3em; color: #ff4f8b; }
 .mg-feed[data-box='1'][data-theme='neon'] .mg-alert .mg-bubble { border-color: var(--ev); box-shadow: 0 0 12px -2px var(--ev); }
 .mg-feed[data-box='1'][data-theme='retro'] .mg-alert .mg-bubble { box-shadow: 4px 4px 0 rgba(0, 0, 0, .55), inset 0 0 0 2px var(--ev); }
-
-/* big alert card */
-.mg-alertcard { position: relative; width: 20em; max-width: 100%; padding: 2.7em 1.3em 1.35em; border-radius: 1.2em; text-align: center; color: #fff;
-  background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--ev) 26%, transparent), transparent 70%), linear-gradient(135deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .02) 60%), rgba(16, 14, 28, .9);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), inset 0 1px 0 rgba(255, 255, 255, .24), 0 24px 60px -18px color-mix(in srgb, var(--ev) 55%, transparent);
-  transform-origin: 50% 100%; animation: mg-alert-life var(--life) cubic-bezier(.16, 1, .3, 1) both; }
-.mg-ac-art { position: absolute; left: 50%; top: 0; width: 4.4em; height: 4.4em; display: grid; place-items: center; border-radius: 50%; color: var(--ev);
-  background: radial-gradient(circle, color-mix(in srgb, var(--ev) 40%, #1a1530), #120f20 72%); border: 2px solid var(--ev);
-  box-shadow: 0 0 32px color-mix(in srgb, var(--ev) 55%, transparent); transform: translate(-50%, -55%); }
-.mg-ac-art::after { content: ''; position: absolute; inset: -.4em; border-radius: 50%; background: conic-gradient(transparent 0 62%, color-mix(in srgb, var(--ev) 70%, transparent) 82%, #fff 86%, transparent 86.5%);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); animation: mg-orbit 2.6s linear infinite; }
-.mg-ac-art > svg { width: 58%; height: 58%; }
-.mg-ac-art > svg[viewBox='0 0 64 64'] { width: 78%; height: 78%; }
-.mg-sc { font-weight: 900; font-size: .95em; color: #fff; }
-.mg-ac-lbl { display: inline-flex; align-items: center; gap: .45em; padding: .4em .85em; border-radius: 99px; font-size: .68em; font-weight: 800; letter-spacing: .14em; color: var(--ev); background: color-mix(in srgb, var(--ev) 15%, transparent); }
-.mg-ac-lbl svg { width: 1.2em; height: 1.2em; }
-.mg-ac-ttl { margin-top: .55em; font-size: 1.22em; font-weight: 600; letter-spacing: -.02em; line-height: 1.25; }
-.mg-ac-ttl b { font-weight: 800; }
-.mg-ac-sub { margin-top: .3em; font-size: .84em; color: rgba(255, 255, 255, .66); }
-.mg-ac-lbl, .mg-ac-ttl, .mg-ac-sub { animation: mg-rise .6s cubic-bezier(.16, 1, .3, 1) both; }
-.mg-ac-lbl { animation-delay: .2s; } .mg-ac-ttl { animation-delay: .28s; } .mg-ac-sub { animation-delay: .36s; }
-.mg-ac-timer { position: absolute; left: 30%; right: 30%; bottom: .55em; height: 3px; border-radius: 99px; background: rgba(255, 255, 255, .1); overflow: hidden; }
-.mg-ac-timer::after { content: ''; position: absolute; inset: 0; background: var(--ev); transform-origin: left; animation: mg-timer calc(var(--life) * .86) linear .2s both; }
 
 @keyframes mg-in { from { opacity: 0; transform: translateX(-24px); } }
 @keyframes mg-in-r { from { opacity: 0; transform: translateX(24px); } }
 @keyframes mg-out { to { opacity: 0; transform: translateY(-6px); } }
-@keyframes mg-alert-life {
-  0% { opacity: 0; transform: perspective(40em) rotateX(26deg) translateY(22px) scale(.95); }
-  14% { opacity: 1; transform: none; }
-  86% { opacity: 1; transform: none; filter: none; }
-  100% { opacity: 0; transform: translateY(-12px) scale(.97); filter: blur(4px); }
-}
-@keyframes mg-orbit { to { rotate: 360deg; } }
-@keyframes mg-rise { from { opacity: 0; transform: translateY(.5em); } }
-@keyframes mg-timer { to { transform: scaleX(0); } }
+@keyframes mg-beat { 0%, 100% { transform: scale(1); } 20% { transform: scale(1.35); } 40% { transform: scale(.95); } 60% { transform: scale(1.2); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .mg-msg, .mg-feed[data-fade] .mg-msg { animation: none; }
-  .mg-alertcard { animation: none; }
-  .mg-ac-art::after, .mg-ac-lbl, .mg-ac-ttl, .mg-ac-sub, .mg-ac-timer::after { animation: none; }
+  .mg-msg, .mg-feed[data-fade] .mg-msg, .mg-heart { animation: none; }
 }
