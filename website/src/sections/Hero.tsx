@@ -1,4 +1,4 @@
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, BadgeCheck, Code2, Monitor, UserX } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { GithubIcon, PlatformIcon, PLATFORMS } from '../components/brand';
 import { ALERT_LOOKS, AlertShow, ChatFeed } from '../components/Overlay';
@@ -30,7 +30,7 @@ export function Hero() {
               style={{ '--d': '0ms' } as CSSProperties}
               className="word-in mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1.5 pl-1.5 pr-3 text-sm text-white/85 backdrop-blur-md hover:bg-white/15 transition-colors">
               <span className="rounded-full bg-gradient-to-r from-violet to-pink px-2.5 py-0.5 text-xs font-semibold text-white">{version}</span>
-              Free &amp; open source
+              100% free &amp; open source
               <ArrowUpRight className="h-4 w-4" />
             </a>
             <h1 className="text-white text-5xl md:text-6xl xl:text-7xl font-medium leading-[1.02] max-w-xl mb-5" style={{ letterSpacing: '-0.045em' }}>
@@ -48,7 +48,12 @@ export function Hero() {
                 <GithubIcon className="h-5 w-5" />View on GitHub
               </a>
             </div>
-            <p className="word-in mt-4 text-sm text-white/45" style={{ '--d': '950ms' } as CSSProperties}>Windows · macOS · Linux</p>
+            <ul className="word-in mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/70" style={{ '--d': '950ms' } as CSSProperties}>
+              <li className="inline-flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-[#4ade80]" />Free forever</li>
+              <li className="inline-flex items-center gap-1.5"><Code2 className="h-4 w-4 text-[#c9b8ff]" />Open source</li>
+              <li className="inline-flex items-center gap-1.5"><UserX className="h-4 w-4 text-[#ff8fc7]" />No account needed</li>
+              <li className="inline-flex items-center gap-1.5"><Monitor className="h-4 w-4 text-white/50" />Windows · macOS · Linux</li>
+            </ul>
 
             <div className="mt-10 lg:mt-auto lg:pt-10 w-full">
               <p className="word-in mb-3.5 text-xs font-semibold uppercase tracking-[.18em] text-white/50" style={{ '--d': '1000ms' } as CSSProperties}>Works with</p>
