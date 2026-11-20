@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=ZUNO-CHAT
+GenericName=Chat overlay
+Comment=Every live chat in one OBS overlay
+Exec=@EXEC@
+Icon=zuno-chat
+Terminal=false
+Categories=AudioVideo;Video;Network;
+Keywords=obs;stream;chat;overlay;multichat;twitch;youtube;kick;tiktok;facebook;
+StartupNotify=false
