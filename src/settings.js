@@ -62,9 +62,12 @@ const DEFAULTS = {
     duration: 6,                // seconds each alert stays on the alerts overlay
     position: 'center',         // top | center | bottom of the alerts browser source
     size: 1,
-    animation: 'pop',           // pop | slide | fade
+    style: 'spotlight',         // spotlight | banner | neon | bubble | card | toast
+    animation: 'pop',           // pop | slide | fade (Card and Minimal styles)
     showMessage: true,
     showAvatar: true,
+    sound: false,               // a short chime with each alert
+    volume: 0.6,
   },
   twitch: { messages: true, cheers: true, announcements: true, subs: true, giftSubs: true, raids: true, redemptions: true, watchStreaks: true, joins: false, sharedChat: 'show', thirdPartyEmotes: true },
   youtube: { messages: true, superChats: true, superStickers: true, memberships: true, giftedMemberships: true, milestones: true },
