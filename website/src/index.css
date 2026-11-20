@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 
-html, body { font-family: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif; background: #F5F5F5; color: #0b0b10; -webkit-font-smoothing: antialiased; }
+html, body { font-family: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif; background: #07060c; color: #f4f3f8; color-scheme: dark; -webkit-font-smoothing: antialiased; }
 * { font-family: inherit; }
 html { scroll-behavior: smooth; }
 ::selection { background: #7c4dff; color: #fff; }
@@ -18,7 +18,6 @@ html { scroll-behavior: smooth; }
 
 /* Stream scene */
 @keyframes twinkle { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
-@keyframes grid-scroll { from { background-position: 0 0; } to { background-position: 0 64px; } }
 @keyframes float-y { 50% { transform: translateY(-8px); } }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @keyframes drift { 0% { transform: translateX(-10%); } 100% { transform: translateX(110%); } }
@@ -40,9 +39,42 @@ html { scroll-behavior: smooth; }
 .anim-rise { animation: rise-in .6s cubic-bezier(.22, 1, .36, 1) both; }
 .anim-spin-slow { animation: spin-slow 18s linear infinite; }
 .anim-ring { animation: ring-out 1.6s ease-out infinite; }
-.grid-floor { background-image: linear-gradient(rgba(255, 70, 200, .55) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(255, 70, 200, .55) 1.5px, transparent 1.5px); background-size: 64px 64px; animation: grid-scroll 1.6s linear infinite; }
+
+/* Scroll reveal */
+.reveal { transition: opacity .9s cubic-bezier(.22, 1, .36, 1), transform .9s cubic-bezier(.22, 1, .36, 1), filter .9s ease; transition-delay: var(--d, 0ms); }
+.reveal:not(.is-in) { opacity: 0; }
+.reveal[data-reveal="up"]:not(.is-in) { transform: translateY(36px); }
+.reveal[data-reveal="left"]:not(.is-in) { transform: translateX(-40px); }
+.reveal[data-reveal="right"]:not(.is-in) { transform: translateX(40px); }
+.reveal[data-reveal="scale"]:not(.is-in) { transform: scale(.92); }
+.reveal[data-reveal="blur"]:not(.is-in) { transform: translateY(16px); filter: blur(12px); }
+
+/* Hero headline: words slide up one after another */
+@keyframes word-up { from { opacity: 0; transform: translateY(.6em) rotate(2deg); filter: blur(6px); } }
+.word-in { animation: word-up .9s cubic-bezier(.22, 1, .36, 1) both; animation-delay: var(--d, 0ms); }
+
+/* Gradient text that slowly shifts */
+@keyframes hue-shift { to { background-position: 200% 50%; } }
+.text-gradient-live { background: linear-gradient(92deg, #7c4dff, #d63cff, #ff2d8f, #7c4dff); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: hue-shift 6s linear infinite; }
+
+/* Cards lift and glow on hover */
+.lift { transition: transform .35s cubic-bezier(.22, 1, .36, 1), box-shadow .35s ease; }
+@media (hover: hover) { .lift:hover { transform: translateY(-6px); box-shadow: 0 24px 60px -20px rgba(124, 77, 255, .45); } }
+
+/* Slow drifting glow blobs */
+@keyframes orb { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(6%, -8%) scale(1.1); } 66% { transform: translate(-6%, 6%) scale(.95); } }
+.anim-orb { animation: orb 16s ease-in-out infinite; }
+
+/* Spinning gradient border */
+@property --ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes ang { to { --ang: 360deg; } }
+.glow-border { position: relative; isolation: isolate; }
+.glow-border::before { content: ''; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; padding: 1px; background: conic-gradient(from var(--ang), transparent 0 60%, #7c4dff 75%, #ff2d8f 85%, transparent 95%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: ang 5s linear infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track, .backers-track, .anim-twinkle, .anim-float, .anim-pulse, .anim-spin-slow, .anim-ring, .grid-floor { animation: none; }
   html { scroll-behavior: auto; }
+  .marquee-track, .backers-track, .anim-twinkle, .anim-float, .anim-pulse, .anim-spin-slow, .anim-ring, .anim-orb, .word-in, .text-gradient-live, .glow-border::before { animation: none !important; }
+  .reveal { transition: none; opacity: 1 !important; transform: none !important; filter: none !important; }
+  .lift:hover { transform: none; }
 }
+.marquee-rev { animation-direction: reverse; }

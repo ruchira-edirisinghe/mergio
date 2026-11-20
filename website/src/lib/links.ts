@@ -6,10 +6,10 @@ const asset = (file: string) => `${REPO}/releases/latest/download/${file}`;
 export type OsId = 'windows' | 'portable' | 'mac' | 'linux';
 
 export const DOWNLOADS: { id: OsId; os: string; note: string; href: string }[] = [
-  { id: 'windows', os: 'Windows', note: 'Installer · 64-bit', href: asset('Mergio-Setup-windows-x64.exe') },
-  { id: 'portable', os: 'Windows portable', note: 'No install needed', href: asset('Mergio-windows-x64-portable.zip') },
-  { id: 'mac', os: 'macOS', note: 'Apple silicon · .dmg', href: asset('Mergio-macos-arm64.dmg') },
-  { id: 'linux', os: 'Linux', note: '.deb (or .tar.gz on GitHub)', href: asset('Mergio-linux-x64.deb') },
+  { id: 'windows', os: 'Windows', note: 'Installer', href: asset('Mergio-Setup-windows-x64.exe') },
+  { id: 'portable', os: 'Windows portable', note: '.zip', href: asset('Mergio-windows-x64-portable.zip') },
+  { id: 'mac', os: 'macOS', note: 'Apple silicon', href: asset('Mergio-macos-arm64.dmg') },
+  { id: 'linux', os: 'Linux', note: '.deb', href: asset('Mergio-linux-x64.deb') },
 ];
 
 /** Best guess of the visitor's OS, used to put their download first. */

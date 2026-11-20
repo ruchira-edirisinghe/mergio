@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, Bell, MessageSquare, Palette, PanelRight, type LucideIcon } from 'lucide-react';
+import { Reveal } from '../components/Reveal';
 import { Eyebrow } from '../components/ui';
 import { useInView } from '../lib/hooks';
 import { readme } from '../lib/links';
@@ -35,7 +36,7 @@ export function Modes() {
   return (
     <section id="modes" className="bg-ink px-4 sm:px-6 py-16 md:py-24 scroll-mt-4">
       <div ref={ref} className="max-w-[88rem] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        <div className="lg:pr-12 lg:pt-2 lg:sticky lg:top-8">
+        <Reveal variant="left" className="lg:pr-12 lg:pt-2 lg:sticky lg:top-8">
           <Eyebrow>Mergio in practice</Eyebrow>
           <h2 className="text-5xl md:text-6xl font-medium leading-none mb-6" style={{ letterSpacing: '-0.04em' }}>Built for<br />your stream</h2>
           <p className="text-white/60 text-base leading-relaxed max-w-sm mb-8 lg:mb-10">
@@ -60,8 +61,9 @@ export function Modes() {
               );
             })}
           </div>
-        </div>
+        </Reveal>
 
+        <Reveal variant="right" delay={120}>
         <div className="relative rounded-3xl overflow-hidden min-h-[760px] bg-night ring-1 ring-white/10" role="tabpanel" aria-label={m.title}>
           <VideoBackdrop clip={m.clip} active={inView} />
           <div className={`absolute inset-0 ${m.dim ? 'bg-[#07060c]/60' : 'bg-[#07060c]/25'}`} />
@@ -82,6 +84,7 @@ export function Modes() {
             </div>
           )}
         </div>
+        </Reveal>
       </div>
     </section>
   );
