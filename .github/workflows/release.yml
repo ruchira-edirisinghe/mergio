@@ -1,6 +1,6 @@
 name: Release
 
-# Push a tag like v1.0.1 to build OmniChat for Windows, macOS and Linux and publish a GitHub release.
+# Push a tag like v1.0.1 to build ZUNO-CHAT for Windows, macOS and Linux and publish a GitHub release.
 on:
   push:
     tags: ['v*']
@@ -16,11 +16,11 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            asset: OmniChat-windows-x64.zip
+            asset: ZUNO-CHAT-windows-x64.zip
           - os: macos-latest
-            asset: OmniChat-macos-arm64.tar.gz
+            asset: ZUNO-CHAT-macos-arm64.tar.gz
           - os: ubuntu-latest
-            asset: OmniChat-linux-x64.tar.gz
+            asset: ZUNO-CHAT-linux-x64.tar.gz
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -37,13 +37,13 @@ jobs:
         shell: pwsh
         run: |
           Copy-Item README.md, LICENSE dist/
-          Compress-Archive -Path dist/OmniChat.exe, dist/README.md, dist/LICENSE -DestinationPath ${{ matrix.asset }}
+          Compress-Archive -Path dist/ZUNO-CHAT.exe, dist/README.md, dist/LICENSE -DestinationPath ${{ matrix.asset }}
 
       - name: Package (macOS / Linux)
         if: runner.os != 'Windows'
         run: |
           cp README.md LICENSE dist/
-          tar -czf ${{ matrix.asset }} -C dist omnichat README.md LICENSE
+          tar -czf ${{ matrix.asset }} -C dist zuno-chat README.md LICENSE
 
       - uses: actions/upload-artifact@v4
         with:

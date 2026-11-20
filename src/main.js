@@ -13,7 +13,7 @@ function openBrowser(url) {
 }
 
 const argv = new Set(process.argv.slice(2));
-const port = Number(process.env.OMNICHAT_PORT) || settings.get().advanced.port;
+const port = Number(process.env.ZUNOCHAT_PORT) || settings.get().advanced.port;
 const dashboard = `http://localhost:${port}/dashboard`;
 const shouldOpen = !argv.has('--no-open') && settings.get().advanced.openDashboardOnStart;
 
@@ -32,7 +32,7 @@ server.on('error', e => {
 });
 
 server.listen(port, '127.0.0.1', () => {
-  log('app', `OmniChat ${pkg.version} running. Dashboard: ${dashboard}  Overlay: http://localhost:${port}/overlay  Data: ${DATA_DIR}`);
+  log('app', `ZUNO-CHAT ${pkg.version} running. Dashboard: ${dashboard}  Overlay: http://localhost:${port}/overlay  Data: ${DATA_DIR}`);
   manager.startAll();
   if (shouldOpen) openBrowser(dashboard);
 });

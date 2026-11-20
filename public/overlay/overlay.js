@@ -1,4 +1,4 @@
-/* OmniChat overlay: connects to the local OmniChat app and renders chat + events. No user text is ever set as HTML. */
+/* ZUNO-CHAT overlay: connects to the local ZUNO-CHAT app and renders chat + events. No user text is ever set as HTML. */
 (() => {
   'use strict';
   const chat = document.getElementById('chat');
@@ -153,7 +153,7 @@
   }
 
   /* ---------------- building blocks ---------------- */
-  function platIcon(m) { const s = h('span', 'plat'); s.title = m.platform; s.appendChild(omniIcon(m.platform)); return s; }
+  function platIcon(m) { const s = h('span', 'plat'); s.title = m.platform; s.appendChild(zunoIcon(m.platform)); return s; }
   function avatar(m, cls = 'av') {
     const src = safeUrl(m.user.avatar);
     const img = h('img', cls);
@@ -176,7 +176,7 @@
     }
     return wrap;
   }
-  function glyphBadge([icon, cls], b) { const s = h('span', `badge glyph ${cls}`); s.title = b.title || ''; s.appendChild(omniIcon(icon, { stroke: 2.6 })); return s; }
+  function glyphBadge([icon, cls], b) { const s = h('span', `badge glyph ${cls}`); s.title = b.title || ''; s.appendChild(zunoIcon(icon, { stroke: 2.6 })); return s; }
   function textBadge(b) { return h('span', 'badge txt', String(b.title || b.id || '').replace(/^kick-/, '').slice(0, 12)); }
 
   function nameEl(m) {
@@ -265,7 +265,7 @@
     const bubble = h('div', 'bubble');
     if (m.flags?.reply) {
       const r = h('span', 'reply');
-      r.appendChild(omniIcon('reply'));
+      r.appendChild(zunoIcon('reply'));
       r.appendChild(document.createTextNode(`${m.flags.reply.name}: ${m.flags.reply.text || ''}`));
       bubble.appendChild(r);
     }
@@ -296,8 +296,8 @@
     if (ev.live) card.classList.add('live-combo');
     const art = h('div', 'art');
     const imgUrl = safeUrl(ev.image);
-    if (imgUrl) { const img = h('img'); img.src = imgUrl; img.alt = ''; img.referrerPolicy = 'no-referrer'; img.onerror = () => img.replaceWith(omniIcon(ART[ev.kind] || 'star')); art.appendChild(img); }
-    else art.appendChild(omniIcon(ART[ev.kind] || 'star'));
+    if (imgUrl) { const img = h('img'); img.src = imgUrl; img.alt = ''; img.referrerPolicy = 'no-referrer'; img.onerror = () => img.replaceWith(zunoIcon(ART[ev.kind] || 'star')); art.appendChild(img); }
+    else art.appendChild(zunoIcon(ART[ev.kind] || 'star'));
     if (S.appearance.showAvatar && m.user.avatar) art.appendChild(avatar(m, 'av-mini'));
     if (CELEBRATE.has(ev.kind) && S.appearance.animation !== 'none') {
       const burst = h('span', 'burst');
@@ -312,7 +312,7 @@
       const rib = h('div', 'ribbon');
       if (label) rib.appendChild(h('span', 'rlabel', label));
       const chip = h('span', 'pchip');
-      chip.appendChild(omniIcon(m.platform));
+      chip.appendChild(zunoIcon(m.platform));
       chip.appendChild(document.createTextNode(`on ${PLATFORM_NAMES[m.platform] || m.platform}`));
       rib.appendChild(chip);
       info.appendChild(rib);
@@ -334,9 +334,9 @@
     const ev = m.event || {};
     const el = h('div', `msg compact ev-${m.type} p-${m.platform}`);
     const pill = h('div', 'pill');
-    if (S.appearance.showPlatform) { const g = h('span', 'gl'); g.appendChild(omniIcon(m.platform)); pill.appendChild(g); }
+    if (S.appearance.showPlatform) { const g = h('span', 'gl'); g.appendChild(zunoIcon(m.platform)); pill.appendChild(g); }
     if (S.appearance.showAvatar) pill.appendChild(avatar(m));
-    const g2 = h('span', 'gl'); g2.appendChild(omniIcon(ART[ev.kind] || 'star')); pill.appendChild(g2);
+    const g2 = h('span', 'gl'); g2.appendChild(zunoIcon(ART[ev.kind] || 'star')); pill.appendChild(g2);
     const nm = h('b', '', m.user.name); nm.style.color = nameColor(m);
     pill.append(nm, document.createTextNode(` ${ev.title || ''}${S.appearance.showEventLabels && m.type !== 'like' ? ` on ${PLATFORM_NAMES[m.platform] || m.platform}` : ''}`));
     if (ev.amount) pill.appendChild(h('span', 'amt', ` ${ev.amount}`));

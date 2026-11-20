@@ -10,11 +10,11 @@ labels: bug
 
 **Platform(s) involved:** YouTube / Twitch / Kick / TikTok / Facebook
 
-**OmniChat version:** (shown under the logo in the control panel)
+**ZUNO-CHAT version:** (shown under the logo in the control panel)
 
 **Operating system:**
 
-**Log lines** (from `data/omnichat.log` next to the app; remove anything private):
+**Log lines** (from `data/zuno-chat.log` next to the app; remove anything private):
 
 ```
 paste here

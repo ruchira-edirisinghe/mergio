@@ -25,7 +25,7 @@ function kickParts(content = '') {
 class KickConnector extends Connector {
   start() {
     this.attempt = 0;
-    this.clientId = `omnichat-${Math.random().toString(36).slice(2, 12)}`;
+    this.clientId = `zunochat-${Math.random().toString(36).slice(2, 12)}`;
     this.cmdId = 1;
     this.connect();
   }
@@ -180,7 +180,7 @@ class KickConnector extends Connector {
       case 'App\\Events\\StopStreamBroadcast':
         return this.setState('live', 'Connected to chat (stream ended)');
       default:
-        if (process.env.OMNICHAT_DEBUG) log('kick', 'unhandled', event, JSON.stringify(d).slice(0, 300));
+        if (process.env.ZUNOCHAT_DEBUG) log('kick', 'unhandled', event, JSON.stringify(d).slice(0, 300));
     }
   }
 }
