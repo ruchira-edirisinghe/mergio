@@ -1,6 +1,7 @@
 'use strict';
 const { Connector, textParts } = require('./base');
 const { backoff, log } = require('../util');
+const gifts = require('../gifts');
 
 const TT_PINK = '#fe2c55';
 let lib = null;
@@ -14,6 +15,7 @@ class TikTokConnector extends Connector {
     this.attempt = 0;
     this.streaks = new Map();   // user+gift -> message id while a gift combo is running
     this.likes = new Map();     // user -> { id, count, timer }
+    gifts.warm();
     this.connect();
   }
 
@@ -79,15 +81,16 @@ class TikTokConnector extends Connector {
   }
 
   onGift(d) {
-    const det = d.giftDetails || {};
-    const ext = d.extendedGiftInfo || d.gift || {};
-    const name = det.giftName || ext.name || 'a gift';
-    const diamonds = Number(det.diamondCount ?? ext.diamond_count ?? 0);
+    const g = d.gift || d.giftDetails || {};        // current protocol: gift; older ones: giftDetails
+    const ext = d.extendedGiftInfo || {};
+    const known = gifts.tiktokGift(d.giftId, g.name || g.giftName || ext.name);
+    const name = g.name || g.giftName || ext.name || known?.name || 'a gift';
+    const diamonds = Number(g.diamondCount || g.diamond_count || ext.diamond_count || known?.diamonds || 0);
     const count = Number(d.repeatCount) || 1;
-    const image = pic(det.giftImage) || pic(ext.image) || pic(ext.icon);
+    const image = pic(g.image) || g.giftImage?.giftPictureUrl || pic(g.giftImage) || pic(ext.image) || known?.image || pic(g.icon) || '';
     const user = this.user(d.user, d.userIdentity);
     const key = `${user.id}:${d.giftId}`;
-    const streakable = det.giftType === 1 || ext.type === 1;
+    const streakable = g.type === 1 || g.giftType === 1 || ext.type === 1;
     let id = this.streaks.get(key);
     if (!id) { id = `ttg${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`; this.streaks.set(key, id); }
     if (!streakable || d.repeatEnd) this.streaks.delete(key);
