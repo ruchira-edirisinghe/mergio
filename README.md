@@ -215,15 +215,19 @@ Below that, **Which alerts and messages to show** lists everything each platform
 
 ### Step 7 · Add the overlay to OBS
 
-1. In Mergio, open **Add to OBS** and click **Copy link** next to your overlay link (`http://localhost:8787/overlay`).
+The **Add to OBS** page shows your two overlays side by side: the **Chat overlay** and the **Alerts overlay**, each with its link, the size to use and whether OBS is showing it. If the alerts overlay is off, click **Turn on alerts overlay** right there (or **Use both** to keep a small line in the chat as well).
+
+1. In Mergio, open **Add to OBS** and click **Copy link** on the Chat overlay card (`http://localhost:8787/overlay`).
 2. In OBS, click **+** under *Sources* and choose **Browser**. Name it *Mergio* and click **OK**.
 3. Paste the link into **URL**. Set **Width** `500` and **Height** `800` (any size works; the chat fills the box).
 4. Leave everything else as it is and click **OK**.
 5. Move and resize the chat on your scene like any other source.
 
+Using the alerts overlay? Repeat these steps with the Alerts overlay link, name it *Mergio Alerts* and use **800 × 500**.
+
 The **Add to OBS** page turns green (*Mergio is showing in OBS*) as soon as it works.
 
-<div align="center"><img src="docs/guide/05-add-to-obs.png" alt="The Add to OBS page with the overlay link" width="820"></div>
+<div align="center"><img src="docs/guide/05-add-to-obs.png" alt="The Add to OBS page with the chat overlay and alerts overlay cards" width="820"></div>
 
 The link never changes, and style changes reach OBS instantly, so you never have to copy it again. It also works in Streamlabs Desktop, Meld, vMix, XSplit and TikTok LIVE Studio (add it as a browser or web source).
 
