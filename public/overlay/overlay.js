@@ -24,6 +24,9 @@
     facebook: { chat: 'messages' },
   };
   const COMPACT = new Set(['join', 'like', 'share']);
+  // Alerts that can move to the separate alerts overlay (everything but chat and the small notes).
+  const NOT_ALERTS = new Set(['chat', 'join', 'like', 'share', 'announcement']);
+  const isAlert = m => !!m.event && !NOT_ALERTS.has(m.type);
   const PLATFORM_NAMES = { twitch: 'Twitch', youtube: 'YouTube', kick: 'Kick', tiktok: 'TikTok', facebook: 'Facebook' };
   const LABELS = {
     sub: 'New subscriber', giftsub: 'Gifted subs', giftmember: 'Gifted memberships', follow: 'New follower', gift: 'Gift', kicks: 'Kicks',
@@ -140,6 +143,7 @@
     if (!sec) return false;
     const key = PLATFORM_KEYS[m.platform]?.[m.type] || 'messages';
     if (sec[key] === false) return false;
+    if (S.alerts?.placement === 'overlay' && isAlert(m)) return false; // shown on the alerts overlay instead
     if (m.platform === 'tiktok' && m.type === 'gift' && (m.event?.diamonds || 0) < (sec.minGiftDiamonds || 0)) return false;
     if (m.platform === 'twitch' && m.flags?.shared && sec.sharedChat === 'hide') return false;
     const g = S.general;
