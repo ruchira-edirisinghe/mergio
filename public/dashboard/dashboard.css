@@ -459,3 +459,22 @@ body.quit .offline-bar::after { content: ' (You closed it from Settings.)'; }
 .pill-ok svg { width: 15px; height: 15px; }
 .install-how { max-width: 340px; text-align: right; }
 @media (max-width: 1280px) { .top-actions #btnInstall span { display: none; } }
+/* Add to OBS: chat and alerts overlays side by side */
+.ovs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.ov { display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; }
+.ov::before { content: ''; position: absolute; inset: 0 0 auto; height: 3px; background: var(--ovc); }
+.ov-chat { --ovc: linear-gradient(90deg, var(--accent), #4d8dff); }
+.ov-alerts { --ovc: linear-gradient(90deg, #ffb020, var(--accent-2)); }
+.ov.off::before { opacity: .35; }
+.ov-h { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; }
+.ov-h h2 { margin: 2px 0 3px; font-size: 16.5px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.ov-h .sub { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.ov-ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: var(--ovc); }
+.ov-ic svg { width: 21px; height: 21px; }
+.ov.off .ov-ic { filter: grayscale(.7) brightness(.8); }
+.ov-b { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.ov .urlbox code { min-width: 0; }
+.ov-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; color: var(--muted); font-size: 13px; }
+.ov-meta a { color: #c9bcff; }
+.ov .hint { margin: 0; }
+@media (max-width: 900px) { .ovs { grid-template-columns: 1fr; } }

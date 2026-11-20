@@ -1,36 +1,71 @@
-/* Add to OBS: live detection of the overlay plus step-by-step instructions. */
+/* Add to OBS: the two overlays (chat and alerts) side by side, live detection, and step-by-step instructions. */
 (() => {
   const { h, icon } = MG;
+  const alertsOn = () => MG.st.settings.alerts.placement !== 'chat';
 
   function status() {
-    const o = MG.overlays;
-    if (o.obs) return h('div', { class: 'banner ok' }, icon('check'), h('div', {}, h('b', { text: 'Mergio is showing in OBS' }), h('span', { text: 'Your overlay is connected. Style changes appear in OBS instantly.' })));
+    const o = MG.overlays, a = o.alerts || {};
+    if (o.obs && alertsOn() && !a.obs) return h('div', { class: 'banner warn' }, icon('info'), h('div', {}, h('b', { text: 'The chat is in OBS. Add the alerts overlay too' }), h('span', { text: 'Alerts are set to show on their own overlay, so add it as a second Browser source (see below).' })));
+    if (o.obs) return h('div', { class: 'banner ok' }, icon('check'), h('div', {}, h('b', { text: 'Mergio is showing in OBS' }), h('span', { text: alertsOn() ? 'Both overlays are connected. Changes appear in OBS instantly.' : 'Your overlay is connected. Style changes appear in OBS instantly.' })));
     if (o.count) return h('div', { class: 'banner warn' }, icon('info'), h('div', {}, h('b', { text: 'The overlay is open, but not in OBS' }), h('span', { text: "It's open in a browser or another streaming app. If that's your streaming app, you're good to go." })));
     return h('div', { class: 'banner' }, icon('monitor'), h('div', {}, h('b', { text: 'Not in OBS yet' }), h('span', { text: 'Follow the steps below. This box turns green as soon as OBS shows the overlay.' })));
+  }
+
+  /** Status pill for one overlay: in OBS, open elsewhere, or not added. */
+  function pill(o, off) {
+    if (off) return h('span', { class: 'pill' }, 'Off');
+    if (o?.obs) return h('span', { class: 'pill live' }, h('span', { class: 'dot' }), 'In OBS');
+    if (o?.count) return h('span', { class: 'pill waiting' }, h('span', { class: 'dot' }), 'Open, not in OBS');
+    return h('span', { class: 'pill' }, h('span', { class: 'dot' }), 'Not added yet');
+  }
+
+  /** One overlay card: what it is, its link and the size to use in OBS. */
+  function overlayCard({ cls, ic, title, text, o, url, name, w, ht, off, extra }) {
+    return h('section', { class: `card ov ${cls} ${off ? 'off' : ''}` },
+      h('div', { class: 'ov-h' }, h('span', { class: 'ov-ic' }, icon(ic)), h('div', {}, h('h2', {}, title, pill(o, off)), h('p', { class: 'sub', text }))),
+      off ? extra : h('div', { class: 'ov-b' },
+        h('div', { class: 'urlbox' }, h('code', { text: url }), h('button', { class: 'btn primary', onclick: () => MG.copy(url) }, icon('copy'), 'Copy link')),
+        h('div', { class: 'ov-meta' }, h('span', {}, 'Name it ', h('i', { text: name })), h('span', {}, 'Size ', h('kbd', { text: String(w) }), ' × ', h('kbd', { text: String(ht) }))),
+        extra || null));
+  }
+
+  function overlays() {
+    const st = MG.st;
+    const on = alertsOn();
+    const turnOn = (id, msg) => { MG.save('alerts', 'placement', id); MG.render(); MG.toast(msg); };
+    return h('div', { class: 'ovs', id: 'obsOverlays' },
+      overlayCard({ cls: 'ov-chat', ic: 'chat', title: 'Chat overlay', text: 'Every chat in one box.' + (on ? '' : ' Alerts show inside it too.'), o: MG.overlays, url: st.overlayUrl, name: 'Mergio', w: 500, ht: 800 }),
+      overlayCard({ cls: 'ov-alerts', ic: 'bell', title: 'Alerts overlay', text: 'Subs, gifts and Super Chats pop up big, anywhere you place it on your scene.', o: MG.overlays.alerts, url: st.alertsUrl, name: 'Mergio Alerts', w: 800, ht: 500, off: !on,
+        extra: on
+          ? h('div', { class: 'ov-meta' }, h('span', { text: st.settings.alerts.placement === 'both' ? 'Alerts also show as a small line in the chat.' : 'The chat stays clean: alerts only show here.' }),
+            h('a', { href: '#alerts', onclick: e => { e.preventDefault(); MG.go('alerts'); } }, 'Change'))
+          : h('div', { class: 'ov-b' },
+            h('p', { class: 'hint', text: 'Off right now: alerts show inside the chat. Turn it on to give them their own spot on your stream.' }),
+            h('div', { class: 'btn-row' },
+              h('button', { class: 'btn primary', onclick: () => turnOn('overlay', 'Alerts overlay is on. Copy its link and add it to OBS.') }, icon('bell'), 'Turn on alerts overlay'),
+              h('button', { class: 'btn ghost', onclick: () => turnOn('both', 'Alerts show in the chat and on their own overlay') }, 'Use both'))) }));
   }
 
   function render(c) {
     const st = MG.st;
     const url = st.overlayUrl;
     const dash = `http://localhost:${st.settings.advanced.port}/dashboard`;
+    const two = alertsOn();
     c.append(h('div', { id: 'obsStatus' }, status()));
+    c.append(h('h2', { class: 'section-h', text: 'Your overlays' }));
+    c.append(overlays());
 
-    c.append(h('section', { class: 'card' }, h('h2', { text: 'Add the overlay to OBS' }),
+    c.append(h('section', { class: 'card' }, h('h2', { text: two ? 'Add each overlay to OBS' : 'Add the overlay to OBS' }),
+      two ? h('p', { class: 'sub', text: 'Do these steps twice: once for the chat overlay and once for the alerts overlay.' }) : null,
       h('ol', { class: 'big-steps' },
-        h('li', {}, h('b', { text: 'Copy your overlay link' }),
-          h('div', { class: 'urlbox' }, h('code', { text: url }), h('button', { class: 'btn primary', onclick: () => MG.copy(url) }, icon('copy'), 'Copy link')),
-          h('span', { class: 'hint', text: "This link never changes, so you only do this once." })),
+        h('li', {}, h('b', { text: 'Copy the overlay link' }),
+          h('span', { text: 'Use the Copy link button above. Links never change, so you only do this once.' })),
         h('li', {}, h('b', { text: 'In OBS, add a Browser source' }),
-          h('span', {}, 'Under ', h('b', { text: 'Sources' }), ' click ', h('kbd', { text: '+' }), ', choose ', h('b', { text: 'Browser' }), ', name it ', h('i', { text: 'Mergio' }), ' and click OK.')),
+          h('span', {}, 'Under ', h('b', { text: 'Sources' }), ' click ', h('kbd', { text: '+' }), ', choose ', h('b', { text: 'Browser' }), ', give it the name shown above and click OK.')),
         h('li', {}, h('b', { text: 'Paste the link and set the size' }),
-          h('span', {}, 'Paste into ', h('b', { text: 'URL' }), '. Set Width ', h('kbd', { text: '500' }), ' and Height ', h('kbd', { text: '800' }), ', then click OK.')),
+          h('span', {}, 'Paste into ', h('b', { text: 'URL' }), ' and set Width and Height to the size shown above, then click OK.')),
         h('li', {}, h('b', { text: 'Place it on your scene' }),
-          h('span', { text: 'Drag and resize the chat like any other source. Press "Send test" at the top to see it in action.' })))));
-
-    if (st.settings.alerts.placement !== 'chat') c.append(MG.alertsSetup());
-    else c.append(h('details', { class: 'card fold' }, h('summary', {}, h('b', { text: 'Want alerts on their own overlay?' }), h('span', { text: 'Place subs and gifts anywhere on your scene' })),
-      h('p', { class: 'sub', text: 'Mergio can show alerts as a separate browser source instead of inside the chat.' }),
-      h('button', { class: 'btn', onclick: () => MG.go('alerts') }, icon('bell'), 'Choose on the Alerts page')));
+          h('span', { text: two ? 'Drag and resize each overlay like any other source, for example the chat on the side and alerts at the top middle. The alerts overlay is see-through until an alert comes in.' : 'Drag and resize the chat like any other source. Press "Send test" at the top to see it in action.' })))));
 
     c.append(h('section', { class: 'card' }, h('h2', { text: 'Control Mergio from inside OBS (optional)' }),
       h('p', { class: 'sub', text: 'Put this control panel in an OBS dock to read every chat and change settings without leaving OBS.' }),
@@ -58,6 +93,9 @@
   }
 
   MG.page({ id: 'obs', order: 20, group: 'setup', label: 'Add to OBS', icon: 'monitor', title: 'Add to OBS', subtitle: 'Show the overlay on your stream',
-    badge: () => (MG.overlays.obs ? { text: '✓', cls: 'good' } : null), render });
-  MG.on('overlays', () => { const el = document.getElementById('obsStatus'); if (el) { el.textContent = ''; el.append(status()); } });
+    badge: () => (MG.overlays.obs && (!MG.st || !alertsOn() || MG.overlays.alerts?.obs) ? { text: '✓', cls: 'good' } : null), render });
+  MG.on('overlays', () => {
+    const el = document.getElementById('obsStatus'); if (el) { el.textContent = ''; el.append(status()); }
+    const ov = document.getElementById('obsOverlays'); if (ov) ov.replaceWith(overlays());
+  });
 })();
