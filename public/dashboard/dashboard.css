@@ -157,6 +157,15 @@ details.qa { border: 1px solid var(--line); border-radius: 12px; padding: 12px 1
 details.qa + details.qa { margin-top: 10px; }
 details.qa summary { cursor: pointer; font-weight: 650; }
 details.qa p, details.qa li { color: #c8c8d8; }
+details.fb-guide > ol { margin: 10px 0 0; padding-left: 22px; display: grid; gap: 12px; }
+details.fb-guide li { line-height: 1.55; }
+details.fb-guide li::marker { color: #a78bfa; font-weight: 700; }
+details.fb-guide .fbg-t { display: block; color: #fff; margin-bottom: 2px; }
+details.fb-guide li b:not(.fbg-t) { color: #ececf6; font-weight: 650; }
+details.fb-guide code { font: 12.5px ui-monospace, Consolas, monospace; padding: 1px 6px; border-radius: 5px; background: #121318; border: 1px solid var(--line-2); color: #d8ceff; white-space: nowrap; }
+details.fb-guide .hint { display: block; margin-top: 4px; }
+details.fb-guide .fbg-intro { margin: 10px 0 0; }
+details.fb-guide .fbg-foot { margin: 12px 0 0; }
 
 /* ---------- preview pane ---------- */
 .preview { border-left: 1px solid var(--line); background: #0e0e15; display: flex; flex-direction: column; min-height: 0; }
