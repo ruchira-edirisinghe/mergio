@@ -193,8 +193,21 @@
     wn.showModal();
     wn.querySelector('.upd-actions .btn').focus();
     wnNotes(w);
-    // If GitHub can't be reached, stop waiting after a few seconds and point to the online notes.
-    setTimeout(() => { if (wn) { wn.dataset.waited = '1'; wnNotes(MG.st.update?.whatsNew || w); } }, 6000);
+    if (!(w.notes || []).length) waitForNotes();
+  }
+
+  /** Right after an update the notes can arrive before the live connection is open, so ask for them
+      directly until they're there. If GitHub can't be reached, point to the online notes instead. */
+  function waitForNotes(tries = 0) {
+    setTimeout(async () => {
+      if (!wn) return;
+      try { MG.st.update = await MG.api('GET', '/api/update'); } catch { /* still starting */ }
+      const w = MG.st.update?.whatsNew || {};
+      if ((w.notes || []).length) return wnNotes(w);
+      if (tries < 7) return waitForNotes(tries + 1);
+      wn.dataset.waited = '1';
+      wnNotes(w);
+    }, 1000);
   }
 
   MG.openUpdate = (force = true) => open(MG.st.update, force);
