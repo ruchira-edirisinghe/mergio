@@ -10,6 +10,7 @@
     "start": "node src/main.js",
     "dev": "node --watch src/main.js --no-open",
     "icons": "node scripts/gen-icons.mjs",
+    "build": "node scripts/build.mjs",
     "check": "node scripts/check.mjs"
   },
   "keywords": [
