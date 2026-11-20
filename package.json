@@ -1,10 +1,10 @@
 {
-  "name": "zuno-chat",
+  "name": "mergio",
   "version": "1.0.0",
   "description": "One lightweight overlay for every live chat: YouTube, Twitch, Kick, TikTok and Facebook in a single OBS browser source.",
   "main": "src/main.js",
   "bin": {
-    "zuno-chat": "src/main.js"
+    "mergio": "src/main.js"
   },
   "scripts": {
     "start": "node src/main.js",
@@ -31,11 +31,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ruchira-edirisinghe/zuno-chat.git"
+    "url": "https://github.com/ruchira-edirisinghe/mergio.git"
   },
-  "homepage": "https://github.com/ruchira-edirisinghe/zuno-chat#readme",
+  "homepage": "https://github.com/ruchira-edirisinghe/mergio#readme",
   "bugs": {
-    "url": "https://github.com/ruchira-edirisinghe/zuno-chat/issues"
+    "url": "https://github.com/ruchira-edirisinghe/mergio/issues"
   },
   "engines": {
     "node": ">=20"

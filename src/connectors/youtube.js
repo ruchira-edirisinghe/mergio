@@ -162,7 +162,7 @@ class YouTubeConnector extends Connector {
         return this.push({ id: r.id, time, type: 'member', user: author(r),
           event: { kind: 'giftreceived', title: simple(r.message) || 'received a gift membership', color: '#0f9d58' } });
       default:
-        if (process.env.ZUNOCHAT_DEBUG) log('youtube', 'unhandled renderer', kind);
+        if (process.env.MERGIO_DEBUG) log('youtube', 'unhandled renderer', kind);
     }
   }
 }

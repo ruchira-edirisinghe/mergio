@@ -91,7 +91,7 @@ class TwitchConnector extends Connector {
     ws.on('close', () => this.retry());
     ws.on('error', e => log('twitch', e.message));
     clearInterval(this.pingTimer);
-    this.pingTimer = setInterval(() => { try { ws.send('PING :zunochat'); } catch { /* closed */ } }, 240000);
+    this.pingTimer = setInterval(() => { try { ws.send('PING :mergio'); } catch { /* closed */ } }, 240000);
   }
 
   retry() {

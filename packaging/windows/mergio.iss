@@ -1,19 +1,19 @@
-; ZUNO-CHAT Windows installer (Inno Setup 6).
+; Mergio Windows installer (Inno Setup 6).
 ; Built by `npm run package` on Windows, which passes the version and paths:
-;   ISCC /DAppVersion=1.1.0 /DSourceExe=..\..\dist\ZUNO-CHAT.exe /DOutputDir=..\..\dist\release zuno-chat.iss
+;   ISCC /DAppVersion=1.1.0 /DSourceExe=..\..\dist\Mergio.exe /DOutputDir=..\..\dist\release mergio.iss
 
 #ifndef AppVersion
   #define AppVersion "0.0.0"
 #endif
 #ifndef SourceExe
-  #define SourceExe "..\..\dist\ZUNO-CHAT.exe"
+  #define SourceExe "..\..\dist\Mergio.exe"
 #endif
 #ifndef OutputDir
   #define OutputDir "..\..\dist\release"
 #endif
-#define AppName "ZUNO-CHAT"
-#define AppExe "ZUNO-CHAT.exe"
-#define AppUrl "https://github.com/ruchira-edirisinghe/zuno-chat"
+#define AppName "Mergio"
+#define AppExe "Mergio.exe"
+#define AppUrl "https://github.com/ruchira-edirisinghe/mergio"
 
 [Setup]
 AppId={{D822005D-DA83-4740-8570-C73CFAEF6D41}
@@ -39,7 +39,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 LicenseFile=..\..\LICENSE
 OutputDir={#OutputDir}
-OutputBaseFilename=ZUNO-CHAT-Setup-windows-x64
+OutputBaseFilename=Mergio-Setup-windows-x64
 SetupIconFile=..\..\assets\icon.ico
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
@@ -52,27 +52,27 @@ CloseApplications=no
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Shortcuts:"
-Name: "autostart"; Description: "Start ZUNO-CHAT quietly when I sign in to Windows (keeps the overlay ready)"; GroupDescription: "Startup:"; Flags: unchecked
+Name: "autostart"; Description: "Start Mergio quietly when I sign in to Windows (keeps the overlay ready)"; GroupDescription: "Startup:"; Flags: unchecked
 
 [Files]
 Source: "{#SourceExe}"; DestDir: "{app}"; DestName: "{#AppExe}"; Flags: ignoreversion
 Source: "..\..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 
 [Icons]
-Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "Open the ZUNO-CHAT control panel"
-Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "Open the ZUNO-CHAT control panel"; Tasks: desktopicon
+Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "Open the Mergio control panel"
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "Open the Mergio control panel"; Tasks: desktopicon
 ; Same file the in-app "Start with Windows" switch manages, so both stay in sync.
-Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; Parameters: "--autostart"; Comment: "ZUNO-CHAT chat overlay"; Tasks: autostart
+Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExe}"; Parameters: "--autostart"; Comment: "Mergio chat overlay"; Tasks: autostart
 
 [Run]
-Filename: "{app}\{#AppExe}"; Description: "Open ZUNO-CHAT now"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#AppExe}"; Description: "Open Mergio now"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM {#AppExe}"; Flags: runhidden; RunOnceId: "StopApp"
 
 [UninstallDelete]
 Type: files; Name: "{userstartup}\{#AppName}.lnk"
-Type: files; Name: "{app}\data\zuno-chat.log"
+Type: files; Name: "{app}\data\mergio.log"
 
 [Code]
 // The app has no window, so stop a running copy before files are replaced.

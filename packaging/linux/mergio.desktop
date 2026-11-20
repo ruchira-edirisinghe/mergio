@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=ZUNO-CHAT
+Name=Mergio
 GenericName=Chat overlay
 Comment=Every live chat in one OBS overlay
 Exec=@EXEC@
-Icon=zuno-chat
+Icon=mergio
 Terminal=false
 Categories=AudioVideo;Video;Network;
 Keywords=obs;stream;chat;overlay;multichat;twitch;youtube;kick;tiktok;facebook;

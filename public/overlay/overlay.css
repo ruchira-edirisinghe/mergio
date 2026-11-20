@@ -1,4 +1,4 @@
-/* ZUNO-CHAT overlay. All look-and-feel comes from CSS variables that overlay.js sets from your settings. */
+/* Mergio overlay. All look-and-feel comes from CSS variables that overlay.js sets from your settings. */
 :root {
   --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
   --fs: 20px;
