@@ -59,9 +59,9 @@
       [G, { key: 'groupConsecutiveMessages', label: 'Group messages from the same person', type: 'toggle' }],
     ] },
     { title: 'Alert look', sub: 'Subs, gifts, follows and Super Chats', items: [
-      [A, { key: 'eventStyle', label: 'Alerts appear as', type: 'select', options: [['card', 'Big highlighted cards'], ['inline', 'Normal chat lines']] }],
-      [A, { key: 'showEventLabels', label: 'Label with the platform', hint: 'e.g. NEW FOLLOWER · on TikTok', type: 'toggle' }],
-      [A, { key: 'followStyle', label: 'New followers appear as', type: 'select', options: [['card', 'Big alert card'], ['pill', 'Small note']] }],
+      [A, { key: 'eventStyle', label: 'Alerts in chat look like', type: 'select', options: [['compact', 'Chat lines with the gift icon (calm)'], ['card', 'Big highlighted cards']], keywords: 'highlight card compact' }],
+      [A, { key: 'showEventLabels', label: 'Label with the platform', hint: 'e.g. NEW FOLLOWER · on TikTok', type: 'toggle', when: s => s.appearance.eventStyle === 'card' }],
+      [A, { key: 'followStyle', label: 'New followers appear as', type: 'select', options: [['card', 'Like other alerts'], ['pill', 'Small note']] }],
       [G, { key: 'joinLifetime', label: 'Show "joined" notes for', hint: 'They roll through one small note', type: 'range', min: 2, max: 20, unit: 's' }],
     ] },
     { title: 'Filters', sub: 'Keep bots, commands and unwanted words off screen', items: [

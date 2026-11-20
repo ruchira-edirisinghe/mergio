@@ -280,17 +280,34 @@
     return el;
   }
 
+  /** An alert as a calm chat line: the gift picture (or an icon), what happened and the amount, with a thin coloured edge. */
+  function renderLine(m) {
+    const ev = m.event || {};
+    const el = h('div', `msg chat alert-line ev-${m.type} ev-${ev.kind || m.type} p-${m.platform}`);
+    if (ev.color) el.style.setProperty('--ev', ev.color);
+    const bubble = h('div', 'bubble');
+    const hd = head(m);
+    const what = h('span', 'what');
+    const ic = h('span', 'ev-ic');
+    const imgUrl = safeUrl(ev.image);
+    if (imgUrl) { const img = h('img'); img.src = imgUrl; img.alt = ''; img.referrerPolicy = 'no-referrer'; img.onerror = () => img.replaceWith(mergioIcon(ART[ev.kind] || 'star')); ic.appendChild(img); }
+    else ic.appendChild(mergioIcon(ART[ev.kind] || 'star'));
+    what.appendChild(ic);
+    if (ev.title) what.appendChild(h('span', 'ev-title', ev.title));
+    // Only real amounts, and only when the title doesn't already say it ("gifted 5 subs" doesn't need "5 gifts").
+    const num = String(ev.amount || '').match(/\d[\d.,]*/)?.[0];
+    if (num && (/^[×x]/i.test(ev.amount) || !(ev.title || '').includes(num))) what.appendChild(h('span', 'amount', ev.amount));
+    if (ev.live) el.classList.add('live-combo');
+    hd.appendChild(what);
+    bubble.appendChild(hd);
+    if (S.appearance.showMessage && (m.parts || []).length) bubble.appendChild(body(m));
+    el.appendChild(bubble);
+    return el;
+  }
+
   function renderCard(m) {
     const ev = m.event || {};
     const el = h('div', `msg event ev-${m.type} ev-${ev.kind || m.type} p-${m.platform}`);
-    if (S.appearance.eventStyle === 'inline') {
-      const c = renderChat(m);
-      c.classList.add('event-inline');
-      const t = h('span', 'title', ` ${ev.title || ''}${ev.amount ? ` · ${ev.amount}` : ''} `);
-      t.style.fontWeight = 800; t.style.color = ev.color || 'var(--pc)';
-      c.querySelector('.head')?.appendChild(t);
-      return c;
-    }
     const card = h('div', 'card');
     if (ev.color) card.style.setProperty('--ev', ev.color);
     if (ev.live) card.classList.add('live-combo');
@@ -346,7 +363,9 @@
 
   function build(m) {
     const compact = COMPACT.has(m.type) || (m.type === 'follow' && S.appearance.followStyle === 'pill');
-    const el = compact ? renderPill(m) : m.event && m.type !== 'chat' ? renderCard(m) : renderChat(m);
+    const el = compact ? renderPill(m)
+      : m.event && m.type !== 'chat' ? (S.appearance.eventStyle === 'card' ? renderCard(m) : renderLine(m))
+      : renderChat(m);
     el.dataset.id = m.id;
     el.dataset.user = `${m.sourceId}:${m.user.id}`;
     el.dataset.source = m.sourceId;
@@ -419,6 +438,7 @@
     }
     const card = el.querySelector('.card');
     if (card) card.classList.toggle('live-combo', !!m.event?.live);
+    if (el.classList.contains('alert-line')) el.classList.toggle('live-combo', !!m.event?.live);
     if (hideAfter()) scheduleHide(el, hideAfter() * 2);
   }
 

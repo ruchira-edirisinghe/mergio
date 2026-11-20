@@ -78,7 +78,24 @@ body:not(.inline) .name::after { content: none; }
 .msg.first .bubble::before { content: 'FIRST MESSAGE'; display: block; font-size: .55em; font-weight: 900; letter-spacing: .12em; color: #7cf29c; margin-bottom: .2em; }
 .msg.action .body { font-style: italic; color: var(--uc, var(--text)); }
 
-/* ---------- event cards (subs, gifts, super chats, raids, cheers…) ---------- */
+/* ---------- alerts as calm chat lines (the default) ---------- */
+.alert-line { --ev: var(--pc); }
+body.bubbles .alert-line .bubble { background: linear-gradient(90deg, color-mix(in srgb, var(--ev) 16%, transparent), transparent 75%), var(--bubble); }
+body.bubbles.accent .alert-line .bubble { box-shadow: inset 3px 0 0 var(--ev); }
+body.bubbles.accent.align-right .alert-line .bubble { box-shadow: inset -3px 0 0 var(--ev); }
+.alert-line .what { display: inline-flex; align-items: center; gap: .3em; flex-wrap: wrap; }
+body.inline .alert-line .what { display: inline; }
+body.inline .alert-line .what > * { margin-right: .28em; }
+.alert-line .name::after { content: none; }
+.ev-ic { display: inline-flex; align-items: center; justify-content: center; width: 1.35em; height: 1.35em; flex: none; vertical-align: middle; }
+.ev-ic img { width: 100%; height: 100%; object-fit: contain; }
+.ev-ic svg { width: 85%; height: 85%; color: color-mix(in srgb, var(--ev) 70%, #fff); }
+.ev-title { opacity: .85; font-weight: 600; }
+.alert-line .amount { background: none; padding: 0; border-radius: 0; font-size: 1em; font-weight: 800; color: color-mix(in srgb, var(--ev) 45%, #fff); font-variant-numeric: tabular-nums; }
+.alert-line .amount.bump { display: inline-block; animation: bump .45s cubic-bezier(.34, 1.56, .64, 1); }
+.alert-line.live-combo .ev-ic { animation: pulse 1s ease-in-out infinite; }
+
+/* ---------- big event cards (optional: Style > Alert look) ---------- */
 .card {
   --ev: var(--pc);
   position: relative; display: flex; gap: .7em; align-items: center; max-width: 100%;

@@ -37,9 +37,9 @@ const DEFAULTS = {
     emoteScale: 1.4,
     bigEmotes: true,
     maxMessages: 30,
-    eventStyle: 'card',         // card | inline
+    eventStyle: 'compact',      // compact (a chat line with the gift icon) | card (big highlighted card)
     showEventLabels: true,      // 'NEW FOLLOWER - on TikTok' label on alerts
-    followStyle: 'card',        // card | pill
+    followStyle: 'card',        // card (like other alerts) | pill (small note)
   },
   general: {
     fadeMessages: false,        // messages disappear after hideAfter seconds
@@ -61,7 +61,7 @@ const DEFAULTS = {
   kick: { messages: true, subs: true, giftSubs: true, hosts: true, rewards: true, kicksGifts: true, follows: true },
   tiktok: { messages: true, joins: true, gifts: true, likes: true, follows: true, shares: false, subs: true, minGiftDiamonds: 0 },
   facebook: { messages: true },
-  advanced: { port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
+  advanced: { configVersion: 2, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
   sources: [],
 };
 
@@ -80,17 +80,24 @@ function merge(base, over) {
 
 /** Brings configs from older versions up to date. */
 function migrate(raw) {
-  const g = raw?.general;
+  if (!raw || typeof raw !== 'object') return raw;
+  const version = Number(raw.advanced?.configVersion) || 1;
+  // 1.2 made alerts in chat calmer: older configs move from the big cards to the compact line once.
+  if (version < 2 && raw.appearance) raw.appearance.eventStyle = 'compact';
+  const g = raw.general;
   // Before 1.2, "hide after 0 seconds" meant "never hide"; now there is a separate switch.
   if (g && !('fadeMessages' in g)) {
     g.fadeMessages = Number(g.hideAfter) > 0;
     if (!g.fadeMessages) delete g.hideAfter;
   }
+  if (version < 2) { (raw.advanced ||= {}).configVersion = 2; migrated = true; }
   return raw;
 }
 
-let current = load();
+let migrated = false;
 let saveTimer = null;
+let current = load();
+if (migrated) save();
 
 function load() {
   try { return merge(DEFAULTS, migrate(JSON.parse(fs.readFileSync(FILE, 'utf8')))); }
