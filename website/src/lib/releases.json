@@ -1,0 +1,258 @@
+{
+ "overrides": {
+  "v1.1.1": [
+   {
+    "title": "Opening Mergio again works",
+    "text": "Clicking the Mergio icon while it was already running did nothing. Now it opens the control panel of the copy that is running."
+   }
+  ],
+  "v1.1.0": [
+   {
+    "title": "Installers for every system",
+    "text": "A Windows installer, a macOS disk image and Linux packages, so Mergio installs like any other app."
+   },
+   {
+    "title": "A new name: Mergio",
+    "text": "The app got its final name and logo."
+   },
+   {
+    "title": "Getting-started tour",
+    "text": "The first time you open Mergio, a short tour shows how to connect your chats, style the overlay and add it to OBS."
+   },
+   {
+    "title": "Complete setup guide",
+    "text": "The guide on GitHub walks through installing, connecting every platform and adding the overlay to OBS, step by step."
+   }
+  ],
+  "v1.0.0": [
+   {
+    "title": "Every live chat in one overlay",
+    "text": "Chats from YouTube, Twitch, Kick, TikTok and Facebook, merged into a single OBS browser source."
+   },
+   {
+    "title": "A control panel",
+    "text": "Add your chats, choose a style and send test messages from a control panel in your browser."
+   },
+   {
+    "title": "One small app",
+    "text": "A single-file app that runs quietly in the background, with nothing else to install."
+   }
+  ]
+ },
+ "releases": [
+  {
+   "tag": "v1.4.2",
+   "date": "2026-11-20T17:05:49Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.4.2",
+   "notes": [
+    {
+     "title": "Facebook setup, step by step with pictures",
+     "text": "Settings → Accounts & keys → **Show me how** opens a short guide that shows each Facebook screen with the button to press highlighted. It opens the right Facebook page for you and has copy buttons for anything you type. You'll find it on the Help page and the Chats page too."
+    },
+    {
+     "title": "Mergio checks your Facebook token",
+     "text": "Paste the token in the last step and Mergio tells you in plain words whether it's the right one: your Page's token, your personal token (one more step), a token missing a permission, or not a token at all. A good token is saved right away."
+    },
+    {
+     "title": "Messages line up with the name",
+     "text": "With the *Name on top* layout, a message now starts right after the profile picture: under the badges on Twitch, and under the name everywhere else. Wrapped alert text and follow-up messages line up the same way."
+    },
+    {
+     "title": "Release notes show up reliably after an update",
+     "text": "The *What's new* popup now waits a moment for the notes when Mergio has just restarted, instead of saying they couldn't be loaded."
+    }
+   ]
+  },
+  {
+   "tag": "v1.4.1",
+   "date": "2026-11-20T16:21:53Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.4.1",
+   "notes": [
+    {
+     "title": "See what's new after every update",
+     "text": "The first time you open the control panel on a new version, a popup shows that version's release notes, however you installed it. It shows once per version, and if an even newer version is already out, the update popup follows."
+    },
+    {
+     "title": "Facebook token guide built in",
+     "text": "Settings → Accounts & keys now has step-by-step instructions right under the Facebook Page token field: create a free app, turn on the permissions, and get a Page token that doesn't expire. The same guide is on the Help page."
+    },
+    {
+     "title": "Fixed Facebook setup steps",
+     "text": "The old steps skipped creating the app, so Facebook didn't offer the permissions Mergio needs. The guide, Help page and README now walk through the steps that work."
+    }
+   ]
+  },
+  {
+   "tag": "v1.4.0",
+   "date": "2026-11-20T14:58:37Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.4.0",
+   "notes": [
+    {
+     "title": "Mergio updates itself",
+     "text": "Every time it opens, Mergio checks for a new version and shows a popup with everything that's new since yours. On the installed Windows app, **Download and install** downloads the update with a progress bar, installs it and opens Mergio again by itself. You can choose *Not now*; an *Update* pill under the logo keeps it one click away."
+    },
+    {
+     "title": "Redesigned alert styles",
+     "text": "All six styles are rebuilt to look like polished stream overlays: Spotlight centres the picture with a light circling it and the name rising in, Banner is a TV-style lower third that wipes in, Neon draws its glowing tube before lighting up, Bubbly is a sticker that slaps on, Card is frosted glass that tilts into place, and Minimal is a black pill that grows open. No more confetti or clutter."
+    },
+    {
+     "title": "Smooth control panel",
+     "text": "An animated opening with the Mergio logo drawing itself, soft transitions between pages, cards that rise in one after another, a sidebar highlight that glides to the page you pick, and springier notifications. All of it turns off if your system asks for reduced motion."
+    },
+    {
+     "title": "Fresh style previews",
+     "text": "The style tiles on the *Alerts* page now play each new entrance."
+    }
+   ]
+  },
+  {
+   "tag": "v1.3.1",
+   "date": "2026-11-20T14:06:50Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.3.1",
+   "notes": [
+    {
+     "title": "TikTok likes look like normal messages",
+     "text": "\"liked the LIVE\" is now a regular message from that viewer, with their picture and name, a red-pink glow and a beating heart, instead of a small pill. The ×count keeps going up in place while they keep tapping."
+    }
+   ]
+  },
+  {
+   "tag": "v1.3.0",
+   "date": "2026-11-20T13:59:23Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.3.0",
+   "notes": [
+    {
+     "title": "Six alert styles",
+     "text": "The alerts overlay now has **Spotlight** (the new default: the gift or picture big, with spinning light rays, pulsing rings and a confetti shower), **Banner**, **Neon**, **Bubbly**, **Card** and **Minimal**. Pick one on the *Alerts* page from tiles that play a little preview; clicking a tile sends a test alert so you can see it move. Names animate in letter by letter, and a thin bar shows how long each alert stays."
+    },
+    {
+     "title": "Optional alert chime",
+     "text": "A short sound with each alert, made by Mergio itself (no sound files), with its own volume."
+    },
+    {
+     "title": "Name on top, messages below",
+     "text": "*Style → Layout* lets you choose between one line (\"Name: message\") and the name on its own line with the message underneath."
+    },
+    {
+     "title": "One box per person",
+     "text": "When someone sends several messages in a row, *Style → Grouped messages go in* can put them **in the same box, one per line**, or in their own boxes under the picture as before."
+    },
+    {
+     "title": "Friendlier settings",
+     "text": "Dropdowns now match the app (with keyboard support), short choices are simple buttons, sliders show a filled track, and the settings that confuse people have a small **ⓘ** with a plain-words explanation. The Style page has a short tip for first-timers and tidier sections."
+    }
+   ]
+  },
+  {
+   "tag": "v1.2.1",
+   "date": "2026-11-20T12:09:34Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.2.1",
+   "notes": [
+    {
+     "title": "Facebook finds your live video by itself",
+     "text": "Add your Facebook Page once (`facebook.com/yourpage`) and Mergio connects to the comments every time you go live, then goes back to waiting when the stream ends. No more pasting a new link each stream."
+    },
+    {
+     "title": "Follow-up messages tucked under the picture",
+     "text": "When someone sends several messages in a row, only the first shows their icon, picture and name. The rest get their own small bubble that starts under the picture."
+    },
+    {
+     "title": "Turn the box behind messages off completely",
+     "text": "*Style → Box behind each message* now really removes the box, including the border and glow from the Glass, Neon and Retro looks, for plain text on your stream. The box settings hide while it's off."
+    },
+    {
+     "title": "The alerts overlay is easy to find",
+     "text": "*Add to OBS* shows the Chat overlay and the Alerts overlay side by side, each with its link, size and live status. If the alerts overlay is off, you can turn it on right there. Home shows an Alerts overlay tile too."
+    }
+   ]
+  },
+  {
+   "tag": "v1.2.0",
+   "date": "2026-11-20T11:39:35Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.2.0",
+   "notes": [
+    {
+     "title": "Separate alerts overlay",
+     "text": "Subs, gifts, Super Chats, follows and raids can show on their own browser source (`/alerts`) that you can place anywhere on your scene, one big animated alert at a time. On the **Alerts** page, choose whether alerts show *in the chat*, *on their own overlay* or *both*."
+    },
+    {
+     "title": "Calmer alerts in the chat",
+     "text": "Alerts in the chat are now a normal chat line with the gift picture and a thin coloured edge. The big highlighted cards are still available under *Style → Alert look*."
+    },
+    {
+     "title": "The real picture for every gift",
+     "text": "A Rose shows a rose and a Galaxy shows the galaxy. Kick's KICKs gifts show their own pictures too."
+    },
+    {
+     "title": "Profile pictures for everyone in chat",
+     "text": ", even in very busy chats."
+    },
+    {
+     "title": "Disappearing messages switch",
+     "text": "Messages can fade out after the time you choose, so only the newest stay on screen."
+    },
+    {
+     "title": "Install the control panel as an app",
+     "text": "Click *Install app* (or the install icon in Chrome, Edge or Brave) to open Mergio in its own window instead of a browser tab."
+    },
+    {
+     "title": "",
+     "text": "The control panel shows when the alerts overlay is in OBS, and all open control panels stay in sync."
+    }
+   ]
+  },
+  {
+   "tag": "v1.1.1",
+   "date": "2026-11-20T10:38:42Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.1.1",
+   "notes": [
+    {
+     "title": "Opening Mergio again works",
+     "text": "Clicking the Mergio icon while it was already running did nothing. Now it opens the control panel of the copy that is running."
+    }
+   ]
+  },
+  {
+   "tag": "v1.1.0",
+   "date": "2026-11-20T10:02:36Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.1.0",
+   "notes": [
+    {
+     "title": "Installers for every system",
+     "text": "A Windows installer, a macOS disk image and Linux packages, so Mergio installs like any other app."
+    },
+    {
+     "title": "A new name: Mergio",
+     "text": "The app got its final name and logo."
+    },
+    {
+     "title": "Getting-started tour",
+     "text": "The first time you open Mergio, a short tour shows how to connect your chats, style the overlay and add it to OBS."
+    },
+    {
+     "title": "Complete setup guide",
+     "text": "The guide on GitHub walks through installing, connecting every platform and adding the overlay to OBS, step by step."
+    }
+   ]
+  },
+  {
+   "tag": "v1.0.0",
+   "date": "2026-11-20T08:57:41Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.0.0",
+   "notes": [
+    {
+     "title": "Every live chat in one overlay",
+     "text": "Chats from YouTube, Twitch, Kick, TikTok and Facebook, merged into a single OBS browser source."
+    },
+    {
+     "title": "A control panel",
+     "text": "Add your chats, choose a style and send test messages from a control panel in your browser."
+    },
+    {
+     "title": "One small app",
+     "text": "A single-file app that runs quietly in the background, with nothing else to install."
+    }
+   ]
+  }
+ ]
+}
