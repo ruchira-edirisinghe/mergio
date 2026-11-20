@@ -81,6 +81,21 @@ body:not(.inline) .name::after { content: none; }
 .embed { display: block; max-height: 8em; max-width: 100%; border-radius: 8px; margin-top: .3em; }
 .link { opacity: .85; text-decoration: underline; text-decoration-color: rgba(255,255,255,.35); }
 .mention-hl { font-weight: 800; color: #ffd36e; }
+/* Likes: a normal message with a red-pink glow */
+body.bubbles .msg.like-msg .bubble { background: linear-gradient(90deg, rgba(254, 44, 85, .34), rgba(255, 79, 154, .14) 55%, transparent), var(--bubble) !important; box-shadow: inset 0 0 0 1px rgba(255, 79, 139, .38), 0 0 .9em -.3em rgba(254, 44, 85, .55) !important; }
+body.bubbles.accent .msg.like-msg .bubble { box-shadow: inset 3px 0 0 #fe2c55, inset 0 0 0 1px rgba(255, 79, 139, .38), 0 0 .9em -.3em rgba(254, 44, 85, .55) !important; }
+body.bubbles.accent.align-right .msg.like-msg .bubble { box-shadow: inset -3px 0 0 #fe2c55, inset 0 0 0 1px rgba(255, 79, 139, .38), 0 0 .9em -.3em rgba(254, 44, 85, .55) !important; }
+.like-msg .lk { color: #ffb3c8; }
+body:not(.bubbles) .like-msg .lk { color: #ff8fb1; }
+.like-msg .lk-ic { display: inline-flex; width: 1.05em; height: 1.05em; color: #ff2d6f; vertical-align: -.17em; filter: drop-shadow(0 0 .25em rgba(254, 44, 85, .8)); }
+.like-msg .lk-ic svg { width: 100%; height: 100%; fill: currentColor; }
+.like-msg .lk-ic { animation: heart-beat .9s ease-in-out; }
+.like-msg .lk-ic.beat { animation: heart-beat2 .9s ease-in-out; }
+.like-msg .amt { color: #ff4f8b; font-weight: 800; margin-left: .25em; }
+.like-msg .lk-ic svg * { fill: currentColor; stroke: currentColor; }
+.like-msg .amt.bump { display: inline-block; animation: bump .45s cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes heart-beat { 0%, 100% { transform: scale(1); } 20% { transform: scale(1.35); } 40% { transform: scale(.95); } 60% { transform: scale(1.2); } }
+@keyframes heart-beat2 { 0%, 100% { transform: scale(1); } 20% { transform: scale(1.35); } 40% { transform: scale(.95); } 60% { transform: scale(1.2); } }
 .msg.mention .bubble { background: linear-gradient(90deg, rgba(255, 196, 0, .32), var(--bubble)) !important; box-shadow: inset 3px 0 0 #ffc400 !important; }
 .msg.first .bubble::before { content: 'FIRST MESSAGE'; display: block; font-size: .55em; font-weight: 900; letter-spacing: .12em; color: #7cf29c; margin-bottom: .2em; }
 .msg.action .body { font-style: italic; color: var(--uc, var(--text)); }
