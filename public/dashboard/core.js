@@ -34,7 +34,7 @@
   /* ---------------- API & state ---------------- */
   MG.st = null;
   MG.feed = [];
-  MG.overlays = { count: 0, obs: false };
+  MG.overlays = { count: 0, obs: false, alerts: { count: 0, obs: false } };
   MG.api = async (method, path, body) => {
     const res = await fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
     const json = await res.json().catch(() => ({}));
@@ -192,6 +192,8 @@
     const scale = Math.min(1, stage.clientWidth / 500);
     frame.style.transform = `scale(${scale})`;
     frame.style.height = `${stage.clientHeight / scale}px`;
+    const alerts = $('#alertsFrame'); // the alerts overlay floats over the top of the preview
+    if (alerts) alerts.style.transform = `scale(${Math.min(1, stage.clientWidth / 800)})`;
   }
   window.addEventListener('resize', fitPreview);
   const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } } };
@@ -217,7 +219,7 @@
         emit('msg', { msg: d.msg, updated: i >= 0 });
       }
       if (d.op === 'clear') { MG.feed = []; emit('feed'); }
-      if (d.op === 'overlays') { MG.overlays = { count: d.count, obs: d.obs }; if (d.count) MG.st.settings.advanced.overlaySeen = true; emit('overlays'); renderNav(); }
+      if (d.op === 'overlays') { MG.overlays = { count: d.count, obs: d.obs, alerts: d.alerts || { count: 0, obs: false } }; if (d.count) MG.st.settings.advanced.overlaySeen = true; emit('overlays'); renderNav(); }
     };
     ws.onclose = () => {
       document.body.classList.add('offline');
