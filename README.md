@@ -178,7 +178,7 @@ Each chat shows its status: **Connected**, **Waiting for you to go live** (it co
 
 Open **Style** and click one of the six looks (Glass, Neon, Minimal, Soft light, Retro pixel, Bold cards). **Quick settings** has the options most people change: text size and colour, profile pictures, platform icons, bubbles, left or right, newest at the top or bottom, and **Messages disappear after a while** (with the number of seconds). Everything else is in folding sections, and the search box finds any setting.
 
-The **live preview** on the right updates instantly; use **Game / Dark / Light** above it to check how it looks over your stream.
+The **live preview** on the right updates instantly; use **Game / Dark / Light** above it to check how it looks over your stream. New to streaming tools? Hover the small **ⓘ** next to a setting for a plain-words explanation. Two- and three-way choices are simple buttons, and longer lists open a dropdown you can also use with the arrow keys.
 
 <div align="center"><img src="docs/guide/03-style.png" alt="The Style page with ready-made looks and quick settings" width="820"></div>
 
