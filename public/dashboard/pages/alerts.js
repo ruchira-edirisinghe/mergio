@@ -60,6 +60,32 @@
     h('div', { class: 'chatcol' }, h('i'), id === 'overlay' ? h('i') : h('i', { class: 'al' }), h('i')),
     id === 'chat' ? null : h('div', { class: 'box' }));
 
+  /* ---------- alert styles, each with a little looping preview ---------- */
+  const STYLES = [
+    ['spotlight', 'Spotlight', 'Big picture, light rays and confetti'],
+    ['banner', 'Banner', 'A ribbon that sweeps across'],
+    ['neon', 'Neon', 'A glowing sign with a moving edge'],
+    ['bubble', 'Bubbly', 'Soft, bouncy and cute'],
+    ['card', 'Card', 'The classic card'],
+    ['toast', 'Minimal', 'A small, quiet pill'],
+  ];
+  const mini = id => h('div', { class: `ast ast-${id}`, 'aria-hidden': 'true' },
+    h('i', { class: 'a1' }), h('i', { class: 'a2' }), h('i', { class: 'a3' }), h('b'), h('b'), h('b'), h('b'), h('b'), h('b'));
+  function stylePicker() {
+    const cur = MG.st.settings.alerts.style;
+    const grid = h('div', { class: 'astyles', role: 'radiogroup', 'aria-label': 'Alert style' });
+    const pick = id => {
+      MG.save('alerts', 'style', id);
+      for (const b of grid.children) { const on = b.dataset.id === id; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(on)); }
+      MG.refreshDeps();
+      setTimeout(() => MG.test('gift'), 250); // show it in the preview (and in OBS)
+    };
+    for (const [id, name, desc] of STYLES)
+      grid.append(h('button', { class: `astyle ${cur === id ? 'on' : ''}`, 'data-id': id, role: 'radio', 'aria-checked': String(cur === id), onclick: () => pick(id) },
+        mini(id), h('b', { text: name }), h('span', { text: desc })));
+    return MG.card('Alert style', 'Pick a look. Each one plays a test alert in the preview so you can see it move.', grid);
+  }
+
   function alertsStatus() {
     const o = MG.overlays.alerts || {};
     if (o.obs) return h('div', { class: 'banner ok' }, icon('check'), h('div', {}, h('b', { text: 'The alerts overlay is in OBS' }), h('span', { text: 'Press Try below to see an alert on your stream.' })));
@@ -90,18 +116,21 @@
     if (cur === 'chat' && MG.overlays.alerts?.count) card.append(h('p', { class: 'hint', text: 'Your alerts overlay is open. Pick "Their own overlay" or "Both" to use it.' }));
     c.append(card);
     if (cur === 'chat') return;
-    c.append(MG.alertsSetup());
+    c.append(stylePicker());
     const A = 'alerts';
-    c.append(MG.card('Alert overlay', 'How the big alerts look and behave. The preview shows them at the top.',
+    c.append(MG.card('Timing, size and sound', 'The preview shows alerts at the top.',
       h('div', { class: 'fields' },
         MG.field(A, { key: 'duration', label: 'Each alert stays for', type: 'range', min: 2, max: 20, unit: 's', keywords: 'time seconds' }),
         MG.field(A, { key: 'size', label: 'Size', type: 'range', min: 0.6, max: 2, step: 0.1, unit: '×', keywords: 'scale bigger smaller' }),
         MG.field(A, { key: 'position', label: 'Where in its box', hint: 'Within the browser source', type: 'select', options: [['top', 'Top'], ['center', 'Middle'], ['bottom', 'Bottom']] }),
-        MG.field(A, { key: 'animation', label: 'How alerts appear', type: 'select', options: [['pop', 'Pop'], ['slide', 'Slide up'], ['fade', 'Fade in']] }),
+        MG.field(A, { key: 'animation', label: 'How alerts appear', hint: 'The other styles have their own entrance', type: 'select', options: [['pop', 'Pop'], ['slide', 'Slide up'], ['fade', 'Fade in']], when: s => ['card', 'toast'].includes(s.alerts.style) }),
         MG.field(A, { key: 'showAvatar', label: 'Profile picture', type: 'toggle' }),
-        MG.field(A, { key: 'showMessage', label: 'Their message', hint: 'Super Chats, resubs and more', type: 'toggle' })),
+        MG.field(A, { key: 'showMessage', label: 'Their message', hint: 'Super Chats, resubs and more', type: 'toggle' }),
+        MG.field(A, { key: 'sound', label: 'Play a chime', hint: 'A short sound with each alert, made by Mergio', type: 'toggle', keywords: 'sound audio chime volume' }),
+        MG.field(A, { key: 'volume', label: 'Chime volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'sound audio', when: s => s.alerts.sound })),
       h('div', { class: 'btn-row' }, h('span', { class: 'lbl', text: 'Try:' }),
         ...[['gift', 'Gift'], ['sub', 'Sub'], ['superchat', 'Super Chat'], ['follow', 'Follow'], ['raid', 'Raid']].map(([k, t]) => h('button', { class: 'btn ghost sm', onclick: () => MG.test(k) }, icon('play'), t)))));
+    c.append(MG.alertsSetup());
   }
   MG.on('overlays', () => { for (const el of document.querySelectorAll('.alerts-status')) { el.textContent = ''; el.append(alertsStatus()); } });
 

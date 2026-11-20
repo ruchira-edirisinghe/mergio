@@ -64,4 +64,151 @@ body.pos-bottom #stage { justify-content: flex-end; }
 @keyframes art-pop { from { transform: scale(.4) rotate(-12deg); } to { transform: none; } }
 @keyframes out { to { opacity: 0; transform: scale(.92) translateY(-.4em); } }
 @keyframes bump { 40% { transform: scale(1.25); } }
-@media (prefers-reduced-motion: reduce) { .alert, .alert .art, .burst i { animation: none !important; } }
+
+/* ===================================================================================
+   Alert styles (body.st-*). The base rules above are the "Card" style.
+   Every style shares the same parts: .fx (decoration), .art (picture), .info (text),
+   .timer (time left) and a name split into letters (.name .l).
+   =================================================================================== */
+.name .l { display: inline-block; white-space: pre; }
+.timer { position: absolute; left: 1.1em; right: 1.1em; bottom: .45em; height: .16em; border-radius: 99px; overflow: hidden; background: rgba(255, 255, 255, .12); }
+.timer i { display: block; height: 100%; border-radius: inherit; background: color-mix(in srgb, var(--ev) 70%, #fff); transform-origin: left; animation: timer var(--hold, 6s) linear forwards; }
+@keyframes timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.fx { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; z-index: -1; }
+.sheen { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
+.sheen::after { content: ''; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .28), transparent); animation: sheen 3.2s .5s ease-in-out infinite; }
+@keyframes sheen { 0% { left: -60%; } 45%, 100% { left: 130%; } }
+@keyframes l-pop { 0% { opacity: 0; transform: translateY(.7em) scale(.4) rotate(-10deg); } 70% { opacity: 1; transform: translateY(-.12em) scale(1.12); } 100% { transform: none; } }
+@keyframes l-drop { 0% { opacity: 0; transform: translateY(-.9em); } 60% { opacity: 1; transform: translateY(.08em); } 100% { transform: none; } }
+@keyframes l-slide { from { opacity: 0; transform: translateX(-.6em); } to { opacity: 1; transform: none; } }
+@keyframes l-flicker { 0%, 12% { opacity: 0; } 14% { opacity: 1; } 18% { opacity: .2; } 24%, 100% { opacity: 1; } }
+
+/* ---------- Card (the classic look) gets a gentle shine ---------- */
+.st-card .name .l { animation: l-slide .35s calc(.2s + var(--i) * 22ms) ease-out both; }
+
+/* ---------- Spotlight: big picture, spinning light rays, pulsing rings and confetti ---------- */
+.st-spotlight .alert { width: min(100%, 26em); padding: 1.6em 1em 1.2em; margin-top: 0; background: none; box-shadow: none; text-shadow: 0 2px .5em rgba(0, 0, 0, .75); animation: sp-in .7s cubic-bezier(.34, 1.56, .64, 1) both; }
+.st-spotlight .alert .art { position: relative; top: auto; left: auto; margin: 0 0 .45em; width: 4.4em; height: 4.4em;
+  box-shadow: 0 0 0 .2em color-mix(in srgb, var(--ev) 85%, #fff), 0 0 2.2em color-mix(in srgb, var(--ev) 85%, transparent), 0 .4em 1.2em rgba(0, 0, 0, .5);
+  animation: sp-art .9s .05s cubic-bezier(.34, 1.56, .64, 1) both, float 3.4s 1s ease-in-out infinite; }
+.st-spotlight .alert .art.gift { width: 5.2em; height: 5.2em; box-shadow: none; }
+.st-spotlight .fx { inset: auto; left: 50%; top: 2.2em; width: 0; height: 0; }
+.st-spotlight .alert.has-gift .fx { top: 2.6em; }
+.st-spotlight .rays { position: absolute; left: -8em; top: -8em; width: 16em; height: 16em; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--ev) 45%, transparent) 0 7deg, transparent 7deg 18deg);
+  -webkit-mask: radial-gradient(circle, #000 18%, transparent 68%); mask: radial-gradient(circle, #000 18%, transparent 68%);
+  animation: rays-in .8s ease-out both, spin 14s linear infinite; }
+.st-spotlight .glow { position: absolute; left: -5em; top: -5em; width: 10em; height: 10em; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--ev) 55%, transparent), transparent 65%); animation: breathe 2.4s ease-in-out infinite; }
+.st-spotlight .ring { position: absolute; left: -2.4em; top: -2.4em; width: 4.8em; height: 4.8em; border-radius: 50%; border: .14em solid color-mix(in srgb, var(--ev) 70%, #fff); opacity: 0; animation: ring 2.2s .3s ease-out infinite; }
+.st-spotlight .ring + .ring { animation-delay: 1.4s; }
+.st-spotlight .label { font-size: .6em; margin-bottom: .35em; }
+.st-spotlight .label .what-kind { padding: .3em .8em; border-radius: 99px; background: color-mix(in srgb, var(--ev) 80%, #000 10%); color: #fff; }
+.st-spotlight .name { font-size: 1.65em; letter-spacing: -.01em; text-shadow: 0 0 .5em color-mix(in srgb, var(--ev) 80%, transparent), 0 2px .3em rgba(0, 0, 0, .7); }
+.st-spotlight .name .l { animation: l-pop .55s calc(.35s + var(--i) * 40ms) cubic-bezier(.34, 1.56, .64, 1) both; }
+.st-spotlight .amount { font-size: 1.4em; padding: 0; background: linear-gradient(90deg, #fff, color-mix(in srgb, var(--ev) 50%, #fff)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; filter: drop-shadow(0 0 .3em color-mix(in srgb, var(--ev) 80%, transparent)); }
+.st-spotlight .msg { padding: .45em .9em; border-radius: .9em; background: rgba(10, 10, 18, .6); backdrop-filter: blur(6px); }
+.st-spotlight .timer { left: 30%; right: 30%; bottom: .2em; }
+.st-spotlight .alert.out { animation: sp-out .5s ease-in forwards !important; }
+@keyframes sp-in { from { opacity: 0; transform: scale(.5); } to { opacity: 1; transform: none; } }
+@keyframes sp-art { 0% { transform: scale(0) rotate(-30deg); } 100% { transform: none; } }
+@keyframes sp-out { to { opacity: 0; transform: scale(1.15); filter: blur(6px); } }
+@keyframes rays-in { from { opacity: 0; transform: scale(.3); } }
+@keyframes spin { to { rotate: 360deg; } }
+@keyframes breathe { 50% { transform: scale(1.15); opacity: .75; } }
+@keyframes ring { 0% { opacity: .9; transform: scale(.9); } 100% { opacity: 0; transform: scale(2.4); } }
+@keyframes float { 50% { translate: 0 -.25em; } }
+
+/* confetti shower (Spotlight) */
+.confetti { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.confetti i { position: absolute; top: -1em; left: var(--x); width: .42em; height: .7em; border-radius: .1em; background: var(--c); opacity: 0;
+  animation: fall var(--t) var(--d) cubic-bezier(.3, .6, .6, 1) forwards; }
+.confetti i:nth-child(3n) { width: .5em; height: .5em; border-radius: 50%; }
+@keyframes fall { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 85% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), 105vh) rotate(var(--r)); } }
+#stage { z-index: 1; }
+
+/* ---------- Banner: a ribbon that sweeps in from the side ---------- */
+.st-banner .alert { flex-direction: row; align-items: center; text-align: left; gap: .8em; width: min(100%, 30em); padding: .75em 1.6em .95em .8em; margin-top: 0; border-radius: .7em;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--ev) 88%, #000 12%), color-mix(in srgb, var(--ev) 40%, #0e0e16) 75%);
+  box-shadow: 0 .5em 1.8em -.3em color-mix(in srgb, var(--ev) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .25);
+  animation: bn-in .75s cubic-bezier(.22, 1, .36, 1) both; }
+.st-banner .alert .art { position: relative; top: auto; left: auto; margin: 0; flex: none; width: 3.4em; height: 3.4em; box-shadow: 0 0 0 .15em rgba(255, 255, 255, .85), 0 .3em .8em rgba(0, 0, 0, .4); }
+.st-banner .alert .art.gift { box-shadow: none; }
+.st-banner .info { align-items: flex-start; }
+.st-banner .label { justify-content: flex-start; font-size: .56em; }
+.st-banner .label .what-kind { color: rgba(255, 255, 255, .85); }
+.st-banner .name { font-size: 1.25em; }
+.st-banner .name .l { animation: l-slide .3s calc(.35s + var(--i) * 25ms) ease-out both; }
+.st-banner .amount { background: rgba(0, 0, 0, .28); }
+.st-banner .msg { font-size: .82em; }
+.st-banner .timer { left: 0; right: 0; bottom: 0; height: .2em; border-radius: 0 0 .7em .7em; background: rgba(0, 0, 0, .25); }
+.st-banner .timer i { background: #fff; }
+.st-banner .alert.out { animation: bn-out .5s ease-in forwards !important; }
+@keyframes bn-in { 0% { opacity: 0; transform: translateX(-60%) skewX(-14deg); clip-path: inset(0 100% 0 0 round .7em); } 60% { opacity: 1; transform: translateX(2%) skewX(-3deg); clip-path: inset(-2em -2em -2em -2em); } 100% { transform: none; clip-path: inset(-2em -2em -2em -2em); } }
+@keyframes bn-out { to { opacity: 0; transform: translateX(40%) skewX(-10deg); } }
+
+/* ---------- Neon: a glowing sign with a light running round the edge ---------- */
+@property --ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.st-neon .alert { background: rgba(7, 6, 14, .88); box-shadow: 0 0 2em -.2em color-mix(in srgb, var(--ev) 60%, transparent), inset 0 0 1.4em color-mix(in srgb, var(--ev) 22%, transparent); animation: neon-on .9s steps(1) both; }
+.st-neon .fx { z-index: 0; }
+.st-neon .edge { position: absolute; inset: 0; border-radius: inherit; padding: .14em;
+  background: conic-gradient(from var(--ang), var(--ev), #fff 8%, var(--ev) 16%, color-mix(in srgb, var(--ev) 25%, transparent) 30% 70%, var(--ev) 84%, #ff2d8f 92%, var(--ev));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: edge 3s linear infinite; }
+.st-neon .scan { position: absolute; inset: 0; border-radius: inherit; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 4px); }
+.st-neon .art, .st-neon .info, .st-neon .timer { z-index: 1; }
+.st-neon .art { background: #08070f; box-shadow: 0 0 0 .14em var(--ev), 0 0 1em var(--ev), 0 0 2em color-mix(in srgb, var(--ev) 60%, transparent); }
+.st-neon .art.gift { background: radial-gradient(circle, color-mix(in srgb, var(--ev) 30%, transparent), transparent 70%); box-shadow: none; }
+.st-neon .name { color: #fff; text-shadow: 0 0 .08em #fff, 0 0 .35em var(--ev), 0 0 .9em var(--ev), 0 0 1.6em color-mix(in srgb, var(--ev) 70%, transparent); }
+.st-neon .name .l { animation: l-flicker 1.2s calc(.3s + var(--i) * 45ms) linear both; }
+.st-neon .label .what-kind { color: color-mix(in srgb, var(--ev) 45%, #fff); text-shadow: 0 0 .5em var(--ev); }
+.st-neon .amount { background: transparent; box-shadow: 0 0 0 .1em var(--ev), 0 0 .8em color-mix(in srgb, var(--ev) 70%, transparent); text-shadow: 0 0 .4em var(--ev); }
+.st-neon .timer i { background: var(--ev); box-shadow: 0 0 .5em var(--ev); }
+.st-neon .alert.out { animation: neon-off .45s steps(1) forwards !important; }
+@keyframes edge { to { --ang: 360deg; } }
+@keyframes neon-on { 0% { opacity: 0; } 10% { opacity: 1; } 16% { opacity: .15; } 24% { opacity: 1; } 30% { opacity: .4; } 36%, 100% { opacity: 1; } }
+@keyframes neon-off { 0% { opacity: 1; } 20% { opacity: .2; } 35% { opacity: .9; } 50%, 100% { opacity: 0; } }
+
+/* ---------- Bubbly: soft, bouncy and cute, with floating hearts ---------- */
+.st-bubble .alert { color: #2a2140; text-shadow: none; border-radius: 1.6em; padding-bottom: 1.3em;
+  background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--ev) 14%, #fff));
+  box-shadow: 0 .35em 0 color-mix(in srgb, var(--ev) 55%, #fff), 0 .9em 1.8em -.4em color-mix(in srgb, var(--ev) 60%, transparent);
+  animation: jelly .9s cubic-bezier(.34, 1.56, .64, 1) both; }
+.st-bubble .alert .art { background: #fff; box-shadow: 0 0 0 .2em color-mix(in srgb, var(--ev) 70%, #fff), 0 .3em .8em rgba(0, 0, 0, .15); animation: art-pop .7s .1s cubic-bezier(.34, 1.56, .64, 1) both, bob 2.6s 1s ease-in-out infinite; }
+.st-bubble .alert .art.gift { background: radial-gradient(circle, #fff 55%, transparent 72%); box-shadow: none; }
+.st-bubble .art .glyph, .st-bubble .art .glyph.corner { color: var(--ev); }
+.st-bubble .art .glyph svg { filter: none; }
+.st-bubble .art .glyph.corner { color: #fff; }
+.st-bubble .label .what-kind { color: color-mix(in srgb, var(--ev) 75%, #2a2140); }
+.st-bubble .name { color: color-mix(in srgb, var(--ev) 55%, #2a2140); }
+.st-bubble .name .l { animation: l-drop .5s calc(.3s + var(--i) * 35ms) cubic-bezier(.34, 1.56, .64, 1) both; }
+.st-bubble .title { opacity: .8; }
+.st-bubble .amount { color: #fff; background: var(--ev); box-shadow: 0 .15em 0 color-mix(in srgb, var(--ev) 60%, #000); }
+.st-bubble .msg { opacity: .85; }
+.st-bubble .timer { background: color-mix(in srgb, var(--ev) 15%, #fff); }
+.st-bubble .timer i { background: var(--ev); }
+.st-bubble .floaty { position: absolute; left: 0; right: 0; bottom: .5em; height: 0; }
+.st-bubble .floaty i { position: absolute; left: var(--x); bottom: 0; font-style: normal; font-size: var(--s); line-height: 1; color: var(--c); opacity: 0; animation: rise var(--t) var(--d) ease-out infinite; }
+.st-bubble .alert.out { animation: pop-out .45s cubic-bezier(.6, -.4, .7, .4) forwards !important; }
+@keyframes jelly { 0% { opacity: 0; transform: scale(.2); } 40% { opacity: 1; transform: scale(1.12, .9); } 60% { transform: scale(.94, 1.06); } 80% { transform: scale(1.03, .98); } 100% { transform: none; } }
+@keyframes bob { 50% { translate: 0 -.2em; rotate: 4deg; } }
+@keyframes rise { 0% { opacity: 0; transform: translateY(0) scale(.6); } 20% { opacity: .9; } 100% { opacity: 0; transform: translate(var(--dx), -6em) scale(1.1) rotate(var(--r)); } }
+@keyframes pop-out { to { opacity: 0; transform: scale(.3); } }
+
+/* ---------- Minimal: a small quiet pill ---------- */
+.st-toast .alert { flex-direction: row; align-items: center; text-align: left; gap: .75em; width: auto; max-width: min(100%, 26em); margin-top: 0; padding: .5em 1.3em .65em .5em; border-radius: 99px;
+  background: rgba(14, 14, 22, .9); box-shadow: 0 0 0 1px rgba(255, 255, 255, .09), 0 .5em 1.4em rgba(0, 0, 0, .45); font-size: .85em; }
+.st-toast .alert .art { position: relative; top: auto; left: auto; margin: 0; flex: none; width: 2.6em; height: 2.6em; box-shadow: 0 0 0 .12em var(--ev); }
+.st-toast .alert .art.gift { box-shadow: none; }
+.st-toast .art .av-mini, .st-toast .burst, .st-toast .label .pchip { display: none; }
+.st-toast .info { align-items: flex-start; gap: 0; }
+.st-toast .label { justify-content: flex-start; font-size: .55em; margin: 0; }
+.st-toast .label .what-kind { color: color-mix(in srgb, var(--ev) 55%, #fff); }
+.st-toast .name { font-size: 1.05em; }
+.st-toast .title { font-size: .85em; }
+.st-toast .amount { margin-top: .1em; font-size: .9em; }
+.st-toast .msg { font-size: .8em; margin-top: .15em; max-height: 2.6em; }
+.st-toast .timer { left: 1.5em; right: 1.5em; bottom: .25em; height: .12em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .alert, .alert .art, .burst i, .name .l, .rays, .glow, .ring, .confetti i, .sheen::after, .edge, .floaty i, .timer i { animation: none !important; }
+  .confetti, .floaty, .ring { display: none; }
+}

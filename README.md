@@ -205,10 +205,25 @@ Open **Alerts**. At the top, choose **where alerts show**:
 
 <div align="center"><img src="docs/guide/04-alerts.png" alt="The Alerts page: where alerts show, the alerts overlay link and settings" width="820"></div>
 
-If you pick an overlay, the page shows its link (`http://localhost:8787/alerts`) and the OBS steps. Add it like the chat overlay (step 7) as a second Browser source, for example **800 × 500**, and drag it wherever you want alerts to pop up. It's see-through until an alert comes in, and the box turns green when OBS shows it. You can set how long each alert stays, its size, where it sits in its box, the animation, and whether it shows the viewer's picture and message.
+If you pick an overlay, choose an **alert style**. Each tile plays a little preview, and clicking one sends a test alert to the preview so you can see it move:
+
+| Style | What it looks like |
+|---|---|
+| **Spotlight** (default) | The picture or gift, big, with spinning light rays, pulsing rings and a confetti shower |
+| **Banner** | A ribbon that sweeps in from the side with a shine running across it |
+| **Neon** | A glowing sign that flickers on, with a light running round its edge |
+| **Bubbly** | A soft, bouncy bubble with floating hearts |
+| **Card** | The classic card with the picture on top |
+| **Minimal** | A small, quiet pill |
+
+In every style the viewer's name animates in letter by letter, a thin bar shows how long the alert stays, and gift combos count up live. Below the styles you can set how long each alert stays, its size, where it sits in its box, whether it shows the viewer's picture and message, and an optional **chime** (made by Mergio, no sound files needed) with its volume.
+
+<div align="center"><img src="docs/guide/10-alert-styles.png" alt="The six alert styles: Spotlight, Banner, Neon, Bubbly, Card and Minimal" width="820"></div>
+
+Then add the alerts overlay to OBS. The page shows its link (`http://localhost:8787/alerts`) and the steps: add it like the chat overlay (step 7) as a second Browser source, for example **800 × 500**, and drag it wherever you want alerts to pop up. It's see-through until an alert comes in, and the box turns green when OBS shows it. The chime plays through your desktop audio; tick **Control audio via OBS** in the browser source's properties to give it its own volume slider in OBS.
 
 <div align="center">
-<img src="docs/guide/08-alert-gift.png" alt="A TikTok Galaxy gift on the alerts overlay" width="400"> <img src="docs/guide/09-alert-sub.png" alt="A Twitch resub on the alerts overlay" width="400">
+<img src="docs/guide/08-alert-gift.png" alt="A TikTok gift in the Spotlight style" width="400"> <img src="docs/guide/09-alert-sub.png" alt="A Twitch resub in the Neon style" width="400">
 </div>
 
 Below that, **Which alerts and messages to show** lists everything each platform can show: TikTok gifts, follows, subscriptions, joins and likes; Twitch Bits, subs, gift subs and raids; YouTube Super Chats and memberships; Kick follows, subs, gifted subs and KICKs. Switch off anything you don't want on screen, and press **Try** to see any of them. For TikTok you can also set a minimum gift value.
@@ -282,7 +297,7 @@ http://localhost:8787/overlay?fontSize=28&theme=neon&align=right&maxMessages=12
 
 Useful options: `theme` (glass, neon, minimal, soft, retro), `fontSize`, `font`, `align` (left/right), `scrollDirection` (normal/reversed), `fadeMessages` (true/false) with `hideAfter` (seconds), `maxMessages`, `showAvatar`, `showPlatform`, `useChatBubbles`, `inlineChat`, `groupStyle` (tuck, merge), `animation` (slide, pop, fade, none).
 
-The alerts overlay works the same way: `http://localhost:8787/alerts?size=1.3&position=top&duration=8` (`size`, `position` top/center/bottom, `duration` in seconds, `animation` pop/slide/fade, `showAvatar`, `showMessage`).
+The alerts overlay works the same way: `http://localhost:8787/alerts?size=1.3&position=top&duration=8` (`style` spotlight/banner/neon/bubble/card/toast, `size`, `position` top/center/bottom, `duration` in seconds, `animation` pop/slide/fade for Card and Minimal, `showAvatar`, `showMessage`, `sound`, `volume`).
 
 ## Platform notes
 
