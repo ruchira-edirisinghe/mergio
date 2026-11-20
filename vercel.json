@@ -5,6 +5,7 @@
   "buildCommand": "cd website && npm run build",
   "outputDirectory": "website/dist",
   "ignoreCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]; then exit 0; fi; P=\"$VERCEL_GIT_PREVIOUS_SHA\"; if [ \"$FORCE_DEPLOY\" = \"1\" ] || [ -z \"$P\" ] || ! git cat-file -e \"$P\" 2>/dev/null; then exit 1; fi; git diff --quiet \"$P\" HEAD -- website vercel.json",
+  "rewrites": [{ "source": "/(privacy|terms)", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/assets/(.*)",
