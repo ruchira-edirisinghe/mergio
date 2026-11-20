@@ -2,43 +2,6 @@
 (() => {
   const { h, icon } = MG;
 
-  /**
-   * Step-by-step guide to a Facebook Page token that does not expire. Shown under the token field and on
-   * the Help page. Facebook's own tools only list the right permissions after you create a (free) app.
-   */
-  MG.fbTokenGuide = () => {
-    const link = (href, text) => h('a', { href, target: '_blank', rel: 'noopener' }, text);
-    const c = text => h('code', { text });
-    const b = text => h('b', { text });
-    const step = (title, ...body) => h('li', {}, h('b', { class: 'fbg-t', text: title }), h('div', {}, ...body));
-    return h('details', { class: 'qa fb-guide' },
-      h('summary', { text: 'How do I get a Facebook Page token? (about 5 minutes, free)' }),
-      h('p', { class: 'fbg-intro', text: 'You only do this once. Use the Facebook account that manages your Page, on a computer browser.' }),
-      h('ol', {},
-        step('Create a free app',
-          'Open ', link('https://developers.facebook.com/apps/creation/', 'Meta for Developers'), ' and log in. If it asks, register as a developer first (free). ',
-          'Name the app ', b('Mergio'), '. Under ', b('Use cases'), ' pick ', b('Content management'), ' then ', b('Manage everything on your Page'), '. ',
-          'Choose ', b("I don't want to connect a business portfolio yet"), ', then ', b('Create app'), '.'),
-        step('Turn on the permissions',
-          'In your new app open ', b('Use cases'), ' → ', b('Manage everything on your Page'), ' → ', b('Customize'), '. Click ', b('Add'), ' next to ',
-          c('pages_read_engagement'), ', ', c('pages_read_user_content'), ', ', b('Live Video API'), ' and ', b('Business Asset User Profile Access'), ' (this one shows viewers\' names and pictures).'),
-        step('Generate a token',
-          'Open the ', link('https://developers.facebook.com/tools/explorer/', 'Graph API Explorer'), '. Set ', b('Meta App'), ' to Mergio and add the permissions ',
-          c('pages_show_list'), ', ', c('pages_read_engagement'), ' and ', c('pages_read_user_content'), '. Click ', b('Generate Access Token'), '. ',
-          'In the popup click ', b('Continue'), ', choose ', b('Opt in to current Pages only'), ', tick your Page, then ', b('Continue'), ' and ', b('Save'), '. ',
-          h('span', { class: 'hint', text: 'If Facebook asks you to switch accounts, click Continue: tokens come from your own profile, not from the Page profile.' })),
-        step('Make it last',
-          'Copy the token, open the ', link('https://developers.facebook.com/tools/debug/accesstoken/', 'Access Token Debugger'), ', paste it and click ', b('Debug'), '. ',
-          'At the bottom click ', b('Extend Access Token'), ' and copy the new, long-lived token it shows.'),
-        step('Get the Page token',
-          'Back in the Graph API Explorer, paste the long-lived token into the ', b('Access Token'), ' box. In the query bar type your Page name followed by ',
-          c('?fields=access_token'), ' (for example ', c('mypage?fields=access_token'), ') and click ', b('Submit'), '. Copy the ', c('access_token'), ' value from the answer.'),
-        step('Paste it into Mergio',
-          'Paste it into ', b('Settings → Accounts & keys → Facebook Page token'), '. Then on ', h('a', { href: '#chats', onclick: e => { e.preventDefault(); MG.go('chats'); } }, 'Chats'),
-          ', add Facebook with your Page name. Mergio connects by itself every time you go live.')),
-      h('p', { class: 'hint fbg-foot' }, 'A Page token made this way does not expire (the Access Token Debugger shows ', b('Expires: Never'), '). If Facebook ever asks you to log in again, about every 3 months, repeat steps 3 to 6.'));
-  };
-
   function row(title, hint, control) {
     return h('div', { class: 'f' }, h('label', {}, title, hint ? h('span', { class: 'hint', text: hint }) : null), control);
   }
@@ -63,8 +26,8 @@
     // ----- accounts -----
     c.append(MG.card('Accounts & keys', 'Only needed for some platforms. Saved on this computer only.',
       h('div', { class: 'fields one' },
-        MG.field('advanced', { key: 'facebookAccessToken', label: 'Facebook Page token', hint: 'Needed for Facebook comments', help: 'Facebook only lets apps read Live comments with a free token from your Page. The steps just below walk you through it.', type: 'secret', placeholder: 'Paste your token here' }),
-        MG.fbTokenGuide(),
+        MG.field('advanced', { key: 'facebookAccessToken', label: 'Facebook Page token', hint: 'Needed for Facebook comments', help: 'Facebook only lets apps read Live comments with a free token from your Page. Click Show me how for step-by-step pictures.', type: 'secret', placeholder: 'Paste your token here' }),
+        MG.fbGuideCallout(),
         MG.field('advanced', { key: 'tiktokSignApiKey', label: 'TikTok key (optional)', hint: 'TikTok works without it', help: 'A free key from eulerstream.com. TikTok limits how often apps can connect; with a key Mergio skips that limit.', type: 'secret', placeholder: 'Optional' }))));
 
     // ----- backup -----

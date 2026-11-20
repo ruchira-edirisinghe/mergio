@@ -27,7 +27,7 @@ class FacebookConnector extends Connector {
   async run() {
     if (this.stopped) return;
     if (!this.token()) {
-      this.setState('error', 'Facebook needs a Page access token. Add it in Settings > Accounts & keys (see Help), then click Reconnect.');
+      this.setState('error', 'Facebook needs a Page token. Open Settings > Accounts & keys and click Show me how. It takes about 5 minutes.');
       return;
     }
     try {
@@ -110,4 +110,28 @@ function graphError(e) {
   return `Facebook: ${e.message}`;
 }
 
-module.exports = { FacebookConnector };
+/**
+ * Tells the user, in plain words, what a pasted token is: a Page token (good), a personal token (one step
+ * short), or not valid. Used by the token guide before saving.
+ */
+async function checkToken(raw) {
+  const token = String(raw || '').trim().replace(/^["']|["']$/g, '');
+  if (!/^EA[A-Za-z0-9]{40,}$/.test(token)) return { ok: false, kind: 'format', message: "That doesn't look like a Facebook token. It should be one long line that starts with EA." };
+  const q = `access_token=${encodeURIComponent(token)}`;
+  let d;
+  try { d = (await fetchJson(`${GRAPH}/debug_token?input_token=${encodeURIComponent(token)}&${q}`)).data || {}; }
+  catch (e) { return { ok: false, kind: 'invalid', message: `Facebook didn't accept this token. ${graphError(e).replace(/^Facebook: /, '')}` }; }
+  if (!d.is_valid) return { ok: false, kind: 'invalid', message: 'This token has expired or was cancelled. Make a new one (steps 3 to 6).' };
+  const scopes = d.scopes || [];
+  const missing = ['pages_read_engagement', 'pages_read_user_content'].filter(x => !scopes.includes(x));
+  const expires = d.expires_at || 0;
+  if (d.type !== 'PAGE') {
+    return { ok: false, kind: 'user', expires, message: "This is your personal token, not your Page's. Do step 6 to turn it into a Page token." };
+  }
+  let name = '';
+  try { name = (await fetchJson(`${GRAPH}/${d.profile_id}?fields=name&${q}`)).name || ''; } catch { /* the name is only for the message */ }
+  if (missing.length) return { ok: false, kind: 'scopes', name, message: `This Page token is missing ${missing.join(' and ')}. Tick it in step 3 and make the token again.` };
+  return { ok: true, kind: 'page', name, id: d.profile_id, expires };
+}
+
+module.exports = { FacebookConnector, checkToken };

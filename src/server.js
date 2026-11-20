@@ -8,6 +8,7 @@ const testdata = require('./testdata');
 const autostart = require('./autostart');
 const avatars = require('./avatars');
 const updater = require('./updater');
+const { checkToken: checkFacebookToken } = require('./connectors/facebook');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
 
@@ -121,6 +122,7 @@ function createServer(manager, { onQuit }) {
         }
         if (p === '/api/update' && req.method === 'GET') return send(res, 200, updater.view());
         if (p === '/api/update/check' && req.method === 'POST') return send(res, 200, await updater.check());
+        if (p === '/api/facebook/check' && req.method === 'POST') return send(res, 200, await checkFacebookToken(body.token));
         if (p === '/api/update/seen' && req.method === 'POST') return send(res, 200, updater.markSeen());
         if (p === '/api/update/install' && req.method === 'POST') {
           if (!updater.view().canInstall) return send(res, 400, { error: 'This copy of Mergio can’t update itself. Download the new version instead.' });

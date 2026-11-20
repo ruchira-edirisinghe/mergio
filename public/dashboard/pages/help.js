@@ -17,9 +17,8 @@
         h('li', { text: 'Facebook: your Page link (facebook.com/yourpage), plus a token (see below). Mergio finds your live video by itself every time you go live.' }))),
       qa('A chat says "Waiting for you to go live"', h('p', { text: "That's normal while you're offline. Mergio keeps checking and connects by itself when your stream starts." })),
       qa('The chat does not show in OBS', h('p', {}, 'See the quick fixes on the ', goto('obs', 'Add to OBS'), ' page. That page also tells you whether OBS is showing the overlay right now.')),
-      qa('How do I set up Facebook?', h('p', {}, 'Facebook needs a free Page token. Paste it in ', goto('settings', 'Settings → Accounts & keys'),
-        ', then on ', goto('chats', 'Chats'), ' pick Facebook and type your Page name once. Mergio connects whenever you go live. The steps to get the token:')),
-      MG.fbTokenGuide(),
+      qa('How do I set up Facebook?', h('p', {}, 'Facebook needs a free Page token. The guide below shows each Facebook screen and what to click, then checks and saves the token for you. After that, on ',
+        goto('chats', 'Chats'), ' pick Facebook and type your Page name once. Mergio connects whenever you go live.'), MG.fbGuideCallout()),
       qa('TikTok does not connect', h('p', {}, 'Make sure you are LIVE and the username is right. If it says it is busy, add a free key from eulerstream.com in ', goto('settings', 'Settings → Accounts'), '.')),
       qa("Why can't I see Twitch followers or Kick/YouTube joins?", h('p', { text: 'Those platforms only share them with logged-in apps (Twitch followers) or not at all (Kick and YouTube joins). Everything that is public is supported.' })),
       qa('Does Mergio slow down my stream?', h('p', { text: 'No. It is a tiny background app (about 50 to 80 MB of memory) and the overlay only uses smooth, GPU-friendly animations.' }))));
