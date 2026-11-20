@@ -1,6 +1,10 @@
-MIT License
+MIT License, with credit to the creator
 
 Copyright (c) 2026 Ruchira Edirisinghe
+
+Mergio was created by Ruchira Edirisinghe (https://ruchiraedirisinghe.vercel.app).
+It is free and open source. Contributions from other people were added later and
+are welcome, but they do not change who created Mergio.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,8 +13,14 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+2. Any copy, fork, modified version or other work based on the Software must
+   clearly credit Ruchira Edirisinghe as the creator of Mergio, in its
+   documentation (for example its README) and, if it has one, in its "about"
+   or credits screen. Contributions added later by other people do not replace
+   or remove this credit.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
