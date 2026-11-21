@@ -1,0 +1,81 @@
+/* Mergio viewer count. Colours, font and size come from your settings (CSS variables set by viewers.js). */
+:root { --font: 'Inter', 'Segoe UI', system-ui, sans-serif; --fs: 28px; --text: #fff; --accent: #ff2d55; --bg: rgba(13, 13, 20, .78); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
+body { font-family: var(--font); font-size: var(--fs); color: var(--text); line-height: 1.15; -webkit-font-smoothing: antialiased; }
+
+#root { position: absolute; inset: 0; padding: .45em; display: flex; align-items: flex-start; }
+#root.al-center { justify-content: center; }
+html.mid #root { align-items: center; }
+#root.al-right { justify-content: flex-end; }
+.box { display: flex; align-items: center; gap: .45em; flex-wrap: wrap; }
+.lay-column .box { flex-direction: column; align-items: flex-start; }
+.al-center.lay-column .box { align-items: center; }
+.al-right.lay-column .box { align-items: flex-end; }
+.plats { display: flex; gap: .35em; flex-wrap: wrap; }
+.lay-column .plats { flex-direction: column; align-items: inherit; }
+
+.num { font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.total { display: inline-flex; align-items: center; gap: .32em; white-space: nowrap; }
+.total .lbl { font-size: .62em; font-weight: 700; opacity: .8; text-transform: lowercase; }
+.eye { display: inline-flex; width: .78em; height: .78em; opacity: .85; }
+.eye svg, .ic svg { width: 100%; height: 100%; }
+.live { flex: none; width: .42em; height: .42em; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 var(--accent); animation: ping 1.8s ease-out infinite; }
+.offline .live { background: #77778a; animation: none; }
+@keyframes ping { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent); } 80%, 100% { box-shadow: 0 0 0 .35em transparent; } }
+
+.pl { display: inline-flex; align-items: center; gap: .3em; white-space: nowrap; transition: opacity .3s; }
+.pl .ic { display: inline-flex; width: .72em; height: .72em; color: var(--pc); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .4)); }
+.pl .num { font-size: .72em; }
+.pl .nm { font-size: .6em; font-weight: 700; opacity: .8; }
+.pl.off { opacity: .45; }
+.pl.up .num { animation: tick-up .9s ease-out; }
+.pl.down .num { animation: tick-down .9s ease-out; }
+@keyframes tick-up { 30% { color: #6ef0a0; transform: translateY(-.08em); } }
+@keyframes tick-down { 30% { color: #ff8a8a; transform: translateY(.06em); } }
+
+.share { display: flex; gap: 2px; height: .2em; border-radius: 99px; overflow: hidden; width: 100%; min-width: 6em; }
+.share .seg { display: block; flex: 1 1 0; min-width: 2px; transition: flex-grow .9s cubic-bezier(.22, 1, .36, 1); }
+
+/* ---------- Pill: a dark pill for the total, small chips for each platform ---------- */
+.st-pill .total { padding: .22em .6em .22em .45em; border-radius: 99px; background: var(--bg); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08), 0 .2em .6em rgba(0, 0, 0, .35); }
+.st-pill .pl { padding: .2em .55em .2em .4em; border-radius: 99px; background: var(--bg); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pc) 40%, transparent); }
+
+/* ---------- Glass: a frosted card with a share bar ---------- */
+.st-glass .box { flex-direction: column; align-items: stretch; gap: .35em; padding: .5em .7em .55em; border-radius: .6em; background: linear-gradient(160deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .03)), var(--bg); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), 0 .4em 1.2em rgba(0, 0, 0, .4); backdrop-filter: blur(8px); }
+.st-glass .total .num { font-size: 1.15em; }
+.st-glass .plats { gap: .25em .7em; }
+.st-glass.lay-column .plats .pl, .st-neon.lay-column .plats .pl { width: 100%; }
+.st-glass.lay-column .plats .pl .nm, .st-neon.lay-column .plats .pl .nm { flex: 1; }
+.st-glass.lay-column .plats .pl .num, .st-neon.lay-column .plats .pl .num { margin-left: auto; padding-left: .6em; }
+
+/* ---------- Neon: glowing outline and numbers ---------- */
+.st-neon .box { flex-direction: column; align-items: stretch; gap: .35em; padding: .45em .7em .5em; border-radius: .45em; background: rgba(6, 6, 12, .82); box-shadow: inset 0 0 0 .06em var(--accent), 0 0 .5em color-mix(in srgb, var(--accent) 70%, transparent), inset 0 0 .6em color-mix(in srgb, var(--accent) 35%, transparent); }
+.st-neon .num { text-shadow: 0 0 .05em #fff, 0 0 .3em var(--accent), 0 0 .7em color-mix(in srgb, var(--accent) 60%, transparent); }
+.st-neon .total .lbl { color: color-mix(in srgb, var(--accent) 40%, #fff); text-shadow: 0 0 .4em var(--accent); }
+.st-neon .pl .ic { filter: drop-shadow(0 0 .2em var(--pc)); }
+.st-neon .plats { gap: .25em .7em; }
+.st-neon .share { box-shadow: 0 0 .4em color-mix(in srgb, var(--accent) 50%, transparent); }
+
+/* ---------- Broadcast: a TV-style strip with a LIVE block ---------- */
+.st-broadcast .box { gap: 0; flex-wrap: nowrap; filter: drop-shadow(0 .25em .5em rgba(0, 0, 0, .45)); }
+.st-broadcast.lay-column .box { align-items: stretch; }
+.st-broadcast .total { gap: .4em; padding: .2em .6em .2em 0; background: #fff; color: #111; border-radius: .2em 0 0 .2em; }
+.st-broadcast .total .live { width: auto; height: auto; border-radius: 0; padding: .32em .5em; align-self: stretch; display: grid; place-items: center; font-size: .5em; font-weight: 900; letter-spacing: .12em; color: #fff; background: var(--accent); animation: none; }
+.st-broadcast.offline .total .live { background: #55556a; }
+.st-broadcast .total .eye { display: none; }
+.st-broadcast .total .lbl { opacity: .65; }
+.st-broadcast .plats { gap: 0; flex-wrap: nowrap; }
+.st-broadcast .pl { padding: .3em .55em; background: var(--bg); box-shadow: inset 0 -.12em 0 var(--pc); }
+.st-broadcast .plats .pl:last-child { border-radius: 0 .2em .2em 0; }
+.st-broadcast .share { order: 3; width: 100%; height: .14em; border-radius: 0; flex-basis: 100%; }
+.st-broadcast:not(.lay-column) .box { display: grid; grid-template-columns: auto auto; justify-content: start; }
+.st-broadcast:not(.lay-column) .share { grid-column: 1 / -1; }
+.st-broadcast.lay-column .box { display: inline-flex; }
+
+/* ---------- Minimal: just icons and numbers with a shadow ---------- */
+.st-minimal .num, .st-minimal .lbl, .st-minimal .nm { text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 4px rgba(0, 0, 0, .6); }
+.st-minimal .box { gap: .3em .7em; }
+.st-minimal .eye { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); }
+
+@media (prefers-reduced-motion: reduce) { .live, .pl .num { animation: none !important; } .share .seg { transition: none; } }

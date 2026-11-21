@@ -73,6 +73,25 @@ const DEFAULTS = {
     sound: false,               // a short chime with each alert
     volume: 0.6,
   },
+  viewers: {
+    style: 'pill',              // pill | glass | neon | broadcast | minimal
+    layout: 'row',              // row | column (platforms side by side or under each other)
+    align: 'left',              // left | center | right
+    showTotal: true,            // one number for every platform together
+    totalLabel: 'watching',
+    showPlatforms: true,        // a number for each platform
+    showNames: false,           // "Twitch 120" instead of just the logo
+    hideOffline: true,          // only platforms that are live right now
+    showLiveDot: true,
+    showShare: true,            // a bar split by how many watch on each platform
+    animate: true,              // numbers roll to the new value
+    font: 'Inter',
+    fontSize: 28,
+    textColor: '#ffffff',
+    accent: '#ff2d55',
+    background: '#0d0d14',
+    bgOpacity: 0.78,
+  },
   twitch: { messages: true, cheers: true, announcements: true, subs: true, giftSubs: true, raids: true, redemptions: true, watchStreaks: true, joins: false, sharedChat: 'show', thirdPartyEmotes: true },
   youtube: { messages: true, superChats: true, superStickers: true, memberships: true, giftedMemberships: true, milestones: true },
   kick: { messages: true, subs: true, giftSubs: true, hosts: true, rewards: true, kicksGifts: true, follows: true },

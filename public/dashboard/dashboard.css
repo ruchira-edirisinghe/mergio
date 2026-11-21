@@ -587,6 +587,8 @@ body.quit .offline-bar::after { content: ' (You closed it from Settings.)'; }
 .ov::before { content: ''; position: absolute; inset: 0 0 auto; height: 3px; background: var(--ovc); }
 .ov-chat { --ovc: linear-gradient(90deg, var(--accent), #4d8dff); }
 .ov-alerts { --ovc: linear-gradient(90deg, #ffb020, var(--accent-2)); }
+.ov-viewers { --ovc: linear-gradient(90deg, #ff2d55, #ff7a45); }
+.ov-followers { --ovc: linear-gradient(90deg, #22c55e, #14b8a6); }
 .ov.off::before { opacity: .35; }
 .ov-h { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; }
 .ov-h h2 { margin: 2px 0 3px; font-size: 16.5px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
@@ -987,3 +989,34 @@ body.side-min .upd-pill > :not(.upd-dot) { display: none; }
 .fi .fh b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fi .fh time { margin: 0 0 0 auto; flex: none; }
 .fi .t { color: #dcdce8; }
+
+/* =========================== counter overlays (viewer count, follower goals) =========================== */
+.stage #counterFrame { display: none; width: 560px; pointer-events: none; }
+body[data-preview="counter"] #counterFrame { display: block; }
+body[data-preview="counter"] #previewFrame, body[data-preview="counter"] #alertsFrame, body[data-preview="counter"] .chat-foot { display: none; }
+.counter-foot { display: none; }
+body[data-preview="counter"] .counter-foot { display: flex; }
+/* live numbers card */
+.now { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
+.now-big { display: grid; justify-items: start; gap: 2px; padding: 14px 20px; border-radius: 14px; background: linear-gradient(140deg, rgba(255, 45, 85, .18), rgba(124, 77, 255, .12)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06); min-width: 150px; }
+.now-big b { font-size: 34px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.now-big span { color: var(--muted); font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.now-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.now-it { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 2px 10px; align-items: center; padding: 9px 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--line); }
+.now-it .logo { grid-row: span 2; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: color-mix(in srgb, var(--pc) 16%, transparent); color: var(--pc); }
+.now-it .logo svg { width: 16px; height: 16px; }
+.now-it b { font-size: 16px; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-it small { color: var(--faint); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-it.off b { color: var(--faint); font-weight: 600; font-size: 13.5px; }
+.now-it.err small { color: #fca5a5; }
+@media (max-width: 640px) { .now { grid-template-columns: 1fr; } }
+/* style picker for counters */
+.cstyles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.cstyle { display: flex; flex-direction: column; gap: 3px; padding: 8px 8px 11px; border-radius: 14px; text-align: left; background: var(--panel-2); border: 1.5px solid var(--line); color: inherit; font: inherit; cursor: pointer; transition: border-color .2s, transform .2s, box-shadow .2s; }
+.cstyle:hover { transform: translateY(-2px); border-color: rgba(167, 139, 250, .45); }
+.cstyle.on { border-color: #8b5cf6; box-shadow: 0 0 0 1px #8b5cf6, 0 8px 24px -10px rgba(139, 92, 246, .7); }
+.cstyle b { font-size: 14px; margin-top: 6px; padding: 0 4px; }
+.cstyle > span { font-size: 12px; opacity: .65; padding: 0 4px; line-height: 1.35; }
+.cmini { position: relative; height: 70px; border-radius: 10px; overflow: hidden; display: grid; place-items: center; background: radial-gradient(circle at 30% 20%, #3b2d55, #141a2b 75%); }
+.cmini svg { width: 100%; height: 100%; }
+.cmini iframe { position: absolute; left: 0; top: 0; width: 420px; height: 180px; border: 0; background: transparent; color-scheme: normal; transform-origin: 0 0; pointer-events: none; }

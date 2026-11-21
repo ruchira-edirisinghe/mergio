@@ -4,7 +4,7 @@ const { fetchJson, backoff } = require('../util');
 
 const GRAPH = 'https://graph.facebook.com/v21.0';
 const LOOK_EVERY = 30000;   // how often to look for a new live video while offline
-const CHECK_EVERY = 60000;  // how often to check that the live video is still live
+const CHECK_EVERY = 20000;  // how often to check that the live video is still live (and how many watch)
 
 /**
  * Facebook does not expose live comments without authentication, so this connector uses the official
@@ -66,7 +66,7 @@ class FacebookConnector extends Connector {
     this.videoId = videoId;
     this.seen = new Set();
     this.primed = false;
-    this.checkedAt = Date.now();
+    this.checkedAt = 0; // look up the viewer count straight away
     this.setState('live', `Connected${title ? ' to "' + title + '"' : ''}`);
     this.poll();
   }
@@ -75,10 +75,11 @@ class FacebookConnector extends Connector {
     if (this.stopped) return;
     try {
       // Page mode: once a minute make sure the stream hasn't ended, then wait for the next one.
-      if (this.pageMode && Date.now() - this.checkedAt > CHECK_EVERY) {
+      if (Date.now() - this.checkedAt > CHECK_EVERY) {
         this.checkedAt = Date.now();
-        const v = await this.api(this.videoId, 'fields=status');
-        if (v.status && v.status !== 'LIVE') { this.videoId = null; return this.run(); }
+        const v = await this.api(this.videoId, 'fields=status,live_views');
+        if (this.pageMode && v.status && v.status !== 'LIVE') { this.videoId = null; return this.run(); }
+        this.setViewers(v.status && v.status !== 'LIVE' ? null : Number(v.live_views) || 0);
       }
       const res = await this.api(`${this.videoId}/comments`, 'order=reverse_chronological&live_filter=no_filter&filter=stream&limit=50&fields=id,message,created_time,from{id,name,picture.type(small)}');
       const fresh = (res.data || []).filter(c => !this.seen.has(c.id)).reverse();

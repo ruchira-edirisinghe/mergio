@@ -84,8 +84,10 @@
       <div class="stage bg-game" id="stage">
         <iframe id="previewFrame" src="/overlay?preview=1" title="Overlay preview"></iframe>
         <iframe id="alertsFrame" src="/alerts?preview=1" title="Alerts overlay preview" tabindex="-1"></iframe>
+        <iframe id="counterFrame" title="Counter overlay preview" tabindex="-1"></iframe>
       </div>
-      <div class="preview-foot">
+      <div class="preview-foot counter-foot"><span class="lbl">Sample numbers show here while you're offline. In OBS your real numbers show.</span></div>
+      <div class="preview-foot chat-foot">
         <span class="lbl">Try:</span>
         <button class="btn ghost sm" data-test="random">Message</button>
         <button class="btn ghost sm" data-test="gift">Gift</button>
@@ -101,11 +103,13 @@
   <script src="/shared/glyphs.js"></script>
   <script src="/dashboard/core.js"></script>
   <script src="/dashboard/install.js"></script>
+  <script src="/dashboard/counters.js"></script>
   <script src="/dashboard/pages/home.js"></script>
   <script src="/dashboard/pages/chats.js"></script>
   <script src="/dashboard/pages/obs.js"></script>
   <script src="/dashboard/pages/style.js"></script>
   <script src="/dashboard/pages/alerts.js"></script>
+  <script src="/dashboard/pages/viewers.js"></script>
   <script src="/dashboard/pages/live.js"></script>
   <script src="/dashboard/pages/settings.js"></script>
   <script src="/dashboard/pages/help.js"></script>

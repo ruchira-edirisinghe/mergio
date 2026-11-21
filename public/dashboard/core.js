@@ -34,7 +34,7 @@
   /* ---------------- API & state ---------------- */
   MG.st = null;
   MG.feed = [];
-  MG.overlays = { count: 0, obs: false, alerts: { count: 0, obs: false } };
+  MG.overlays = { count: 0, obs: false, alerts: { count: 0, obs: false }, viewers: { count: 0, obs: false }, followers: { count: 0, obs: false } };
   MG.api = async (method, path, body) => {
     const res = await fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
     const json = await res.json().catch(() => ({}));
@@ -92,7 +92,7 @@
   /* ---------------- pages & navigation ---------------- */
   const PAGES = [];
   MG.page = def => { PAGES.push(def); PAGES.sort((a, b) => a.order - b.order); };
-  const GROUPS = { '': '', setup: 'Set up', custom: 'Customize', live: 'While live', app: 'App' };
+  const GROUPS = { '': '', setup: 'Set up', custom: 'Chat & alerts', counters: 'Counters', live: 'While live', app: 'App' };
   let page = (location.hash || '#home').slice(1);
   MG.current = () => page;
 
@@ -145,8 +145,16 @@
     $('#pageSub').textContent = p.subtitle || '';
     renderNav();
     const c = $('#content'); c.textContent = '';
+    setPreviewKind(p.preview);
     p.render(c);
   };
+  /** Pages for the counter overlays show that overlay in the preview instead of the chat. */
+  function setPreviewKind(src) {
+    document.body.dataset.preview = src ? 'counter' : 'chat';
+    const f = $('#counterFrame');
+    if (src && f.getAttribute('src') !== src) f.setAttribute('src', src);
+    setTimeout(fitPreview, 30);
+  }
   MG.refreshIf = (...ids) => { if (ids.includes(page)) MG.render(); else renderNav(); };
 
   /* ---------------- reusable settings controls ---------------- */
@@ -352,6 +360,8 @@
     frame.style.height = `${stage.clientHeight / scale}px`;
     const alerts = $('#alertsFrame'); // the alerts overlay floats over the top of the preview
     if (alerts) alerts.style.transform = `scale(${Math.min(1, stage.clientWidth / 800)})`;
+    const counter = $('#counterFrame'); // counters are drawn 560 wide and scaled to fit
+    if (counter) { const k = Math.min(1, stage.clientWidth / 560); counter.style.transform = `scale(${k})`; counter.style.height = `${stage.clientHeight / k}px`; }
   }
   window.addEventListener('resize', fitPreview);
   const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } } };
@@ -394,7 +404,7 @@
     ws.onopen = () => document.body.classList.remove('offline');
     ws.onmessage = e => {
       const d = JSON.parse(e.data);
-      if (d.op === 'hello') { MG.feed = d.recent || []; emit('feed'); }
+      if (d.op === 'hello') { MG.feed = d.recent || []; if (d.stats) MG.st.stats = d.stats; emit('feed'); emit('stats', MG.st.stats); }
       if (d.op === 'sources') { MG.st.sources = d.sources; emit('sources'); renderNav(); updateSummary(); }
       if (d.op === 'msg') {
         const i = MG.feed.findIndex(x => x.id === d.msg.id);
@@ -404,7 +414,8 @@
       if (d.op === 'clear') { MG.feed = []; emit('feed'); }
       if (d.op === 'settings') syncSettings(d.settings);
       if (d.op === 'update') emit('update', d.update);
-      if (d.op === 'overlays') { MG.overlays = { count: d.count, obs: d.obs, alerts: d.alerts || { count: 0, obs: false } }; if (d.count) MG.st.settings.advanced.overlaySeen = true; emit('overlays'); renderNav(); }
+      if (d.op === 'stats') { MG.st.stats = d.stats; emit('stats', d.stats); }
+      if (d.op === 'overlays') { MG.overlays = { count: d.count, obs: d.obs, alerts: d.alerts || { count: 0, obs: false }, viewers: d.viewers || { count: 0, obs: false }, followers: d.followers || { count: 0, obs: false } }; if (d.count) MG.st.settings.advanced.overlaySeen = true; emit('overlays'); renderNav(); }
     };
     ws.onclose = () => {
       document.body.classList.add('offline');

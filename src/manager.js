@@ -1,6 +1,7 @@
 'use strict';
 const { EventEmitter } = require('node:events');
 const settings = require('./settings');
+const stats = require('./stats');
 const { detect } = require('./detect');
 const { uid, log } = require('./util');
 const { TwitchConnector } = require('./connectors/twitch');
@@ -29,6 +30,7 @@ class Manager extends EventEmitter {
     this.counts = new Map();    // sourceId -> messages received
     this.recent = [];           // last BUFFER messages (overlay backfill + dashboard feed)
     this.ctx = { settings: settings.get };
+    this.on('status', list => stats.setSources(list));
   }
 
   startAll() {
@@ -45,6 +47,8 @@ class Manager extends EventEmitter {
     c.on('message', m => this.onMessage(m));
     c.on('delete', d => this.onDelete(source, d));
     c.on('status', () => this.emit('status', this.list()));
+    c.on('viewers', n => stats.setViewers(source.id, n));
+    c.on('followers', n => stats.setFollowers(source.id, n));
     this.running.set(source.id, c);
     try { c.start(); } catch (e) { log('manager', e); c.setState('error', e.message); }
     this.emit('status', this.list());
@@ -76,7 +80,7 @@ class Manager extends EventEmitter {
     const s = sources.find(x => x.id === id);
     if (!s) return;
     if (enabled) this.startSource(s);
-    else { this.running.get(id)?.stop(); this.running.delete(id); this.emit('status', this.list()); }
+    else { this.running.get(id)?.stop(); this.running.delete(id); stats.setViewers(id, null); this.emit('status', this.list()); }
   }
 
   reconnect(id) {

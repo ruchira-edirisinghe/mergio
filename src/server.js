@@ -8,6 +8,7 @@ const testdata = require('./testdata');
 const autostart = require('./autostart');
 const avatars = require('./avatars');
 const updater = require('./updater');
+const stats = require('./stats');
 const { checkToken: checkFacebookToken } = require('./connectors/facebook');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
@@ -120,8 +121,8 @@ function pageHeaders(file, host) {
     "manifest-src 'self'",
   ];
   // The control panel can't be shown inside another website (so nobody can trick you into clicking its buttons).
-  // The overlays only show chat, so other tools may still embed them.
-  const panel = !/^(overlay|alerts)\//.test(file);
+  // The overlays only show chat and numbers, so other tools (and the panel's previews) may still embed them.
+  const panel = !/^(overlay|alerts|viewers)\//.test(file);
   if (!panel) return { 'Content-Security-Policy': csp.join('; ') };
   csp.push("frame-ancestors 'none'");
   return { 'Content-Security-Policy': csp.join('; '), 'X-Frame-Options': 'DENY', 'Cross-Origin-Opener-Policy': 'same-origin' };
@@ -160,6 +161,8 @@ function createServer(manager, { onQuit }) {
     dataDir: DATA_DIR,
     overlayUrl: `http://localhost:${settings.get().advanced.port}/overlay`,
     alertsUrl: `http://localhost:${settings.get().advanced.port}/alerts`,
+    viewersUrl: `http://localhost:${settings.get().advanced.port}/viewers`,
+    stats: stats.view(),
     testKinds: testdata.KINDS,
     autostart: { supported: autostart.supported(), enabled: autostart.isEnabled() },
     overlays: overlayStatus(),
@@ -246,6 +249,7 @@ function createServer(manager, { onQuit }) {
       if (p === '/' ) return send(res, 302, '', 'text/plain', { Location: '/dashboard' });
       const file = p === '/overlay' || p === '/overlay/' ? 'overlay/index.html'
         : p === '/alerts' || p === '/alerts/' ? 'alerts/index.html'
+        : p === '/viewers' || p === '/viewers/' ? 'viewers/index.html'
         : p === '/manifest.webmanifest' ? 'dashboard/manifest.webmanifest'
         : p === '/sw.js' ? 'dashboard/sw.js' // served from the root so it can look after /dashboard
         : p === '/dashboard' || p === '/dashboard/' ? 'dashboard/index.html'
@@ -278,7 +282,7 @@ function createServer(manager, { onQuit }) {
   function overlayStatus() {
     const open = [...wss.clients].filter(c => c.overlay && c.readyState === 1);
     const of = kind => { const l = open.filter(c => c.overlay.kind === kind); return { count: l.length, obs: l.some(c => c.overlay.obs) }; };
-    return { ...of('chat'), alerts: of('alerts') };
+    return { ...of('chat'), alerts: of('alerts'), viewers: of('viewers') };
   }
   const broadcast = obj => {
     const data = JSON.stringify(obj);
@@ -288,19 +292,20 @@ function createServer(manager, { onQuit }) {
     // Overlays identify themselves so the control panel can show "Mergio is in OBS".
     const q = new URL(req.url, 'http://localhost').searchParams;
     const client = q.get('client');
-    if (client === 'overlay' || client === 'alerts') {
+    if (['overlay', 'alerts', 'viewers'].includes(client)) {
       // OBS browser sources expose window.obsstudio (sent as obs=1); the user agent is a fallback.
-      ws.overlay = { kind: client === 'alerts' ? 'alerts' : 'chat', obs: q.get('obs') === '1' || /\bOBS\//.test(req.headers['user-agent'] || '') };
+      ws.overlay = { kind: client === 'overlay' ? 'chat' : client, obs: q.get('obs') === '1' || /\bOBS\//.test(req.headers['user-agent'] || '') };
       if (client === 'overlay' && !settings.get().advanced.overlaySeen) settings.update({ advanced: { overlaySeen: true } });
       ws.on('close', () => broadcast({ op: 'overlays', ...overlayStatus() }));
       broadcast({ op: 'overlays', ...overlayStatus() });
     }
-    ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(-60) }));
+    ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(-60), stats: stats.view() }));
   });
   manager.on('message', m => broadcast({ op: 'msg', msg: m }));
   manager.on('delete', d => broadcast({ op: 'delete', ...d }));
   manager.on('status', list => broadcast({ op: 'sources', sources: list }));
   updater.onChange(update => broadcast({ op: 'update', update }));
+  stats.on('change', view => broadcast({ op: 'stats', stats: view }));
 
   return server;
 }
