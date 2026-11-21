@@ -115,13 +115,15 @@
     let group = null;
     for (const p of PAGES) {
       if (p.group !== group) { group = p.group; if (GROUPS[group]) nav.append(h('div', { class: 'nav-h', text: GROUPS[group] })); }
-      const b = h('button', { class: p.id === page ? 'on' : '', style: `--n:${PAGES.indexOf(p)}`, title: p.label, onclick: () => MG.go(p.id), 'aria-current': p.id === page ? 'page' : null },
+      const b = h('button', { class: `${p.id === page ? 'on' : ''} ${p.highlight ? 'cta' : ''} ${p.highlight?.() === 'todo' ? 'todo' : ''}`.trim(), style: `--n:${PAGES.indexOf(p)}`, title: p.label, onclick: () => MG.go(p.id), 'aria-current': p.id === page ? 'page' : null },
         icon(p.icon), h('span', { class: 'lbl', text: p.label }));
       const badge = p.badge?.();
       if (badge) b.append(h('span', { class: `count ${badge.cls || ''}`, text: badge.text }));
       nav.append(b);
     }
     placeIndicator(nav);
+    // on a phone the page bar scrolls sideways: keep the current page in view
+    if (nav.scrollWidth > nav.clientWidth) nav.querySelector('.on')?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
   }
   MG.renderNav = renderNav;
   const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -146,6 +148,7 @@
     renderNav();
     const c = $('#content'); c.textContent = '';
     setPreviewKind(p.preview);
+    document.body.dataset.page = p.id;
     p.render(c);
   };
   /** Pages for the counter overlays show that overlay in the preview instead of the chat. */
@@ -316,7 +319,16 @@
 
   /** A small (i) that explains a setting in plain words. */
   MG.help = text => {
-    const b = h('button', { type: 'button', class: 'info-tip', 'aria-label': `About this setting: ${text}`, onclick: e => { e.preventDefault(); e.stopPropagation(); b.classList.toggle('show'); } }, icon('info'), h('span', { class: 'tip', role: 'tooltip', text }));
+    const tip = h('span', { class: 'tip', role: 'tooltip', text });
+    // keep the bubble inside the window (on a phone it would stick out on the right)
+    const place = () => {
+      tip.style.left = '';
+      const r = tip.getBoundingClientRect(), room = document.documentElement.clientWidth - 8;
+      if (r.width && r.right > room) tip.style.left = `${-10 - Math.min(r.right - room, r.left - 8)}px`;
+    };
+    const b = h('button', { type: 'button', class: 'info-tip', 'aria-label': `About this setting: ${text}`, onclick: e => { e.preventDefault(); e.stopPropagation(); b.classList.toggle('show'); place(); } }, icon('info'), tip);
+    b.addEventListener('mouseenter', () => requestAnimationFrame(place));
+    b.addEventListener('focus', () => requestAnimationFrame(place));
     b.addEventListener('blur', () => b.classList.remove('show'));
     return b;
   };
@@ -367,14 +379,14 @@
   const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } } };
   MG.store = store;
   /** The sidebar can shrink to just its icons (remembered on this computer). */
-  function setSideMin(min, animate = true) {
+  function setSideMin(min, animate = true, remember = true) {
     document.body.classList.toggle('side-anim', animate && !calm());
     document.body.classList.toggle('side-min', min);
     const b = $('#btnSide');
     b.setAttribute('aria-expanded', String(!min));
     b.title = min ? 'Expand the sidebar' : 'Shrink the sidebar';
     b.setAttribute('aria-label', b.title);
-    store.set('mg-side', min ? 'min' : 'full');
+    if (remember) store.set('mg-side', min ? 'min' : 'full');
     navAt = null;
     setTimeout(() => { renderNav(); fitPreview(); }, animate ? 260 : 0);
   }
@@ -439,11 +451,16 @@
     $('#version').textContent = `v${MG.st.version}`;
     const bg = $('#btnGuide'); bg.append(icon('help'), h('span', { text: 'Guide' })); bg.onclick = () => MG.openGuide?.();
     const bt = $('#btnTest'); bt.append(icon('sparkle'), h('span', { text: 'Send test' })); bt.onclick = () => { MG.test('burst'); MG.toast('Sample messages sent to the overlay'); };
-    const bc = $('#btnCopy'); bc.append(icon('copy'), h('span', { text: 'Copy overlay link' })); bc.onclick = () => MG.copy(MG.st.overlayUrl);
+    // takes you to Add to OBS, where every overlay has its link, its size and the steps
+    const bc = $('#btnCopy'); bc.append(icon('monitor'), h('span', { text: 'Add to OBS' })); bc.onclick = () => MG.go('obs');
     const bp = $('#btnPreview'); bp.append(icon('eye'), h('span', { text: 'Show preview' })); bp.onclick = () => setPreview(document.body.classList.contains('no-preview'));
     $('#btnPreviewClose').append(icon('plus')); $('#btnPreviewClose').onclick = () => setPreview(false);
     const bs = $('#btnSide'); bs.append(icon('sidebar')); bs.onclick = () => setSideMin(!document.body.classList.contains('side-min'));
-    setSideMin(store.get('mg-side') === 'min', false);
+    // Until you choose, the sidebar shows just its icons on smaller laptop screens to leave room for the settings.
+    const sideAuto = () => innerWidth > 1020 && innerWidth <= 1280;
+    const sidePref = store.get('mg-side');
+    setSideMin(sidePref ? sidePref === 'min' : sideAuto(), false, false);
+    if (!sidePref) window.addEventListener('resize', () => { if (!store.get('mg-side') && document.body.classList.contains('side-min') !== sideAuto()) setSideMin(sideAuto(), false, false); });
     for (const b of document.querySelectorAll('[data-test]')) b.onclick = () => MG.test(b.dataset.test);
     for (const b of document.querySelectorAll('#bgSeg button')) b.onclick = () => {
       document.querySelectorAll('#bgSeg button').forEach(x => x.classList.toggle('on', x === b));

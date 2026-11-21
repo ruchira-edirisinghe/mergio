@@ -129,7 +129,7 @@ svg { display: block; }
 
 /* ---------- OBS / steps ---------- */
 .urlbox { display: flex; gap: 8px; align-items: center; background: #0d0d14; border: 1px solid var(--line-2); border-radius: 12px; padding: 6px 6px 6px 14px; }
-.urlbox code { flex: 1; font-size: 14px; color: #d8ceff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.urlbox code { flex: 1; min-width: 0; font-size: 14px; color: #d8ceff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .steps { counter-reset: s; list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 10px; }
 .steps li { counter-increment: s; position: relative; padding-left: 40px; color: #cfcfe0; }
 .steps li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 12.5px; background: rgba(124,92,255,.2); color: #c9bbff; }
@@ -465,7 +465,7 @@ button.link { border: 0; background: none; padding: 0; color: #b9a8ff; text-deco
 .banner.ok { border-color: rgba(34,197,94,.45); background: rgba(34,197,94,.08); } .banner.ok > svg { color: #86efac; }
 .banner.warn { border-color: rgba(245,158,11,.45); background: rgba(245,158,11,.08); } .banner.warn > svg { color: #fcd34d; }
 .big-steps { counter-reset: s; list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 16px; }
-.big-steps li { counter-increment: s; position: relative; padding-left: 46px; display: grid; gap: 6px; color: #cfcfe0; }
+.big-steps li { counter-increment: s; position: relative; padding-left: 46px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; color: #cfcfe0; }
 .big-steps li::before { content: counter(s); position: absolute; left: 0; top: -2px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
 .big-steps li > b { color: var(--text); font-size: 15px; }
 .big-steps.compact { gap: 10px; }
@@ -552,7 +552,7 @@ body.quit .offline-bar::after { content: ' (You closed it from Settings.)'; }
   body.no-preview .app { grid-template-columns: 1fr; }
   .nav-h { display: none; }
 }
-@media (max-width: 760px) { .act span { display: none; } .src { grid-template-columns: 40px 1fr; } .src .acts { grid-column: 1 / -1; justify-content: flex-end; } .hero-top { flex-direction: column; } .todo li { grid-template-columns: 32px 1fr; } .todo li .btn { grid-column: 2; justify-self: start; } .ev-row { grid-template-columns: 1fr auto; } .ev-row .btn { display: none; } .mini-search input { width: 120px; } }
+@media (max-width: 760px) { .ev-row > span:empty { display: none; } .act span { display: none; } .src { grid-template-columns: 40px 1fr; } .src .acts { grid-column: 1 / -1; justify-content: flex-end; } .hero-top { flex-direction: column; } .todo li { grid-template-columns: 32px 1fr; } .todo li .btn { grid-column: 2; justify-self: start; } .ev-row { grid-template-columns: 1fr auto; } .ev-row .btn { display: none; } .mini-search input { width: 120px; } }
 @media (max-width: 560px) { .connect { flex-direction: column; } .top-actions .btn span { display: none; } .titles p { display: none; } }
 
 /* ---------- Alerts: where alerts show ---------- */
@@ -697,8 +697,9 @@ select option { background: #1a1a26; color: var(--text); }
 .info-tip { position: relative; display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--faint); cursor: help; flex: none; }
 .info-tip svg { width: 15px; height: 15px; }
 .info-tip:hover, .info-tip:focus-visible, .info-tip.show { color: #b9a8ff; outline: none; }
-.info-tip .tip { position: absolute; left: -10px; top: calc(100% + 8px); z-index: 50; width: max-content; max-width: 280px; padding: 9px 12px; border-radius: 10px; background: #232334; border: 1px solid var(--line-2); box-shadow: 0 12px 30px -8px rgba(0, 0, 0, .7); color: #dedeea; font-size: 12.5px; font-weight: 450; line-height: 1.45; text-align: left; white-space: normal; opacity: 0; visibility: hidden; transform: translateY(-3px); transition: opacity .15s, transform .15s, visibility .15s; pointer-events: none; }
-.info-tip:hover .tip, .info-tip:focus-visible .tip, .info-tip.show .tip { opacity: 1; visibility: visible; transform: none; }
+.info-tip .tip { position: absolute; left: -10px; top: calc(100% + 8px); z-index: 50; width: max-content; max-width: 280px; padding: 9px 12px; border-radius: 10px; background: #232334; border: 1px solid var(--line-2); box-shadow: 0 12px 30px -8px rgba(0, 0, 0, .7); color: #dedeea; font-size: 12.5px; font-weight: 450; line-height: 1.45; text-align: left; white-space: normal; display: none !important; pointer-events: none; }
+.info-tip:hover .tip, .info-tip:focus-visible .tip, .info-tip.show .tip { display: block !important; animation: tip-in .15s ease-out; }
+@keyframes tip-in { from { opacity: 0; transform: translateY(-3px); } }
 /* lighter rows */
 .f { min-height: 46px; padding: 8px 0; }
 .f label { font-weight: 560; }
@@ -727,7 +728,7 @@ details.fold > summary > .fold-n { color: var(--faint); }
 .tipbar .i-inline svg { display: inline-block; }
 .fields { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
 .f .dd { max-width: 300px; }
-.info-tip .tip { display: block; width: 260px; max-width: 70vw; }
+.info-tip .tip { width: 260px; max-width: calc(100vw - 24px); }
 .f input[type=password] { width: 240px; }
 
 /* ---------- update popup ---------- */
@@ -1021,3 +1022,124 @@ body[data-preview="counter"] .counter-foot { display: flex; }
 .cmini svg { width: 100%; height: 100%; }
 .cmini iframe { position: absolute; left: 0; top: 0; width: 420px; height: 180px; border: 0; background: transparent; color-scheme: normal; transform-origin: 0 0; pointer-events: none; }
 .now-big span svg { width: 14px; height: 14px; }
+
+/* =========================== responsive: the page content adapts to its own width ===========================
+   The sidebar and the live preview take room too, so the cards look at how wide the content column really is
+   (a 1366px laptop with the preview open has less room than a tablet without it). */
+.main { container: main / inline-size; }
+.titles { min-width: 0; }
+.topbar h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.titles p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.top-actions { flex: none; display: flex; flex-wrap: nowrap; gap: 8px; }
+@container main (max-width: 860px) {
+  .top-actions .btn:not(.primary) span { display: none; }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container main (max-width: 760px) {
+  .ovs, .places { grid-template-columns: 1fr; }
+  .src { grid-template-columns: 40px minmax(0, 1fr); }
+  .src .acts { grid-column: 1 / -1; justify-content: flex-end; }
+  .hero-top { flex-direction: column; }
+  .todo li { grid-template-columns: 32px minmax(0, 1fr); }
+  .todo li .btn { grid-column: 2; justify-self: start; }
+  .ev-row { grid-template-columns: 34px minmax(0, 1fr) auto; }
+  .ev-row .btn, .ev-row > span:empty { display: none; }
+  .mini-search input { width: 120px; }
+  .content { padding-left: 18px; padding-right: 18px; }
+}
+@container main (max-width: 640px) {
+  .f { grid-template-columns: 34px minmax(0, 1fr); }
+  .f-ic { width: 34px; height: 34px; }
+  .f-ctl { grid-column: 2; justify-content: flex-start; }
+  .f.has-when { margin-left: 8px; grid-template-columns: 30px minmax(0, 1fr); }
+  /* a switch is small: it stays on the right of its label instead of dropping under it */
+  .f:has(> .f-ctl > .switch) { grid-template-columns: 34px minmax(0, 1fr) auto; }
+  .f.has-when:has(> .f-ctl > .switch) { grid-template-columns: 30px minmax(0, 1fr) auto; }
+  .f:has(> .f-ctl > .switch) > .f-ctl { grid-column: auto; }
+  .now { grid-template-columns: 1fr; }
+  .now-list { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .astyles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .top-actions .btn span { display: none; }
+  .topbar { gap: 10px; }
+  .f-ctl .install-how { text-align: left; max-width: none; }
+}
+@container main (max-width: 560px) {
+  .tiles { grid-template-columns: 1fr; }
+  .connect { flex-direction: column; }
+  .titles p { display: none; }
+  .content { padding-left: 12px; padding-right: 12px; }
+  .card { padding-left: 16px; padding-right: 16px; }
+  .cstyles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* laptops: a slimmer preview leaves more room for the settings */
+@media (min-width: 1021px) and (max-width: 1180px) {
+  .app { grid-template-columns: 210px minmax(0, 1fr) 300px; }
+  body.side-min .app { grid-template-columns: 74px minmax(0, 1fr) 300px; }
+}
+/* phones and small tablets: the sidebar becomes a bar on top that scrolls sideways instead of wrapping */
+@media (max-width: 1020px) {
+  .app, body.no-preview .app, body.side-min .app, body.side-min.no-preview .app { grid-template-columns: minmax(0, 1fr); }
+  .side { flex-wrap: nowrap; gap: 10px; min-width: 0; }
+  #nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; min-width: 0; flex: 1; }
+  #nav::-webkit-scrollbar { display: none; }
+  #nav button { flex: none; }
+  .side-foot .live-sum span:last-child { display: none; }
+  .preview { height: min(520px, 70vh); }
+}
+.preview-head b { white-space: nowrap; }
+.preview-head .seg { flex: none; }
+@media (max-width: 1020px) {
+  /* the page bar scrolls sideways: fade its right edge so you can tell there is more */
+  #nav { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); padding-right: 22px; }
+}
+.content > .hint { margin-left: auto; margin-right: auto; }
+
+/* =========================== clear levels: section title > setting > sub-setting ===========================
+   Level 1, the section (fold) title: a bold title with a coloured icon tile, and a line under it when open.
+   Level 2, a setting: a smaller plain icon and a normal label, inside the section's inset panel.
+   Level 3, a sub-setting (only used when the setting above is on): indented under it with an elbow line, lighter text. */
+details.fold > summary .fold-ic { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; box-shadow: 0 6px 16px -8px rgba(160, 60, 255, .8); }
+details.fold > summary .fold-ic svg { width: 19px; height: 19px; }
+details.fold > summary:hover .fold-ic { background: linear-gradient(135deg, var(--accent), var(--accent-2)); filter: brightness(1.12); }
+details.fold > summary .fold-t > b { font-size: 16px; font-weight: 750; letter-spacing: -.01em; }
+details.fold[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+details.fold[open] > .fields { padding: 4px 14px; border-radius: 14px; background: rgba(255, 255, 255, .018); box-shadow: inset 0 0 0 1px var(--line); }
+details.fold > .fields > .f-sub:first-child { margin-top: 12px; }
+details.fold > .fields > .f-sub { margin-left: 0; margin-right: 0; }
+
+.f-ic { width: 32px; height: 32px; border-radius: 9px; background: transparent; box-shadow: inset 0 0 0 1px var(--line-2); color: #b7a9e6; }
+.f-ic svg { width: 16px; height: 16px; }
+.f { grid-template-columns: 32px minmax(0, 1fr) auto; min-height: 56px; }
+.f > label .lt { font-size: 14px; font-weight: 600; color: #ececf3; }
+
+.f.has-when { position: relative; margin-left: 30px; padding-left: 12px; border-left: 0; border-radius: 12px; grid-template-columns: 26px minmax(0, 1fr) auto; min-height: 48px; }
+.f.has-when::before { content: ''; position: absolute; left: -14px; top: -6px; width: 14px; height: calc(50% + 6px); border-left: 2px solid rgba(124, 77, 255, .4); border-bottom: 2px solid rgba(124, 77, 255, .4); border-bottom-left-radius: 8px; }
+.f.has-when + .f.has-when::before { top: -30px; height: calc(50% + 30px); }
+.f.has-when .f-ic { width: 26px; height: 26px; border-radius: 7px; box-shadow: none; background: rgba(255, 255, 255, .04); color: var(--muted); }
+.f.has-when .f-ic svg { width: 14px; height: 14px; }
+.f.has-when > label .lt { font-size: 13px; font-weight: 550; color: #cfcfdc; }
+.f.has-when .hint { font-size: 12px; }
+@container main (max-width: 640px) {
+  .f, .f:has(> .f-ctl > .switch) { grid-template-columns: 30px minmax(0, 1fr) auto; }
+  .f:not(:has(> .f-ctl > .switch)) { grid-template-columns: 30px minmax(0, 1fr); }
+  .f-ic { width: 30px; height: 30px; }
+  .f.has-when, .f.has-when:has(> .f-ctl > .switch) { margin-left: 22px; grid-template-columns: 24px minmax(0, 1fr) auto; }
+  .f.has-when:not(:has(> .f-ctl > .switch)) { grid-template-columns: 24px minmax(0, 1fr); }
+  .f.has-when .f-ic { width: 24px; height: 24px; }
+  details.fold[open] > .fields { padding: 2px 10px; }
+}
+
+/* ---------- Add to OBS stands out in the sidebar; it pulses until OBS shows the chat overlay ---------- */
+#nav button.cta { color: var(--text); background: linear-gradient(90deg, rgba(124, 77, 255, .2), rgba(255, 45, 143, .1)); box-shadow: inset 0 0 0 1px rgba(160, 110, 255, .35); }
+#nav button.cta svg { color: #d6c6ff; }
+#nav button.cta:hover { background: linear-gradient(90deg, rgba(124, 77, 255, .3), rgba(255, 45, 143, .16)); }
+#nav button.cta.on { background: none; box-shadow: none; }
+#nav button.cta.todo::after { content: ''; position: absolute; top: 7px; left: 24px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 0 0 rgba(255, 45, 143, .6); animation: cta-ping 1.8s ease-out infinite; }
+@keyframes cta-ping { 0% { box-shadow: 0 0 0 0 rgba(255, 45, 143, .6); } 80%, 100% { box-shadow: 0 0 0 7px rgba(255, 45, 143, 0); } }
+@media (prefers-reduced-motion: reduce) { #nav button.cta.todo::after { animation: none; } }
+body[data-page="obs"] #btnCopy { display: none; }
+
+/* a narrow preview pane: the header keeps its close button inside */
+.preview-head b { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.preview-head .x { flex: none; }
+@media (max-width: 1100px) { .preview-head { padding: 12px 10px 12px 14px; } .preview-head .seg button { padding: 4px 8px; } }
