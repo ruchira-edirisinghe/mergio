@@ -403,7 +403,7 @@
     if (Object.keys(pending).length) return; // our own change is about to be saved
     let changed = false;
     for (const [sec, vals] of Object.entries(incoming || {})) {
-      if (!MG.st.settings[sec] || JSON.stringify(MG.st.settings[sec]) === JSON.stringify(vals)) continue;
+      if (!Object.hasOwn(MG.st.settings, sec) || JSON.stringify(MG.st.settings[sec]) === JSON.stringify(vals)) continue;
       MG.st.settings[sec] = { ...MG.st.settings[sec], ...vals };
       changed = true;
     }

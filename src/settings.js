@@ -212,7 +212,7 @@ function update(patch) {
 }
 
 function reset(section) {
-  if (section && DEFAULTS[section] && section !== 'sources') current[section] = structuredClone(DEFAULTS[section]);
+  if (section && Object.hasOwn(DEFAULTS, section) && section !== 'sources') current[section] = structuredClone(DEFAULTS[section]);
   else current = { ...structuredClone(DEFAULTS), sources: current.sources, advanced: current.advanced };
   save();
   return current;

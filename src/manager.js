@@ -41,7 +41,8 @@ class Manager extends EventEmitter {
 
   startSource(source) {
     this.running.get(source.id)?.stop();
-    const Impl = CONNECTORS[source.platform];
+    // Own keys only: a platform like "constructor" from a hand-edited config must not reach Object's constructor.
+    const Impl = Object.hasOwn(CONNECTORS, source.platform) ? CONNECTORS[source.platform] : null;
     if (!Impl) return;
     const c = new Impl(source, this.ctx);
     c.on('message', m => this.onMessage(m));

@@ -33,7 +33,7 @@ function unescapeTag(v = '') {
 }
 
 function parseLine(line) {
-  let rest = line, tags = {}, prefix = '';
+  let rest = line, tags = Object.create(null), prefix = ''; // no prototype: tag names come from the network
   if (rest.startsWith('@')) {
     const sp = rest.indexOf(' ');
     for (const kv of rest.slice(1, sp).split(';')) { const i = kv.indexOf('='); tags[kv.slice(0, i)] = unescapeTag(kv.slice(i + 1)); }
