@@ -71,7 +71,30 @@
     const shape = [S.style, S.layout, S.align, S.showTitle, S.title, S.showNames, S.showGoal, S.showBar, S.showToGo, S.outline, S.fontSize, items.join()].join('|');
     if (shape !== built) build(items, shape);
     for (const k of items) update(k, per[k]);
+    fitLine();
   }
+
+  /** "All in one line": when the line is wider than the browser source, shrink it to fit instead of wrapping. */
+  function fitLine() {
+    const box = root.querySelector('.box');
+    if (!box) return;
+    if (sizeWatch && watched !== box) { sizeWatch.disconnect(); sizeWatch.observe(root); sizeWatch.observe(box); watched = box; }
+    box.style.transform = '';
+    if (S.layout !== 'line') return;
+    const cs = getComputedStyle(root);
+    const room = root.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const w = box.offsetWidth;
+    if (w > room && room > 0) {
+      box.style.transformOrigin = S.align === 'center' ? 'center' : S.align === 'right' ? 'right center' : 'left center';
+      box.style.transform = `scale(${room / w})`;
+    }
+  }
+  addEventListener('resize', () => S && fitLine());
+  // numbers count up and fonts load after the first draw, so fit again whenever the line changes size
+  const sizeWatch = window.ResizeObserver ? new ResizeObserver(() => S && fitLine()) : null;
+  let watched = null;
+  document.fonts && document.fonts.ready.then(() => S && fitLine());
+
 
   function update(k, n) {
     const it = els[k];
@@ -104,7 +127,7 @@
 
   function build(items, shape) {
     built = shape;
-    root.className = `fg st-${S.style} lay-${S.style === 'bars' ? 'column' : S.layout} al-${S.align}`;
+    root.className = `fg st-${S.style} lay-${S.style === 'bars' && S.layout !== 'line' ? 'column' : S.layout} al-${S.align}`;
     root.textContent = '';
     for (const k of Object.keys(els)) delete els[k];
     const box = h('div', 'box');

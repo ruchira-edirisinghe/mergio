@@ -11,7 +11,7 @@
   ];
   const on = key => s => s.followers[key];
   const GROUPS = [
-    { id: 'show', icon: 'eye', title: 'What to show', sub: 'Platforms, the title and the parts of each goal', open: true, items: [
+    { id: 'show', icon: 'eye', title: 'What to show', sub: 'Platforms, the title and the parts of each goal', items: [
       { sub: 'Platforms' },
       [F, { key: 'youtube', icon: 'youtube', label: 'YouTube subscribers', type: 'toggle' }],
       [F, { key: 'twitch', icon: 'twitch', label: 'Twitch followers', type: 'toggle' }],
@@ -44,8 +44,8 @@
       [F, { key: 'celebrate', icon: 'star', label: 'Flash when a goal is reached', type: 'toggle' }],
       [F, { key: 'animate', icon: 'trend', label: 'Numbers count up', hint: 'Off = they change straight away', type: 'toggle' }],
     ] },
-    { id: 'layout', icon: 'layout', title: 'Layout', sub: 'Side by side or stacked, and where it sits', items: [
-      [F, { key: 'layout', icon: 'rows', label: 'Platforms go', hint: 'The Bars style is always stacked', type: 'select', options: [['row', 'Side by side'], ['column', 'Under each other']] }],
+    { id: 'layout', icon: 'layout', title: 'Layout', sub: 'One line, side by side or stacked, and where it sits', items: [
+      [F, { key: 'layout', icon: 'rows', label: 'Arrange the goals', hint: 'One line keeps everything on a single row and shrinks it to fit', type: 'select', dropdown: true, options: [['line', 'All in one line'], ['row', 'Side by side, wraps when long'], ['column', 'Under each other']] }],
       [F, { key: 'align', icon: 'align', label: 'Line up on the', hint: 'Inside the browser source', type: 'select', options: [['left', 'Left'], ['center', 'Middle'], ['right', 'Right']] }],
     ] },
     { id: 'text', icon: 'type', title: 'Text & colours', sub: 'Font, size, outline and colours', items: [

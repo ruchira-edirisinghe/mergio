@@ -75,7 +75,7 @@ const DEFAULTS = {
   },
   viewers: {
     style: 'pill',              // pill | glass | neon | broadcast | minimal
-    layout: 'row',              // row | column (platforms side by side or under each other)
+    layout: 'row',              // line | row | column (one line, side by side and wrapping, or under each other)
     align: 'left',              // left | center | right
     showTotal: true,            // one number for every platform together
     totalLabel: 'watching',
@@ -95,7 +95,7 @@ const DEFAULTS = {
   followers: {
     enabled: true,              // look follower counts up (off = no lookups at all)
     style: 'panel',             // panel | line | cards | neon | bars
-    layout: 'row',              // row | column
+    layout: 'row',              // line | row | column
     align: 'left',              // left | center | right
     showTitle: true,
     title: 'Follower goals',

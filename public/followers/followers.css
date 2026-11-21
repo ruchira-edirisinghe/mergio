@@ -84,3 +84,12 @@ html.mid #root { align-items: center; }
 .st-bars .plus { right: auto; left: 1.2em; }
 
 @media (prefers-reduced-motion: reduce) { .it, .it *, .plus { animation: none !important; transition: none !important; } }
+
+/* ---------- All in one line: the title and every goal side by side, never wrapping ----------
+   (followers.js shrinks it to fit when it is wider than the browser source) */
+.lay-line .box { flex-direction: row; align-items: center; gap: .8em; }
+.lay-line .items { flex-wrap: nowrap; }
+.st-bars.lay-line .items { flex-direction: row; align-items: center; }
+.st-bars.lay-line .it { min-width: 8.5em; }
+
+.lay-line .box { flex: none; }

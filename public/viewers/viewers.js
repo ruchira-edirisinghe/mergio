@@ -68,7 +68,30 @@
       if (row.seg) row.seg.style.flexGrow = String(n || 0);
     }
     if (els.share) els.share.hidden = !total;
+    fitLine();
   }
+
+  /** "All in one line": when the line is wider than the browser source, shrink it to fit instead of wrapping. */
+  function fitLine() {
+    const box = root.querySelector('.box');
+    if (!box) return;
+    if (sizeWatch && watched !== box) { sizeWatch.disconnect(); sizeWatch.observe(root); sizeWatch.observe(box); watched = box; }
+    box.style.transform = '';
+    if (S.layout !== 'line') return;
+    const cs = getComputedStyle(root);
+    const room = root.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const w = box.offsetWidth;
+    if (w > room && room > 0) {
+      box.style.transformOrigin = S.align === 'center' ? 'center' : S.align === 'right' ? 'right center' : 'left center';
+      box.style.transform = `scale(${room / w})`;
+    }
+  }
+  addEventListener('resize', () => S && fitLine());
+  // numbers count up and fonts load after the first draw, so fit again whenever the line changes size
+  const sizeWatch = window.ResizeObserver ? new ResizeObserver(() => S && fitLine()) : null;
+  let watched = null;
+  document.fonts && document.fonts.ready.then(() => S && fitLine());
+
 
   function build(plats, shape) {
     built = shape;
