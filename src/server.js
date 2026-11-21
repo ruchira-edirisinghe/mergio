@@ -84,9 +84,47 @@ function fromOwnPage(req) {
 const mediaType = req => String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
 const hasBody = req => Number(req.headers['content-length']) > 0 || req.headers['transfer-encoding'] !== undefined;
 
+/* ---------- security headers ---------- */
+const BASE_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'no-referrer',
+  'Cross-Origin-Resource-Policy': 'same-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+};
+// Anything that isn't one of Mergio's pages (an SVG opened on its own, JSON) can't run scripts or load anything.
+const LOCKED_CSP = "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'";
+
+/**
+ * Content Security Policy for Mergio's pages: scripts only from Mergio itself, so even a chat message that
+ * somehow got turned into HTML could never run code. Pictures (emotes, badges, profile pictures, gifts) come from
+ * the chat platforms over https, fonts from Google Fonts.
+ */
+function pageHeaders(file, host) {
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "media-src 'self' data: blob: https:",
+    `connect-src 'self' ws://${host}`,
+    "object-src 'none'",
+    "base-uri 'none'",
+    "form-action 'self'",
+    "worker-src 'self'",
+    "manifest-src 'self'",
+  ];
+  // The control panel can't be shown inside another website (so nobody can trick you into clicking its buttons).
+  // The overlays only show chat, so other tools may still embed them.
+  const panel = !/^(overlay|alerts)\//.test(file);
+  if (!panel) return { 'Content-Security-Policy': csp.join('; ') };
+  csp.push("frame-ancestors 'none'");
+  return { 'Content-Security-Policy': csp.join('; '), 'X-Frame-Options': 'DENY', 'Cross-Origin-Opener-Policy': 'same-origin' };
+}
+
 function createServer(manager, { onQuit }) {
   const send = (res, code, body, type = 'application/json; charset=utf-8', extra = {}) => {
-    res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', ...extra });
+    res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', ...BASE_HEADERS, 'Content-Security-Policy': LOCKED_CSP, ...extra });
     res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
   };
   const httpError = (status, message) => Object.assign(new Error(message), { status });
@@ -204,7 +242,8 @@ function createServer(manager, { onQuit }) {
         : p.slice(1);
       const buf = readAsset(file);
       if (!buf) return send(res, 404, 'Not found', 'text/plain');
-      return send(res, 200, buf, TYPES[path.extname(file)] || 'application/octet-stream', { 'Cache-Control': 'no-cache' });
+      const type = TYPES[path.extname(file)] || 'application/octet-stream';
+      return send(res, 200, buf, type, { 'Cache-Control': 'no-cache', ...(type.startsWith('text/html') ? pageHeaders(file, req.headers.host) : {}) });
     } catch (e) {
       if (e.status) return send(res, e.status, { error: e.message });
       log('server', e);
