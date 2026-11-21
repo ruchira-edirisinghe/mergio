@@ -9,9 +9,9 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+# Read-only by default; only the jobs that publish get write access.
 permissions:
-  contents: write
-  actions: write # lets the macOS build start itself again when no Mac machine was free
+  contents: read
 
 jobs:
   build:
@@ -52,6 +52,8 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -74,7 +76,9 @@ jobs:
 
   mac:
     needs: release
+    permissions:
+      contents: write
+      actions: write # lets the macOS build start itself again when no Mac machine was free
     uses: ./.github/workflows/mac.yml
     with:
       tag: ${{ github.ref_name }}
-    secrets: inherit
