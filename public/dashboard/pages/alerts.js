@@ -1,5 +1,6 @@
 /* Alerts: what each platform shows on the overlay, with a "Try" button to preview every alert. */
 (() => {
+  const openPlatforms = new Set();
   const { h, icon } = MG;
 
   // key, label, short description, test kind (for the Try button)
@@ -171,12 +172,15 @@
       const extra = [];
       if (p === 'twitch') extra.push(MG.field('twitch', { key: 'sharedChat', icon: 'raid', label: 'Messages from Shared Chat partners', type: 'select', options: [['show', 'Show'], ['highlight', 'Show and highlight'], ['hide', 'Hide']] }));
       if (p === 'tiktok') extra.push(MG.field('tiktok', { key: 'minGiftDiamonds', icon: 'gem', label: 'Only show gifts worth at least', hint: 'In diamonds. 0 = every gift', type: 'number', min: 0, max: 100000 }));
-      c.append(h('details', { class: 'card fold pcard', style: `--pc: var(--${p})`, open: used.has(p) || !used.size },
+      // every section starts folded; one you open stays open while you change things
+      const fold = h('details', { class: 'card fold pcard', style: `--pc: var(--${p})`, open: openPlatforms.has(p) },
         h('summary', {}, MG.colorIcon(p), h('b', { text: MG.pname(p) }), h('span', { text: used.has(p) ? 'In use' : 'Not connected' }),
           h('label', { class: 'all', onclick: e => e.stopPropagation() }, h('span', { text: 'All' }), h('span', { class: 'switch' }, allBox, h('span')))),
         NOTES[p] ? h('p', { class: 'sub', text: NOTES[p] }) : null,
         h('div', { class: 'ev-list' }, ...rows),
-        extra.length ? h('div', { class: 'fields' }, ...extra) : null));
+        extra.length ? h('div', { class: 'fields' }, ...extra) : null);
+      fold.addEventListener('toggle', () => (fold.open ? openPlatforms.add(p) : openPlatforms.delete(p)));
+      c.append(fold);
     }
   }
 
