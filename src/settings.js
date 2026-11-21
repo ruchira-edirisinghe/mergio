@@ -14,6 +14,7 @@ const DEFAULTS = {
     theme: 'glass',
     showPlatform: true,
     showAvatar: true,
+    avatarSize: 2,              // profile picture size in em (it sits in its own column)
     showBadges: true,
     showPronouns: false,
     showUsername: true,

@@ -29,6 +29,7 @@
     { id: 'show', icon: 'eye', title: 'What each message shows', sub: 'Pictures, icons, names and times', open: true, items: [
       { sub: 'Who sent it' },
       [A, { key: 'showAvatar', icon: 'image', label: 'Profile pictures', hint: "The viewer's picture next to their message", type: 'toggle' }],
+      [A, { key: 'avatarSize', icon: 'size', help: 'The picture sits in its own column, so the name and message line up next to it. Around 2× fits a name and a line of text.', label: 'Picture size', type: 'range', min: 1.2, max: 3.5, step: 0.1, unit: '×', keywords: 'avatar profile picture size big', when: s => s.appearance.showAvatar }],
       [A, { key: 'showUsername', icon: 'user', label: 'Usernames', type: 'toggle' }],
       [A, { key: 'showBadges', icon: 'shield', help: 'Small icons for moderators, VIPs, subscribers and members, shown before the name.', label: 'Badges', hint: 'Mod, VIP, subscriber, member…', type: 'toggle' }],
       [A, { key: 'showPronouns', icon: 'tag', help: 'Pronouns that viewers set on Twitch (through the pronouns extension), shown next to their name.', label: 'Pronouns', hint: 'Twitch only', type: 'toggle' }],
