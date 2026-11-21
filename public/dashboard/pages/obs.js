@@ -104,7 +104,8 @@
         h('li', { text: 'Keep Mergio running while you stream (it starts from the Mergio icon).' }))));
   }
 
-  MG.page({ id: 'obs', order: 20, group: 'setup', label: 'Add to OBS', icon: 'monitor', title: 'Add to OBS', subtitle: 'Show the overlay on your stream',
+  // highlighted in the sidebar; it pulses until OBS shows the chat overlay
+  MG.page({ id: 'obs', order: 20, group: 'setup', highlight: () => (MG.overlays.obs ? 'done' : 'todo'), label: 'Add to OBS', icon: 'monitor', title: 'Add to OBS', subtitle: 'Show the overlay on your stream',
     badge: () => (MG.overlays.obs && (!MG.st || !alertsOn() || MG.overlays.alerts?.obs) ? { text: '✓', cls: 'good' } : null), render });
   MG.on('overlays', () => {
     const el = document.getElementById('obsStatus'); if (el) { el.textContent = ''; el.append(status()); }
