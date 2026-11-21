@@ -261,6 +261,7 @@ function createServer(manager, { onQuit }) {
         : p === '/followers' || p === '/followers/' ? 'followers/index.html'
         : p === '/manifest.webmanifest' ? 'dashboard/manifest.webmanifest'
         : p === '/sw.js' ? 'dashboard/sw.js' // served from the root so it can look after /dashboard
+        : p === '/favicon.ico' ? 'shared/app-192.png' // browsers (and OBS) ask for it even when a page names its icon
         : p === '/dashboard' || p === '/dashboard/' ? 'dashboard/index.html'
         : p.slice(1);
       const buf = readAsset(file);

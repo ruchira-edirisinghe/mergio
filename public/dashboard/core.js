@@ -393,10 +393,11 @@
     navAt = null;
     setTimeout(() => { renderNav(); fitPreview(); }, animate ? 260 : 0);
   }
-  function setPreview(open) {
+  function setPreview(open, remember = true) {
     document.body.classList.toggle('no-preview', !open);
     $('#btnPreview').hidden = open; // when it's open, the × in the preview closes it
-    store.set('mg-preview', open ? '1' : '0');
+    // only your own choice is remembered: a narrow window closing it by itself mustn't hide it in wide windows later
+    if (remember) store.set('mg-preview', open ? '1' : '0');
     setTimeout(fitPreview, 60);
   }
 
@@ -470,7 +471,7 @@
       $('#stage').className = `stage bg-${b.dataset.bg}`;
     };
     window.addEventListener('hashchange', () => { page = (location.hash || '#home').slice(1); turnPage(MG.render); });
-    setPreview(store.get('mg-preview') !== '0' && window.innerWidth > 1020);
+    setPreview(store.get('mg-preview') !== '0' && window.innerWidth > 1020, false);
     MG.render(); updateSummary(); connectWs(); fitPreview();
     await reveal();
     emit('ready');

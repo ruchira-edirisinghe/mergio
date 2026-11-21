@@ -29,11 +29,12 @@
 
   /** The "Install as an app" row on the Settings page. */
   function row() {
-    let ctl;
-    if (installed()) ctl = h('span', { class: 'pill-ok' }, icon('check'), "You're using the app");
-    else if (deferred) ctl = h('button', { class: 'btn primary sm', onclick: prompt }, icon('download'), 'Install app');
-    else ctl = h('span', { class: 'hint install-how', text: 'Click the install icon at the right end of the address bar, or open the browser menu and choose "Install Mergio". (Not offered? Your browser may not support apps; Chrome, Edge and Brave do.)' });
-    return MG.row('window', 'Use Mergio as an app', 'Opens the control panel in its own window, with its own icon. Opening Mergio then opens that window.', ctl, { search: 'install app window pwa taskbar' });
+    const what = 'Opens the control panel in its own window, with its own icon. Opening Mergio then opens that window.';
+    if (installed()) return MG.row('window', 'Use Mergio as an app', what, h('span', { class: 'pill-ok' }, icon('check'), "You're using the app"), { search: 'install app window pwa taskbar' });
+    if (deferred) return MG.row('window', 'Use Mergio as an app', what, h('button', { class: 'btn primary sm', onclick: prompt }, icon('download'), 'Install app'), { search: 'install app window pwa taskbar' });
+    // No install button from the browser: the steps go under the description, where there's room to read them.
+    return MG.row('window', 'Use Mergio as an app', `${what} To install it, click the install icon at the right end of the address bar, or open the browser menu and choose "Install Mergio". Not offered? Your browser may not support apps; Chrome, Edge and Brave do.`,
+      null, { search: 'install app window pwa taskbar' });
   }
 
   MG.install = { available: () => !!deferred && !installed(), installed, prompt, row };
