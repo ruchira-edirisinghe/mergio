@@ -23,6 +23,10 @@ let seen = null;
 let installed = { version: current, notes: [], url: `https://github.com/${REPO}/releases/tag/v${current}`, publishedAt: null };
 let listeners = [];
 
+/** Release links shown in the control panel only ever point at Mergio's GitHub page. */
+const RELEASES = `https://github.com/${REPO}/releases`;
+const releaseLink = u => (typeof u === 'string' && u.startsWith(`${RELEASES}/`) && !/[\s"<>]/.test(u) ? u : `${RELEASES}/latest`);
+
 /** 1.10.0 > 1.9.2; ignores a leading "v" and any "-beta" part. */
 function newer(a, b) {
   const n = v => String(v || '').replace(/^v/i, '').split('-')[0].split('.').map(x => parseInt(x, 10) || 0);
@@ -88,7 +92,7 @@ async function check() {
     if (!rel) throw new Error('no releases found');
     // Notes of the version that is running now, for the "What's new" popup after an update.
     const mine = list.find(r => !newer(r.tag_name, current) && !newer(current, r.tag_name));
-    if (mine) installed = { version: current, notes: parseNotes(mine.body).slice(0, 8), url: mine.html_url || installed.url, publishedAt: mine.published_at };
+    if (mine) installed = { version: current, notes: parseNotes(mine.body).slice(0, 8), url: releaseLink(mine.html_url), publishedAt: mine.published_at };
     const latest = String(rel.tag_name).replace(/^v/i, '');
     const asset = (rel.assets || []).find(a => a.name === WIN_ASSET);
     // GitHub publishes a SHA-256 for every release file; the download has to match it before it may run.
@@ -98,7 +102,7 @@ async function check() {
     const notes = (missed.length ? missed : [rel]).flatMap(r => parseNotes(r.body)).slice(0, 8);
     info = {
       current, latest, available: newer(latest, current), behind: missed.length,
-      notes, url: rel.html_url || info.url, publishedAt: rel.published_at, checkedAt: Date.now(),
+      notes, url: releaseLink(rel.html_url), publishedAt: rel.published_at, checkedAt: Date.now(),
       asset: asset && sha256 ? { url: asset.browser_download_url, size: asset.size, sha256 } : null,
     };
     if (info.available) log('update', `Mergio ${latest} is available (this is ${current})`);
