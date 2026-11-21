@@ -115,7 +115,7 @@ const PRIVACY: Doc = {
         <UL>
           <LI><B>No cookies, analytics or ads.</B> The site doesn't track you.</LI>
           <LI><B>Hosting:</B> the site is hosted by <A href="https://vercel.com/legal/privacy-policy">Vercel</A>, which may keep standard server logs (such as IP address and browser) for security and reliability.</LI>
-          <LI><B>Release info:</B> your browser asks GitHub's public API for the latest version and the release notes shown in Dev notes. That list is kept in your browser's session storage until you close the tab.</LI>
+          <LI><B>Release info:</B> your browser asks GitHub's public API for the latest version and the release notes shown in Dev notes. A copy is kept in your browser's session storage for up to 10 minutes, so it isn't asked again on every visit, and is gone when you close the tab.</LI>
           <LI><B>Fonts:</B> the fonts in the overlay demos come from Google Fonts.</LI>
           <LI><B>Downloads</B> come straight from Mergio's GitHub releases.</LI>
         </UL>
