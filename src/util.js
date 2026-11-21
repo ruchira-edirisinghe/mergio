@@ -34,10 +34,39 @@ function resolveDataDir() {
     try {
       writable(dir);
       migrateLegacy(dir, [path.join(home, 'OmniChat'), path.join(require('node:os').homedir(), '.config', 'OmniChat')]);
+      // Only Mergio's own folders get locked down, never a folder picked with MERGIO_DATA (it could be Documents).
+      dataDirIsOwn = dir !== process.env.MERGIO_DATA;
       return dir;
     } catch { /* try next */ }
   }
   return process.cwd();
+}
+let dataDirIsOwn = false;
+
+/**
+ * The data folder holds the Facebook token and the TikTok key, so only the signed-in user (plus SYSTEM and
+ * administrators on Windows) may open it. Other accounts on the same PC can't read the tokens.
+ */
+function protectDataDir(dir = DATA_DIR, done = () => {}) {
+  if (dir === DATA_DIR && !dataDirIsOwn) return done(false);
+  if (process.platform !== 'win32') {
+    try {
+      fs.chmodSync(dir, 0o700);
+      for (const f of fs.readdirSync(dir)) fs.chmodSync(path.join(dir, f), 0o600);
+      return done(true);
+    } catch (e) { log('app', `could not protect the data folder: ${e.message}`); return done(false); }
+  }
+  const user = process.env.USERNAME;
+  if (!user) return done(false);
+  const who = process.env.USERDOMAIN ? `${process.env.USERDOMAIN}\\${user}` : user;
+  const icacls = args => new Promise(res => execFile('icacls.exe', [dir, ...args, '/Q'], { windowsHide: true }, err => res(err)));
+  // Grant first and only then drop the inherited permissions, so a failed grant can never lock the user out.
+  (async () => {
+    const err = await icacls(['/grant:r', `${who}:(OI)(CI)F`, '/grant:r', '*S-1-5-18:(OI)(CI)F', '/grant:r', '*S-1-5-32-544:(OI)(CI)F'])
+      || await icacls(['/inheritance:r']);
+    if (err) log('app', `could not protect the data folder: ${err.message.split('\n')[0]}`);
+    done(!err);
+  })();
 }
 
 /** Settings from versions released under the old name (OmniChat) are carried over once. */
@@ -115,4 +144,4 @@ function backoff(attempt, base = 2000, cap = 60000) {
 let idCounter = 0;
 const uid = (p = 'm') => `${p}${Date.now().toString(36)}${(idCounter++).toString(36)}`;
 
-module.exports = { UA, DATA_DIR, LOG_FILE, isSea, log, redact, fetchText, fetchJson, curlJson, sleep, backoff, uid };
+module.exports = { UA, DATA_DIR, LOG_FILE, isSea, log, redact, protectDataDir, fetchText, fetchJson, curlJson, sleep, backoff, uid };
