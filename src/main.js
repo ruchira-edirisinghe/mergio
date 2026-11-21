@@ -6,7 +6,7 @@ const settings = require('./settings');
 const { Manager } = require('./manager');
 const { createServer } = require('./server');
 const updater = require('./updater');
-const { log, DATA_DIR } = require('./util');
+const { log, DATA_DIR, protectDataDir } = require('./util');
 const pkg = require('../package.json');
 
 function openBrowser(url) {
@@ -62,6 +62,7 @@ server.on('error', e => {
 server.listen(port, '127.0.0.1', () => {
   log('app', `Mergio ${pkg.version} running. Dashboard: ${dashboard}  Overlay: http://localhost:${port}/overlay  Data: ${DATA_DIR}`);
   manager.startAll();
+  protectDataDir();
   updater.start({ isNewUser: !settings.get().advanced.welcomeSeen });
   if (shouldOpen) openDashboard(dashboard);
 });

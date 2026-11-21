@@ -4,6 +4,9 @@ const path = require('node:path');
 const { DATA_DIR, log } = require('./util');
 
 const FILE = path.join(DATA_DIR, 'config.json');
+// Tokens and keys: the control panel only ever gets MASK back, never the saved value.
+const SECRETS = ['tiktokSignApiKey', 'facebookAccessToken'];
+const MASK = '•'.repeat(12);
 
 /** Every overlay/app option with its default. The dashboard renders its form from SCHEMA (public/dashboard). */
 const DEFAULTS = {
@@ -119,15 +122,33 @@ function load() {
 
 function save() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try { fs.writeFileSync(FILE, JSON.stringify(current, null, 2)); } catch (e) { log('settings', 'save failed:', e.message); }
-  }, 250);
+  saveTimer = setTimeout(writeNow, 250);
+}
+
+/** Writes a temporary file and swaps it in, so a crash or power cut never leaves half a config. Owner-only. */
+function writeNow() {
+  const data = JSON.stringify(current, null, 2);
+  const tmp = `${FILE}.tmp`;
+  try {
+    fs.writeFileSync(tmp, data, { mode: 0o600 });
+    fs.renameSync(tmp, FILE);
+  } catch (e) {
+    // Some antivirus tools briefly lock the file: fall back to writing it in place.
+    try { fs.writeFileSync(FILE, data, { mode: 0o600 }); } catch (e2) { log('settings', 'save failed:', e2.message); }
+    try { fs.rmSync(tmp, { force: true }); } catch { /* ignore */ }
+  }
 }
 
 const get = () => current;
 
 /** Deep-merges a partial update (unknown keys are dropped, types are coerced to the default's type). */
 function update(patch) {
+  // The panel sends the mask back when a token field wasn't really changed: keep the saved token then.
+  // Real tokens and keys are plain ASCII, so anything else (the mask, or the mask with text typed after it) is ignored.
+  const adv = patch?.advanced;
+  if (adv && typeof adv === 'object') {
+    for (const k of SECRETS) if (typeof adv[k] === 'string' && /[^\x20-\x7e]/.test(adv[k].trim())) delete adv[k];
+  }
   current = merge(DEFAULTS, merge(current, patch || {}));
   save();
   return current;
@@ -146,4 +167,11 @@ function publicView(s = current) {
   return rest;
 }
 
-module.exports = { DEFAULTS, FILE, get, update, reset, save, publicView };
+/** Control-panel view: everything, but a saved token shows as MASK (so the panel knows one is set). */
+function panelView(s = current) {
+  const advanced = { ...s.advanced };
+  for (const k of SECRETS) if (advanced[k]) advanced[k] = MASK;
+  return { ...s, advanced };
+}
+
+module.exports = { DEFAULTS, FILE, MASK, get, update, reset, save, publicView, panelView };
