@@ -81,6 +81,8 @@ const DEFAULTS = {
   sources: [],
 };
 
+const MAX_TEXT = 20000; // longest text setting (blocked words, ignored chatters, tokens)
+
 function merge(base, over) {
   if (Array.isArray(base)) return Array.isArray(over) ? over : base;
   if (base && typeof base === 'object') {
@@ -91,7 +93,15 @@ function merge(base, over) {
   if (over === undefined || over === null) return base;
   if (typeof base === 'number') { const n = Number(over); return Number.isFinite(n) ? n : base; }
   if (typeof base === 'boolean') return over === true || over === 'true';
-  return typeof base === 'string' ? String(over) : over;
+  return typeof base === 'string' ? String(over).slice(0, MAX_TEXT) : over;
+}
+
+/** Values that must stay in range whatever was saved or sent. */
+function clamp(s) {
+  const port = Math.trunc(s.advanced.port);
+  if (!(port >= 1024 && port <= 65535)) s.advanced.port = DEFAULTS.advanced.port;
+  else s.advanced.port = port;
+  return s;
 }
 
 /** Brings configs from older versions up to date. */
@@ -116,7 +126,7 @@ let current = load();
 if (migrated) save();
 
 function load() {
-  try { return merge(DEFAULTS, migrate(JSON.parse(fs.readFileSync(FILE, 'utf8')))); }
+  try { return clamp(merge(DEFAULTS, migrate(JSON.parse(fs.readFileSync(FILE, 'utf8'))))); }
   catch (e) { if (e.code !== 'ENOENT') log('settings', 'could not read config, using defaults:', e.message); return structuredClone(DEFAULTS); }
 }
 
@@ -149,7 +159,7 @@ function update(patch) {
   if (adv && typeof adv === 'object') {
     for (const k of SECRETS) if (typeof adv[k] === 'string' && /[^\x20-\x7e]/.test(adv[k].trim())) delete adv[k];
   }
-  current = merge(DEFAULTS, merge(current, patch || {}));
+  current = clamp(merge(DEFAULTS, merge(current, patch || {})));
   save();
   return current;
 }
