@@ -207,6 +207,7 @@ export function ObsDock({ active }: { active: boolean }) {
                 <ChatFeed items={overlay} fontSize={10.5} className="absolute inset-0 p-1.5 [mask-image:linear-gradient(180deg,transparent,#000_25%)]" />
               </div>
               <span className="absolute left-2 top-2 rounded bg-[#ff2d55] px-1.5 py-0.5 text-[10px] font-bold tracking-wider">LIVE</span>
+              <span className="absolute left-14 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold"><Eye className="h-3 w-3" />{counts.reduce((s, n) => s + n, 0).toLocaleString('en')} watching</span>
             </div>
             <div className="mt-3 grid grid-cols-[1fr_1.3fr_1.2fr] gap-3 text-[12px]">
               <div className="rounded-md bg-[#272a33] p-2">
@@ -215,7 +216,7 @@ export function ObsDock({ active }: { active: boolean }) {
               </div>
               <div className="rounded-md bg-[#272a33] p-2">
                 <div className="mb-1.5 text-white/45">Sources</div>
-                {[['Mergio', true], ['Mergio Alerts', false], ['Game capture', false], ['Mic', false]].map(([s, sel]) => (
+                {[['Mergio', true], ['Mergio Alerts', false], ['Mergio Viewers', false], ['Game capture', false]].map(([s, sel]) => (
                   <div key={String(s)} className={`flex items-center gap-2 rounded px-2 py-1 ${sel ? 'bg-[#3c5bd1]/60' : 'text-white/70'}`}>
                     <Eye className="h-3 w-3 opacity-60" />{s}<Lock className="ml-auto h-3 w-3 opacity-30" />
                   </div>

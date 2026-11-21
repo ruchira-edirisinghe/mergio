@@ -8,8 +8,17 @@
 .mg-msg { max-width: 100%; animation: mg-in .5s cubic-bezier(.22, 1, .36, 1) both; }
 .mg-feed[data-align='right'] .mg-msg { animation-name: mg-in-r; }
 .mg-feed[data-fade] .mg-msg { animation: mg-in .5s cubic-bezier(.22, 1, .36, 1) both, mg-out .7s ease-in var(--fade) forwards; }
-.mg-msg.grouped { margin-top: -.14em; margin-left: calc(var(--padx) + 1.45em); }
-.mg-feed[data-align='right'] .mg-msg.grouped { margin-left: 0; margin-right: calc(var(--padx) + 1.45em); }
+.mg-msg.grouped { margin-top: -.2em; }
+/* the picture in its own column, the name on top and the message below (like the app) */
+.mg-msg.has-av { display: flex; align-items: flex-start; gap: .5em; }
+.mg-feed[data-align='right'] .mg-msg.has-av { flex-direction: row-reverse; }
+.mg-msg.has-av > .mg-bubble { min-width: 0; }
+.mg-avcol { flex: none; width: 2em; }
+.mg-avcol .mg-av { width: 2em; height: 2em; margin: 0; vertical-align: top; box-shadow: 0 0 0 .07em rgba(255, 255, 255, .18), 0 .12em .4em rgba(0, 0, 0, .4); }
+.mg-msg.grouped .mg-avcol { visibility: hidden; height: 0; }
+.mg-head { display: flex; align-items: center; gap: .3em; margin-bottom: .12em; flex-wrap: wrap; }
+.mg-feed[data-align='right'] .mg-head { justify-content: flex-end; }
+.mg-head .mg-plat, .mg-head .mg-badge { margin-right: 0; vertical-align: 0; }
 
 .mg-bubble { display: inline-block; max-width: 100%; padding: .42em var(--padx); border-radius: 14px; text-shadow: 0 1px 2px rgba(0, 0, 0, .55); overflow-wrap: anywhere; }
 .mg-plat, .mg-evic { display: inline-flex; width: 1.1em; height: 1.1em; margin-right: .35em; vertical-align: -.2em; }

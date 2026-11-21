@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, Radio } from 'lucide-react';
 import { MergioMark, PlatformIcon, PLATFORMS, platformColor, type PlatformId } from '../components/brand';
 import { Face } from '../components/Face';
@@ -184,17 +184,42 @@ export function Placement({ active }: { active: boolean }) {
   );
 }
 
-/* ---------- 6. Tidy chat: grouped follow-ups and messages that fade away ---------- */
-const TIDY = CHATS.slice(0, 12);
-export function TidyChat({ active }: { active: boolean }) {
-  const items = useFeed(TIDY, 1100, active, 7, 3);
+/* ---------- 6. Live counters: viewers on every platform, and follower goals filling up ---------- */
+const VIEWS: [PlatformId, number][] = [['youtube', 412], ['twitch', 186], ['kick', 74], ['tiktok', 538]];
+const GOALS: [PlatformId, number, number][] = [['youtube', 431, 500], ['twitch', 88, 100], ['tiktok', 1183, 1200]];
+const fmt = (n: number) => n.toLocaleString('en');
+export function Counters({ active }: { active: boolean }) {
+  const [t] = useCycle(36, 650, active);
+  const views = VIEWS.map(([id, n], i) => [id, n + Math.round(Math.sin((t + i * 4) / 2.6) * (5 + i * 3))] as const);
+  const total = views.reduce((s, [, n]) => s + n, 0);
   return (
-    <div className="relative h-56 w-full" aria-hidden="true">
-      <span className="absolute right-0 top-0 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/70">
-        <svg viewBox="0 0 20 20" className="h-3.5 w-3.5 -rotate-90"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" strokeOpacity=".25" strokeWidth="3" /><circle cx="10" cy="10" r="8" fill="none" stroke="#c9b8ff" strokeWidth="3" strokeDasharray="50.3" style={{ animation: active ? 'tidy-ring 4.5s linear infinite' : 'none' } as CSSProperties} /></svg>
-        Fade after 5s
-      </span>
-      <ChatFeed items={items} fade={active ? 4.5 : 0} fontSize={12.5} className="absolute inset-0 pt-8" />
+    <div className="w-full space-y-3" aria-hidden="true">
+      <div className="flex flex-wrap items-center gap-1.5 text-[12px] font-bold text-white">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1 ring-1 ring-white/10">
+          <span className="h-2 w-2 rounded-full bg-[#ff2d55] anim-pulse" /><span className="tabular-nums text-[14px]">{fmt(total)}</span><span className="text-white/60">watching</span>
+        </span>
+        {views.map(([id, n]) => (
+          <span key={id} className="inline-flex items-center gap-1 rounded-full bg-black/40 px-2 py-1 ring-1 ring-white/10">
+            <PlatformIcon id={id} colored className="h-3.5 w-3.5" /><span className="tabular-nums">{fmt(n)}</span>
+          </span>
+        ))}
+      </div>
+      <ul className="space-y-2">
+        {GOALS.map(([id, base, goal], i) => {
+          const n = Math.min(goal, base + Math.floor(t / (2 + i)) * (i === 2 ? 2 : 1));
+          const done = n >= goal;
+          return (
+            <li key={id} className="flex items-center gap-2.5 rounded-xl bg-white/[.06] px-3 py-2">
+              <PlatformIcon id={id} colored className="h-4 w-4 shrink-0" />
+              <span className="w-24 shrink-0 text-[13px] font-bold tabular-nums text-white">{fmt(n)}<span className="text-white/45"> / {fmt(goal)}</span></span>
+              <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+                <span className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500" style={{ width: `${(n / goal) * 100}%`, background: platformColor(id) }} />
+              </span>
+              <span className={`w-14 shrink-0 text-right text-[11px] font-semibold ${done ? 'text-[#86efac]' : 'text-white/50'}`}>{done ? 'Goal! 🎉' : `${fmt(goal - n)} to go`}</span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
