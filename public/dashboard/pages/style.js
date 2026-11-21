@@ -17,7 +17,7 @@
   // Sections: [section, field] pairs, with { sub } headings in between. The first two start open.
   const A = 'appearance', G = 'general';
   const GROUPS = [
-    { id: 'layout', icon: 'layout', title: 'Layout', sub: 'Where messages go and how they line up', open: true, items: [
+    { id: 'layout', icon: 'layout', title: 'Layout', sub: 'Where messages go and how they line up', items: [
       [G, { key: 'inlineChat', icon: 'rows', help: 'One line: "Name: message". Name on top: the name gets its own line and the message goes underneath, like a phone chat.', label: 'Message layout', hint: 'Name and message on one line, or the name on top', type: 'select', options: [[true, 'One line'], [false, 'Name on top']], keywords: 'inline layout stacked name line' }],
       [A, { key: 'align', icon: 'align', label: 'Line up messages on the', hint: 'Right suits a chat on the right side of your scene', type: 'select', options: [['left', 'Left'], ['right', 'Right']] }],
       [G, { key: 'scrollDirection', icon: 'updown', help: 'Bottom: new messages appear at the bottom and push older ones up, like most chats. Top: the newest is always at the top.', label: 'New messages appear at the', hint: 'Bottom is like most chat apps', type: 'select', options: [['normal', 'Bottom'], ['reversed', 'Top']], keywords: 'direction order' }],
@@ -26,7 +26,7 @@
       [G, { key: 'groupConsecutiveMessages', icon: 'layers', help: 'When one person sends a few messages in a row, Mergio shows their name and picture once instead of on every message.', label: 'Group them together', hint: 'Name and picture shown once', type: 'toggle', keywords: 'group stack merge' }],
       [G, { key: 'groupStyle', icon: 'box', help: 'Own boxes: each message keeps its own box, tucked under the first one. Same box: all their messages go in one box, one per line.', label: 'Grouped messages go in', type: 'select', options: [['tuck', 'Own boxes'], ['merge', 'Same box']], keywords: 'group stack merge box', when: s => s.general.groupConsecutiveMessages }],
     ] },
-    { id: 'show', icon: 'eye', title: 'What each message shows', sub: 'Pictures, icons, names and times', open: true, items: [
+    { id: 'show', icon: 'eye', title: 'What each message shows', sub: 'Pictures, icons, names and times', items: [
       { sub: 'Who sent it' },
       [A, { key: 'showAvatar', icon: 'image', label: 'Profile pictures', hint: "The viewer's picture next to their message", type: 'toggle' }],
       [A, { key: 'avatarSize', icon: 'size', help: 'The picture sits in its own column, so the name and message line up next to it. Around 2× fits a name and a line of text.', label: 'Picture size', type: 'range', min: 1.2, max: 3.5, step: 0.1, unit: '×', keywords: 'avatar profile picture size big', when: s => s.appearance.showAvatar }],
