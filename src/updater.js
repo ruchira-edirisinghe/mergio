@@ -3,6 +3,7 @@
    download the new installer and run it silently: Mergio closes, updates itself and opens again. */
 const fs = require('node:fs');
 const os = require('node:os');
+const crypto = require('node:crypto');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
@@ -21,6 +22,10 @@ const SEEN_FILE = path.join(DATA_DIR, 'version.json');
 let seen = null;
 let installed = { version: current, notes: [], url: `https://github.com/${REPO}/releases/tag/v${current}`, publishedAt: null };
 let listeners = [];
+
+/** Release links shown in the control panel only ever point at Mergio's GitHub page. */
+const RELEASES = `https://github.com/${REPO}/releases`;
+const releaseLink = u => (typeof u === 'string' && u.startsWith(`${RELEASES}/`) && !/[\s"<>]/.test(u) ? u : `${RELEASES}/latest`);
 
 /** 1.10.0 > 1.9.2; ignores a leading "v" and any "-beta" part. */
 function newer(a, b) {
@@ -87,21 +92,60 @@ async function check() {
     if (!rel) throw new Error('no releases found');
     // Notes of the version that is running now, for the "What's new" popup after an update.
     const mine = list.find(r => !newer(r.tag_name, current) && !newer(current, r.tag_name));
-    if (mine) installed = { version: current, notes: parseNotes(mine.body).slice(0, 8), url: mine.html_url || installed.url, publishedAt: mine.published_at };
+    if (mine) installed = { version: current, notes: parseNotes(mine.body).slice(0, 8), url: releaseLink(mine.html_url), publishedAt: mine.published_at };
     const latest = String(rel.tag_name).replace(/^v/i, '');
     const asset = (rel.assets || []).find(a => a.name === WIN_ASSET);
+    // GitHub publishes a SHA-256 for every release file; the download has to match it before it may run.
+    const sha256 = /^sha256:([a-f0-9]{64})$/i.exec(asset?.digest || '')?.[1]?.toLowerCase() || null;
     // Someone a few versions behind sees what's new in all of them, newest first.
     const missed = list.filter(r => newer(r.tag_name, current));
     const notes = (missed.length ? missed : [rel]).flatMap(r => parseNotes(r.body)).slice(0, 8);
     info = {
       current, latest, available: newer(latest, current), behind: missed.length,
-      notes, url: rel.html_url || info.url, publishedAt: rel.published_at, checkedAt: Date.now(),
-      asset: asset ? { url: asset.browser_download_url, size: asset.size } : null,
+      notes, url: releaseLink(rel.html_url), publishedAt: rel.published_at, checkedAt: Date.now(),
+      asset: asset && sha256 ? { url: asset.browser_download_url, size: asset.size, sha256 } : null,
     };
     if (info.available) log('update', `Mergio ${latest} is available (this is ${current})`);
     emit();
   } catch (e) { log('update', `could not check for updates: ${e.message}`); }
   return view();
+}
+
+/** Where release downloads may come from (GitHub sends the file from its own download servers). */
+const TRUSTED_HOST = /^(github\.com|objects\.githubusercontent\.com|release-assets\.githubusercontent\.com)$/;
+
+/**
+ * Downloads url to target while hashing it, and only keeps the file when its size and SHA-256 match.
+ * onProgress(0..1) is called as it goes.
+ */
+async function downloadVerified(url, target, { sha256, size = 0, onProgress = () => {}, trusted = TRUSTED_HOST } = {}) {
+  if (!/^[a-f0-9]{64}$/.test(sha256 || '')) throw new Error('This update has no checksum, so it can’t be checked. Download it from GitHub instead.');
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  const res = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': `Mergio/${current}` } });
+  if (!res.ok || !res.body) throw new Error(`Download failed (${res.status})`);
+  const final = new URL(res.url || url);
+  if (final.protocol !== 'https:' && trusted === TRUSTED_HOST) throw new Error('Unexpected download address');
+  if (!trusted.test(final.hostname)) throw new Error(`Unexpected download address (${final.hostname})`);
+  const total = Number(res.headers.get('content-length')) || size || 0;
+  const hash = crypto.createHash('sha256');
+  const file = fs.createWriteStream(target);
+  let got = 0, last = 0;
+  try {
+    for await (const chunk of res.body) {
+      got += chunk.length;
+      hash.update(chunk);
+      if (!file.write(chunk)) await new Promise(r => file.once('drain', r));
+      if (total && Date.now() - last > 200) { last = Date.now(); onProgress(Math.min(0.99, got / total)); }
+    }
+    await new Promise((resolve, reject) => file.end(err => (err ? reject(err) : resolve())));
+    if (size && got !== size) throw new Error('The download was incomplete. Please try again.');
+    if (hash.digest('hex') !== sha256) throw new Error('The download didn’t match the published checksum, so Mergio didn’t install it. Please try again or download it from GitHub.');
+  } catch (e) {
+    file.destroy();
+    try { fs.rmSync(target, { force: true }); } catch { /* ignore */ }
+    throw e;
+  }
+  return target;
 }
 
 /** Downloads the installer with progress, then hands over to it and quits. */
@@ -114,19 +158,8 @@ async function install(onQuit) {
   job = { state: 'downloading', progress: 0, error: '' }; emit();
   const target = path.join(os.tmpdir(), 'mergio-update', `Mergio-Setup-${info.latest}.exe`);
   try {
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    const res = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': `Mergio/${current}` } });
-    if (!res.ok || !res.body) throw new Error(`Download failed (${res.status})`);
-    const total = Number(res.headers.get('content-length')) || info.asset.size || 0;
-    const file = fs.createWriteStream(target);
-    let got = 0, last = 0;
-    for await (const chunk of res.body) {
-      got += chunk.length;
-      if (!file.write(chunk)) await new Promise(r => file.once('drain', r));
-      if (total && Date.now() - last > 200) { last = Date.now(); job.progress = Math.min(0.99, got / total); emit(); }
-    }
-    await new Promise((resolve, reject) => file.end(err => (err ? reject(err) : resolve())));
-    if (info.asset.size && fs.statSync(target).size !== info.asset.size) throw new Error('The download was incomplete. Please try again.');
+    await downloadVerified(url, target, { sha256: info.asset.sha256, size: info.asset.size, onProgress: p => { job.progress = p; emit(); } });
+    log('update', `downloaded ${path.basename(target)}, SHA-256 matches the release`);
   } catch (e) {
     job = { state: 'error', progress: 0, error: e.message }; emit();
     throw e;
@@ -169,4 +202,4 @@ function start({ isNewUser = false } = {}) {
   setInterval(check, CHECK_EVERY).unref();
 }
 
-module.exports = { start, check, install, view, markSeen, newer, parseNotes, onChange: fn => listeners.push(fn) };
+module.exports = { start, check, install, view, markSeen, newer, parseNotes, downloadVerified, onChange: fn => listeners.push(fn) };
