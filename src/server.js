@@ -133,9 +133,11 @@ function createServer(manager, { onQuit }) {
     let size = 0;
     req.on('data', c => {
       size += c.length;
-      if (size > MAX_BODY) { reject(httpError(413, 'Request too large')); req.destroy(); } else chunks.push(c);
+      // Stop keeping the data; the answer closes the connection, so the rest is thrown away.
+      if (size > MAX_BODY) { chunks.length = 0; reject(httpError(413, 'Request too large')); } else chunks.push(c);
     });
     req.on('end', () => {
+      if (size > MAX_BODY) return;
       const data = Buffer.concat(chunks).toString('utf8');
       try {
         const body = data ? JSON.parse(data) : {};
@@ -172,6 +174,7 @@ function createServer(manager, { onQuit }) {
         }
         // A body must be JSON: plain forms and text can't be sent here from a web page without the browser asking first.
         if (req.method !== 'GET' && hasBody(req) && mediaType(req) !== 'application/json') return send(res, 415, { error: 'JSON only' });
+        if (Number(req.headers['content-length']) > MAX_BODY) return send(res, 413, { error: 'Request too large' }, undefined, { Connection: 'close' });
         const body = req.method === 'GET' ? {} : await readBody(req);
         let m;
         if (p === '/api/state' && req.method === 'GET') return send(res, 200, state());
@@ -245,7 +248,7 @@ function createServer(manager, { onQuit }) {
       const type = TYPES[path.extname(file)] || 'application/octet-stream';
       return send(res, 200, buf, type, { 'Cache-Control': 'no-cache', ...(type.startsWith('text/html') ? pageHeaders(file, req.headers.host) : {}) });
     } catch (e) {
-      if (e.status) return send(res, e.status, { error: e.message });
+      if (e.status) return send(res, e.status, { error: e.message }, undefined, e.status === 413 ? { Connection: 'close' } : {});
       log('server', e);
       return send(res, 500, { error: 'Something went wrong. See mergio.log in the data folder.' });
     }
