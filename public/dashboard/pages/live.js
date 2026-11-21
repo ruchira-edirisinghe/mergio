@@ -1,8 +1,14 @@
 /* Live chat: every chat in one readable list (handy as an OBS dock). */
 (() => {
   const { h, icon } = MG;
-  const off = new Set();
+  // Filters are remembered on this device, so an OBS dock keeps showing what you picked.
+  const KEY = 'mergio.liveFilter';
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch {}
+  const off = new Set(Array.isArray(saved.off) ? saved.off : []);
+  let kind = ['all', 'chat', 'alerts'].includes(saved.kind) ? saved.kind : 'all';
   let query = '';
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ off: [...off], kind })); } catch {} };
 
   /** One message, laid out like the overlay: the picture in its own column, then the name line and the message. */
   function item(m) {
@@ -18,38 +24,95 @@
     const av = h('img', { class: 'av', src: /^(https:\/\/|\/avatar\/)/.test(m.user.avatar) ? m.user.avatar : `/avatar/default/${encodeURIComponent(m.user.name)}`, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' });
     return h('div', { class: 'fi', style: `--pc: var(--${m.platform})`, title: MG.pname(m.platform) }, av, h('div', { class: 'fb' }, head, t));
   }
-  const visible = m => !off.has(m.platform) && (!query || `${m.user.name} ${(m.parts || []).map(p => p.text || p.name || '').join('')} ${m.event?.title || ''}`.toLowerCase().includes(query));
+  const isAlert = m => m.type !== 'chat';
+  const visible = m => !off.has(m.platform) && (kind === 'all' || (kind === 'alerts') === isAlert(m)) && (!query || `${m.user.name} ${(m.parts || []).map(p => p.text || p.name || '').join('')} ${m.event?.title || ''}`.toLowerCase().includes(query));
 
   function fill() {
     const el = document.getElementById('feed'); if (!el) return;
     el.textContent = '';
     const items = MG.feed.filter(visible).slice(-200);
-    if (!items.length) { el.append(h('div', { class: 'empty' }, icon('chat'), h('b', { text: query ? 'Nothing matches your search' : 'Waiting for messages' }), h('span', { text: query ? 'Try another word.' : 'Messages from all your chats show up here. Press "Send test" to try it.' }))); return; }
+    counts();
+    const filtered = query || shownPlatforms().some(p => off.has(p.id)) || kind !== 'all';
+    if (!items.length) { el.append(h('div', { class: 'empty' }, icon(filtered ? 'filter' : 'chat'), h('b', { text: query ? 'Nothing matches your search' : filtered ? 'Nothing here with these filters' : 'Waiting for messages' }), h('span', { text: query ? 'Try another word.' : filtered ? 'Pick All to see every message again.' : 'Messages from all your chats show up here. Press "Send test" to try it.' }))); return; }
     for (const m of items) el.append(item(m));
     el.scrollTop = el.scrollHeight;
   }
 
+  /** The platforms worth a filter chip: the ones you added chats for, plus any that sent messages. */
+  const shownPlatforms = () => {
+    const used = new Set([...(MG.st.sources || []).map(x => x.platform), ...MG.feed.map(m => m.platform)]);
+    const list = MG.PLATFORMS.filter(p => used.has(p.id));
+    return list.length ? list : MG.PLATFORMS;
+  };
+
+  /** Message counts on the chips (what is in the list right now, before the filters). */
+  function counts() {
+    const bar = document.getElementById('feedFilter'); if (!bar) return;
+    const n = {}; let all = 0;
+    for (const m of MG.feed.slice(-500)) { if (kind !== 'all' && (kind === 'alerts') !== isAlert(m)) continue; n[m.platform] = (n[m.platform] || 0) + 1; all++; }
+    for (const b of bar.querySelectorAll('[data-p]')) { const c = b.querySelector('.n'); if (c) c.textContent = b.dataset.p === 'all' ? all : (n[b.dataset.p] || 0); }
+  }
+
+  /** Clicking a platform while everything shows picks just that one; after that each click adds or removes one. */
+  function filterBar() {
+    const plats = shownPlatforms();
+    const bar = h('div', { class: 'feed-filter', id: 'feedFilter', role: 'group', 'aria-label': 'Show messages from' });
+    const sync = () => {
+      for (const b of bar.querySelectorAll('[data-p]')) {
+        const on = b.dataset.p === 'all' ? !plats.some(p => off.has(p.id)) : !off.has(b.dataset.p);
+        b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on));
+      }
+      save(); fill();
+    };
+    const allBtn = h('button', { type: 'button', class: 'fchip all', 'data-p': 'all', title: 'Show every platform', onclick: () => { off.clear(); sync(); } }, icon('layers'), 'All', h('span', { class: 'n' }));
+    const chips = plats.map(p => h('button', { type: 'button', class: 'fchip', 'data-p': p.id, style: `--pc: var(--${p.id})`,
+      title: `Only ${p.name}, or add and remove it when you have already picked one`,
+      onclick: () => {
+        const everything = !plats.some(x => off.has(x.id));
+        if (everything) plats.forEach(x => x.id !== p.id && off.add(x.id));
+        else if (off.has(p.id)) off.delete(p.id);
+        else off.add(p.id);
+        if (plats.every(x => off.has(x.id))) off.clear(); // nothing left: show everything again
+        sync();
+      } }, icon(p.id), p.name, h('span', { class: 'n' })));
+    bar.append(allBtn, ...chips);
+    requestAnimationFrame(sync);
+    return bar;
+  }
+
   function render(c) {
     const search = h('input', { type: 'search', placeholder: 'Search messages or names', value: query, 'aria-label': 'Search messages', oninput: e => { query = e.target.value.trim().toLowerCase(); fill(); } });
+    const kinds = MG.segmented({ id: 'feedKind', value: kind, label: 'Kind of messages', options: [['all', 'Everything'], ['chat', 'Chat'], ['alerts', 'Alerts']], onchange: v => { kind = v; save(); fill(); } });
     const tools = h('div', { class: 'feed-tools' },
-      ...MG.PLATFORMS.map(p => h('button', { class: `chip ${off.has(p.id) ? 'off' : ''}`, 'aria-pressed': String(!off.has(p.id)), title: `Show or hide ${p.name}`, style: `--pc: var(--${p.id})`,
-        onclick: e => { off.has(p.id) ? off.delete(p.id) : off.add(p.id); e.currentTarget.classList.toggle('off'); e.currentTarget.setAttribute('aria-pressed', String(!off.has(p.id))); fill(); } }, icon(p.id), p.name)),
-      h('span', { class: 'grow' }),
-      h('div', { class: 'mini-search' }, icon('search'), search),
-      h('button', { class: 'btn sm ghost', title: 'Clear the overlay and this list', onclick: async () => {
-        if (!await MG.confirm({ title: 'Clear the chat?', text: 'Removes all messages from your overlay and from this list. New messages keep coming in.', ok: 'Clear' })) return;
-        await MG.api('POST', '/api/clear', {}); MG.feed = []; fill(); MG.toast('Chat cleared');
-      } }, icon('trash'), 'Clear'));
+      h('div', { class: 'feed-row' }, filterBar()),
+      h('div', { class: 'feed-row' }, kinds, h('span', { class: 'grow' }),
+        h('div', { class: 'mini-search' }, icon('search'), search),
+        h('button', { class: 'btn sm ghost', title: 'Clear the overlay and this list', onclick: async () => {
+          if (!await MG.confirm({ title: 'Clear the chat?', text: 'Removes all messages from your overlay and from this list. New messages keep coming in.', ok: 'Clear' })) return;
+          await MG.api('POST', '/api/clear', {}); MG.feed = []; fill(); MG.toast('Chat cleared');
+        } }, icon('trash'), 'Clear')));
     c.append(h('section', { class: 'card feed-card' }, tools, h('div', { class: 'feed', id: 'feed' })));
     fill();
   }
 
   MG.page({ id: 'live', order: 50, group: 'live', label: 'Live chat', icon: 'chat', title: 'Live chat', subtitle: 'Read all your chats in one list. Not affected by overlay filters', render });
-  MG.on('feed', () => MG.current() === 'live' && fill());
+  MG.on('feed', () => { if (MG.current() !== 'live') return; const bar = document.getElementById('feedFilter'); if (bar) bar.replaceWith(filterBar()); else fill(); });
+  // a chat added on another platform gets its own filter chip
+  MG.on('sources', () => { const bar = document.getElementById('feedFilter'); if (bar && MG.current() === 'live') bar.replaceWith(filterBar()); });
   MG.on('msg', ({ msg, updated }) => {
     if (MG.current() !== 'live') return;
     const el = document.getElementById('feed');
-    if (!el || !visible(msg)) return;
+    if (!el) return;
+    // a platform without a chip yet (a test message, or a chat added elsewhere) gets one
+    const bar = document.getElementById('feedFilter');
+    if (bar && !bar.querySelector(`[data-p="${msg.platform}"]`) && MG.PLATFORMS.some(p => p.id === msg.platform)) {
+      // while one platform is picked, a new one stays hidden instead of slipping into the list
+      if (off.size) off.add(msg.platform);
+      bar.replaceWith(filterBar());
+      return;
+    }
+    if (!updated) counts();
+    if (!visible(msg)) return;
     if (updated) return fill();
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     el.querySelector('.empty')?.remove();
