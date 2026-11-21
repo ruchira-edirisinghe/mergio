@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Banknote, Coins, Gift, Heart, Shield, Sparkles, Star, UserPlus, Users } from 'lucide-react';
 import { PlatformIcon, platformColor, platformName } from './brand';
 import { GiftArt } from './GiftArt';
@@ -51,14 +51,24 @@ function shownAmount(title: string, amount?: string) {
   return num && (/^[×x]/i.test(amount!) || !title.includes(num)) ? amount : undefined;
 }
 
-function Head({ user, showAvatar }: { user: ChatUser; showAvatar: boolean }) {
+/** The line above each message: platform, badge and name (the picture sits in its own column on the left). */
+function Head({ user }: { user: ChatUser }) {
   return (
-    <>
+    <div className="mg-head">
       <span className="mg-plat"><PlatformIcon id={user.platform} colored /></span>
-      {showAvatar && <Avatar user={user} />}
       {user.badge && <Badge badge={user.badge} />}
       <b className="mg-name" style={{ color: user.color }}>{user.name}</b>
-    </>
+    </div>
+  );
+}
+
+/** A message row like the app's: the picture on the left, the name on top and the message under it. */
+function Row({ user, showAvatar, className = '', style, children }: { user: ChatUser; showAvatar: boolean; className?: string; style?: CSSProperties; children: ReactNode }) {
+  return (
+    <div className={`mg-msg ${showAvatar ? 'has-av' : ''} ${className}`} style={style}>
+      {showAvatar && <span className="mg-avcol"><Avatar user={user} /></span>}
+      {children}
+    </div>
   );
 }
 
@@ -66,37 +76,37 @@ function Line({ item, grouped, showAvatar }: { item: ChatItem; grouped: boolean;
   const pc = platformColor(item.user.platform);
   if (item.kind === 'like') {
     return (
-      <div className="mg-msg mg-like" style={{ '--pc': pc } as CSSProperties}>
+      <Row user={item.user} showAvatar={showAvatar} className="mg-like" style={{ '--pc': pc } as CSSProperties}>
         <div className="mg-bubble">
-          <Head user={item.user} showAvatar={showAvatar} /><span className="mg-colon">: </span>
+          <Head user={item.user} />
           <span className="mg-heart"><Heart fill="currentColor" /></span>
           <span className="mg-lk">liked the LIVE</span><span className="mg-amt">×{item.count}</span>
         </div>
-      </div>
+      </Row>
     );
   }
   if (item.kind !== 'chat') {
     const ev = eventInfo(item);
     const amount = shownAmount(ev.title, ev.amount);
     return (
-      <div className="mg-msg mg-alert" style={{ '--pc': pc, '--ev': ev.color } as CSSProperties}>
+      <Row user={item.user} showAvatar={showAvatar} className="mg-alert" style={{ '--pc': pc, '--ev': ev.color } as CSSProperties}>
         <div className="mg-bubble">
-          <Head user={item.user} showAvatar={showAvatar} />
+          <Head user={item.user} />
           <span className="mg-evic">{ev.gift ? <GiftArt gift={ev.gift} /> : ev.glyph}</span>
           <span className="mg-evt">{ev.title}</span>
           {amount && <span className="mg-amt">{amount}</span>}
           {ev.message && <span className="mg-text mg-evmsg">{ev.message}</span>}
         </div>
-      </div>
+      </Row>
     );
   }
   return (
-    <div className={`mg-msg ${grouped ? 'grouped' : ''}`} style={{ '--pc': pc } as CSSProperties}>
+    <Row user={item.user} showAvatar={showAvatar} className={grouped ? 'grouped' : ''} style={{ '--pc': pc } as CSSProperties}>
       <div className="mg-bubble">
-        {!grouped && <><Head user={item.user} showAvatar={showAvatar} /><span className="mg-colon">: </span></>}
+        {!grouped && <Head user={item.user} />}
         <span className="mg-text">{item.text}</span>
       </div>
-    </div>
+    </Row>
   );
 }
 
@@ -111,7 +121,7 @@ export interface FeedOptions {
   align?: 'left' | 'right';
 }
 
-/** A Mergio chat overlay, redrawn: platform icon, picture, name, message; follow-ups tucked under the picture. */
+/** A Mergio chat overlay, redrawn: the picture on the left, platform and name on top, the message below; follow-ups line up under it. */
 export function ChatFeed({ items, theme = 'glass', box = true, showAvatar = true, alerts = true, fade = 0, fontSize = 15, align = 'left', className = '', style }: FeedOptions & { items: FeedEntry<ChatItem>[]; className?: string; style?: CSSProperties }) {
   const shown = alerts ? items : items.filter(e => e.item.kind === 'chat');
   return (
@@ -137,18 +147,31 @@ export const ALERT_LOOKS: { id: AlertLook; name: string }[] = [
   { id: 'toast', name: 'Minimal' },
 ];
 
-/** One alert from Mergio's alerts overlay, built from the same parts as the app (see alerts.css). It leaves by itself after `life` seconds. */
-export function AlertShow({ item, look = 'spotlight', life = 5, size = 1 }: { item: AlertItem; look?: AlertLook; life?: number; size?: number }) {
+/** One alert from Mergio's alerts overlay, built from the same parts as the app (see alerts.css). It leaves by itself after `life` seconds.
+    With `fit`, it shrinks to fit the height of its parent (tall looks with a message would spill over what is below). */
+export function AlertShow({ item, look = 'spotlight', life = 5, size = 1, fit = false }: { item: AlertItem; look?: AlertLook; life?: number; size?: number; fit?: boolean }) {
   const ev = eventInfo(item);
   const { user } = item;
   const [out, setOut] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useLayoutEffect(() => {
+    const el = box.current, parent = el?.parentElement;
+    if (!fit || !el || !parent) return;
+    const measure = () => { const h = el.scrollHeight, room = parent.clientHeight; setScale(h && room ? Math.min(1, room / h) : 1); };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(parent);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    return () => ro.disconnect();
+  }, [fit, item, look, size]);
   useEffect(() => {
     const t = setTimeout(() => setOut(true), Math.max(1, life - 0.6) * 1000);
     return () => clearTimeout(t);
   }, [life]);
   const amount = shownAmount(ev.title, ev.amount);
   return (
-    <div className={`mga st-${look}`} style={{ fontSize: `${22 * size}px` }} aria-hidden="true">
+    <div ref={box} className={`mga st-${look}`} style={{ fontSize: `${22 * size}px`, ...(fit ? { transform: `scale(${scale})`, transformOrigin: 'center' } : null) }} aria-hidden="true">
       <div className={`alert ev-${item.kind} p-${user.platform}${out ? ' out' : ''}`}
         style={{ '--pc': platformColor(user.platform), '--ev': ev.color, '--hold': `${life}s` } as CSSProperties}>
         <div className="fx">

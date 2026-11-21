@@ -27,7 +27,6 @@ html { scroll-behavior: smooth; }
 @keyframes rise-in { from { opacity: 0; transform: translateY(14px); } }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 @keyframes ring-out { 0% { transform: scale(.8); opacity: .8; } 100% { transform: scale(1.9); opacity: 0; } }
-@keyframes tidy-ring { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 50.3; } }
 @keyframes bump { 0% { transform: scale(1.35); } 100% { transform: scale(1); } }
 .anim-bump { display: inline-block; animation: bump .25s ease-out both; }
 
@@ -39,6 +38,9 @@ html { scroll-behavior: smooth; }
 .anim-rise { animation: rise-in .6s cubic-bezier(.22, 1, .36, 1) both; }
 .anim-spin-slow { animation: spin-slow 18s linear infinite; }
 .anim-ring { animation: ring-out 1.6s ease-out infinite; }
+
+/* Sections that slide in from the side must not make the page scroll sideways on phones */
+html, body { overflow-x: clip; }
 
 /* Scroll reveal */
 .reveal { transition: opacity .9s cubic-bezier(.22, 1, .36, 1), transform .9s cubic-bezier(.22, 1, .36, 1), filter .9s ease; transition-delay: var(--d, 0ms); }

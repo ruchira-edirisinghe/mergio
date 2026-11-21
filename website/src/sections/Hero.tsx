@@ -73,8 +73,9 @@ export function Hero() {
 
           {/* The overlays, sitting on the stream like OBS browser sources */}
           <div className="relative h-[520px] sm:h-[580px] lg:h-auto px-4 pb-16 sm:px-6 lg:pl-0 lg:pr-6 lg:pb-20 lg:pt-6">
-            <div className="absolute inset-x-4 top-12 sm:inset-x-6 lg:left-0 lg:right-6 lg:top-16 flex justify-center z-10 pointer-events-none">
-              <AlertShow key={ai} item={ALERTS[ai]} look={ALERT_LOOKS[ai % ALERT_LOOKS.length].id} life={ALERT_LIFE} size={0.62} />
+            {/* a fixed slot above the chat: every look fits in it, so an alert never covers the chat box */}
+            <div className="absolute inset-x-4 top-8 h-[150px] sm:inset-x-6 lg:left-0 lg:right-6 lg:top-10 lg:h-[180px] flex items-center justify-center z-10 pointer-events-none">
+              <AlertShow key={ai} item={ALERTS[ai]} look={ALERT_LOOKS[ai % ALERT_LOOKS.length].id} life={ALERT_LIFE} size={0.62} fit />
             </div>
             <div className="relative h-full pt-[210px] lg:pt-[250px]">
               <div className="relative h-full rounded-[3px] outline outline-[1.5px] outline-[#ff4d4d]/75">
