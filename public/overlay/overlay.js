@@ -185,7 +185,9 @@
   function textBadge(b) { return h('span', 'badge txt', String(b.title || b.id || '').replace(/^kick-/, '').slice(0, 12)); }
 
   function nameEl(m) {
-    const n = h('span', 'name', m.user.name);
+    // <bdi> keeps a right-to-left name (Arabic, Hebrew…) in its own direction, with the ":" still after it
+    const n = h('span', 'name');
+    n.appendChild(h('bdi', null, m.user.name));
     n.style.color = nameColor(m);
     return n;
   }
