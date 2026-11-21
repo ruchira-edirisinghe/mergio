@@ -10,13 +10,29 @@
   let query = '';
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ off: [...off], kind })); } catch {} };
 
+  /** A viewer's own name colour, lightened when it's too dark to read on the dark page (like the overlay does). */
+  function readable(hex) {
+    const m = /^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(hex || '');
+    if (!m) return 'var(--text)';
+    let [r, g, b] = [1, 2, 3].map(i => parseInt(m[i], 16));
+    const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    if (lum < 0.45) { const k = Math.min(0.7, (0.45 - lum) * 1.6 + 0.2); r += (255 - r) * k; g += (255 - g) * k; b += (255 - b) * k; }
+    return `rgb(${r | 0},${g | 0},${b | 0})`;
+  }
+  /** "is raiding with 128 viewers" doesn't need "· 128 viewers" after it: only amounts the title doesn't say. */
+  function eventText(ev) {
+    const amount = String(ev.amount || ''), num = amount.match(/\d[\d.,]*/)?.[0];
+    const show = amount && (!num || /^[×x]/i.test(amount) || !(ev.title || '').includes(num));
+    return `${ev.title || ''}${show ? ` · ${amount}` : ''}`;
+  }
+
   /** One message, laid out like the overlay: the picture in its own column, then the name line and the message. */
   function item(m) {
     const head = h('div', { class: 'fh' }, h('span', { class: 'p' }, icon(m.platform)));
-    const nm = h('b', { text: m.user.name }); nm.style.color = m.user.color || 'var(--text)';
+    const nm = h('b', { text: m.user.name }); nm.style.color = readable(m.user.color);
     head.append(nm, h('time', { text: new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }));
     const t = h('div', { class: 't' });
-    if (m.event && m.type !== 'chat') { const ev = h('span', { class: 'ev', text: `${m.event.title || ''}${m.event.amount ? ` · ${m.event.amount}` : ''}` }); if (m.event.color) ev.style.setProperty('--evc', m.event.color); if (/^https:\/\//.test(m.event.image || '')) ev.prepend(h('img', { class: 'e', src: m.event.image, alt: '', referrerpolicy: 'no-referrer' })); t.append(ev); }
+    if (m.event && m.type !== 'chat') { const ev = h('span', { class: 'ev', text: eventText(m.event) }); if (m.event.color) ev.style.setProperty('--evc', m.event.color); if (/^https:\/\//.test(m.event.image || '')) ev.prepend(h('img', { class: 'e', src: m.event.image, alt: '', referrerpolicy: 'no-referrer' })); t.append(ev); }
     for (const p of m.parts || []) {
       if ((p.type === 'emote' || p.type === 'cheer') && /^https:\/\//.test(p.url)) t.append(h('img', { class: 'e', src: p.url, alt: p.name, title: p.name, referrerpolicy: 'no-referrer' }));
       else t.append(p.text || p.name || '');
