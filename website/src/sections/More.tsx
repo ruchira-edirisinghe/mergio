@@ -55,6 +55,7 @@ const FAQ: [string, string][] = [
   ['Do I need API keys?', 'No. Type your username or paste a link. Only Facebook needs a free Page token, and the guide shows how.'],
   ['Can it show my viewers and follower goals?', 'Yes. The viewer count and follower goal overlays add up every platform live, and can sit in one line.'],
   ['Where does my chat go?', 'Nowhere. Mergio runs on your own PC, with no telemetry and no cloud.'],
+  ['Is it safe?', "Mergio only listens on your own PC, and websites you visit can't talk to it. Your keys never reach the overlays, chat is always shown as plain text, and updates are checked before they install. The security policy, linked at the bottom of this page, has the details."],
   ['How do I update?', 'Mergio tells you when a new version is out. On Windows, one click downloads it, installs it and opens Mergio again.'],
 ];
 
