@@ -75,8 +75,13 @@ function fromPlatform(platform, value) {
       v = v.replace(/^@/, '');
       if (!/^[\w.]{2,40}$/.test(v)) throw new Error(`"${value}" is not a valid TikTok username.`);
       return { platform, target: v, label: '@' + v };
-    case 'youtube':
+    case 'youtube': {
+      // A video id, an @handle (letters of any language) or channel/<id>, c/<name>, user/<name>.
+      try { v = decodeURIComponent(v); } catch { /* keep as typed */ }
+      const ok = /^[\w-]{11}$/.test(v) || /^@[\p{L}\p{N}\p{M}_.·-]{3,100}$/u.test(v) || /^(channel|c|user)\/[\p{L}\p{N}\p{M}_.-]{1,100}$/u.test(v);
+      if (!ok) throw new Error(`"${value}" is not a YouTube video, @handle or channel link.`);
       return { platform, target: v, label: v.startsWith('@') ? v : v.includes('/') ? v.split('/')[1] : v };
+    }
     case 'facebook': {
       // A long number is one live video; anything else is a Page that Mergio watches for new live videos.
       if (/^\d{5,25}$/.test(v)) return { platform, target: v, label: `video ${v}` };

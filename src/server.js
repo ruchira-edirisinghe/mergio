@@ -30,7 +30,8 @@ function readAsset(rel) {
 
 const AVATAR_COLORS = ['#ff6b6b', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#a855f7', '#ec4899', '#84cc16'];
 function defaultAvatar(name) {
-  const n = decodeURIComponent(name || '?');
+  let n = '?';
+  try { n = decodeURIComponent(name || '?').slice(0, 100); } catch { /* broken %-escape: show "?" */ }
   const letter = (Array.from(n.replace(/^[@_\W]+/, ''))[0] || '?').toUpperCase().replace(/[<>&"]/g, '');
   let h = 0; for (const ch of n) h = (h * 31 + ch.codePointAt(0)) >>> 0;
   const c = AVATAR_COLORS[h % AVATAR_COLORS.length];
@@ -40,15 +41,19 @@ function defaultAvatar(name) {
 /* ---------- pronouns (Twitch, via the community pronouns.alejo.io service) ---------- */
 let pronounNames = null;
 const pronounCache = new Map();
+const remember = (key, value) => {
+  pronounCache.set(key, value);
+  if (pronounCache.size > 5000) pronounCache.delete(pronounCache.keys().next().value); // keep memory bounded
+};
 async function pronouns(login) {
   if (pronounCache.has(login)) return pronounCache.get(login);
   try {
     pronounNames ||= Object.fromEntries(Object.entries(await fetchJson('https://api.pronouns.alejo.io/v1/pronouns')).map(([k, v]) => [k, v.singular ? v.subject : `${v.subject}/${v.object}`]));
     const r = await fetchJson(`https://api.pronouns.alejo.io/v1/users/${encodeURIComponent(login)}`);
     const out = [pronounNames[r.pronoun_id], r.alt_pronoun_id && pronounNames[r.alt_pronoun_id]?.split('/')[0]].filter(Boolean).join('/');
-    pronounCache.set(login, out);
+    remember(login, out);
     return out;
-  } catch { pronounCache.set(login, ''); return ''; }
+  } catch { remember(login, ''); return ''; }
 }
 
 /* ---------- who may talk to the local server ---------- */
@@ -179,6 +184,7 @@ function createServer(manager, { onQuit }) {
         let m;
         if (p === '/api/state' && req.method === 'GET') return send(res, 200, state());
         if (p === '/api/settings' && req.method === 'PUT') {
+          delete body.sources; // chats are only added and removed through /api/sources, which checks them
           const before = settings.get();
           const next = settings.update(body);
           broadcast({ op: 'settings', settings: settings.publicView(next) });
@@ -224,17 +230,18 @@ function createServer(manager, { onQuit }) {
           return send(res, 200, updater.view());
         }
         if (p === '/api/quit' && req.method === 'POST') { send(res, 200, { ok: true }); setTimeout(onQuit, 200); return; }
-        if ((m = /^\/api\/pronouns\/([\w]+)$/.exec(p))) return send(res, 200, { pronouns: await pronouns(m[1].toLowerCase()) });
+        if ((m = /^\/api\/pronouns\/(\w{1,40})$/.exec(p))) return send(res, 200, { pronouns: await pronouns(m[1].toLowerCase()) });
         return send(res, 404, { error: 'not found' });
       }
 
       let m;
-      if ((m = /^\/avatar\/(twitch|kick)\/([\w.-]+)$/.exec(p))) {
+      if ((m = /^\/avatar\/(twitch|kick)\/([\w.-]{1,40})$/.exec(p))) {
         // Wait a little for the lookup (the image simply loads a moment later); give up after 10s.
-        const u = await Promise.race([avatars.resolve(m[1], m[2].toLowerCase()), new Promise(r => setTimeout(r, 10000, ''))]);
+        let u = await Promise.race([avatars.resolve(m[1], m[2].toLowerCase()), new Promise(r => setTimeout(r, 10000, ''))]);
+        if (!/^https:\/\/[^\s"<>]+$/.test(u || '')) u = ''; // only ever redirect to a picture on https
         return send(res, 302, '', 'text/plain', u ? { Location: u, 'Cache-Control': 'max-age=3600' } : { Location: `/avatar/default/${m[2]}`, 'Cache-Control': 'no-store' });
       }
-      if ((m = /^\/avatar\/default\/(.+)$/.exec(p))) return send(res, 200, defaultAvatar(m[1]), 'image/svg+xml', { 'Cache-Control': 'max-age=86400' });
+      if ((m = /^\/avatar\/default\/(.{1,300})$/.exec(p))) return send(res, 200, defaultAvatar(m[1]), 'image/svg+xml', { 'Cache-Control': 'max-age=86400' });
 
       if (p === '/' ) return send(res, 302, '', 'text/plain', { Location: '/dashboard' });
       const file = p === '/overlay' || p === '/overlay/' ? 'overlay/index.html'

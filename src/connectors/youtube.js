@@ -53,8 +53,8 @@ class YouTubeConnector extends Connector {
   async resolveVideoId() {
     const t = this.source.target;
     if (/^[\w-]{11}$/.test(t)) return t;
-    const path = t.startsWith('@') ? t : t; // "@handle" | "channel/UC…" | "c/name" | "user/name"
-    const html = await fetchText(`https://www.youtube.com/${path}/live?hl=en`, { headers: { Cookie: COOKIE } });
+    // "@handle" | "channel/UC…" | "c/name" | "user/name" (checked when the chat was added)
+    const html = await fetchText(`https://www.youtube.com/${encodeURI(t)}/live?hl=en`, { headers: { Cookie: COOKIE } });
     const canon = /<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([\w-]{11})"/.exec(html);
     const title = /<meta name="title" content="([^"]*)"/.exec(html);
     if (title) this.channelName = t.startsWith('@') ? t : this.channelName;

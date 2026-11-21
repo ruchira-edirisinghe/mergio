@@ -10,6 +10,15 @@ const { TikTokConnector } = require('./connectors/tiktok');
 const { FacebookConnector } = require('./connectors/facebook');
 
 const CONNECTORS = { twitch: TwitchConnector, youtube: YouTubeConnector, kick: KickConnector, tiktok: TikTokConnector, facebook: FacebookConnector };
+
+/** A chat from config.json must still pass the same checks as one added in the control panel. */
+function valid(s) {
+  try {
+    if (!s || typeof s.id !== 'string' || !/^[\w-]{1,40}$/.test(s.id) || !CONNECTORS[s.platform]) throw new Error('unknown chat');
+    detect(`${s.platform}:${s.target}`);
+    return true;
+  } catch { log('manager', `skipping an invalid chat in config.json: ${JSON.stringify(s).slice(0, 120)}`); return false; }
+}
 const BUFFER = 150;
 
 /** Owns the list of chat sources, runs one connector per source and fans messages out to listeners. */
@@ -23,7 +32,7 @@ class Manager extends EventEmitter {
   }
 
   startAll() {
-    for (const s of settings.get().sources) if (s.enabled !== false) this.startSource(s);
+    for (const s of settings.get().sources) if (s.enabled !== false && valid(s)) this.startSource(s);
   }
 
   stopAll() { for (const c of this.running.values()) c.stop(); this.running.clear(); }
