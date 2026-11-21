@@ -92,12 +92,47 @@ test('tokens are hidden in logs and error messages', () => {
 test('sending the mask back keeps the saved token', () => {
   settings.update({ advanced: { facebookAccessToken: settings.MASK } });
   assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
-  settings.update({ advanced: { facebookAccessToken: settings.MASK + 'typed' } });
-  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
   settings.update({ advanced: { facebookAccessToken: '���' } });
   assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
+  settings.update({ advanced: { facebookAccessToken: settings.MASK.slice(2) } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
+});
+test('a key typed after the mask replaces the saved one', () => {
+  settings.update({ advanced: { facebookAccessToken: `${settings.MASK}EAAnewvalue ` } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAnewvalue');
+  settings.update({ advanced: { facebookAccessToken: `${settings.MASK.slice(3)}EAAother` } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAother');
+  settings.update({ advanced: { facebookAccessToken: 'EAA一二' } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAother');
   settings.update({ advanced: { facebookAccessToken: '' } });
   assert.equal(settings.get().advanced.facebookAccessToken, '');
+});
+test('settings stay in range, on real choices and real colours', () => {
+  const before = structuredClone(settings.get());
+  const s = settings.update({
+    appearance: { fontSize: 1e9, maxMessages: 1e7, bubbleOpacity: -3, theme: 'x"><b', animation: 'zzz', textColor: 'url(https://e.x/a)', font: "Inter'; color: red" },
+    general: { hideAfter: -50 }, alerts: { duration: -1, size: 99, style: 'nope' }, followers: { goalStep: -100, barColor: 'red' }, viewers: { fontSize: 'big' },
+  });
+  assert.equal(s.appearance.fontSize, 48);
+  assert.equal(s.appearance.maxMessages, 80);
+  assert.equal(s.appearance.bubbleOpacity, 0);
+  assert.equal(s.appearance.theme, before.appearance.theme);
+  assert.equal(s.appearance.animation, before.appearance.animation);
+  assert.equal(s.appearance.textColor, before.appearance.textColor);
+  assert.equal(s.appearance.font, before.appearance.font);
+  assert.equal(s.general.hideAfter, 5);
+  assert.equal(s.alerts.duration, 2);
+  assert.equal(s.alerts.size, 2);
+  assert.equal(s.alerts.style, before.alerts.style);
+  assert.equal(s.followers.goalStep, 1);
+  assert.equal(s.followers.barColor, before.followers.barColor);
+  assert.equal(s.viewers.fontSize, before.viewers.fontSize);
+  const ok = settings.update({ appearance: { theme: 'neon', textColor: '#AABBCC', font: 'Noto Sans Sinhala' }, alerts: { duration: 7.5 } });
+  assert.equal(ok.appearance.theme, 'neon');
+  assert.equal(ok.appearance.textColor, '#AABBCC');
+  assert.equal(ok.appearance.font, 'Noto Sans Sinhala');
+  assert.equal(ok.alerts.duration, 7.5);
+  settings.reset();
 });
 
 console.log('Local server security');
