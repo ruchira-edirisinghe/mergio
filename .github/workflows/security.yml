@@ -1,0 +1,42 @@
+name: Security
+
+# Dependency checks: known vulnerabilities in the packages Mergio ships (app and website),
+# and in any dependency a pull request adds. Runs weekly too, because new advisories appear
+# for packages that haven't changed.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '41 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: npm audit (${{ matrix.dir }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: [., website]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Only what ships: the app's runtime packages and the website's built bundle.
+      # Build tools are covered by Dependabot and dependency review.
+      - name: Audit shipped dependencies
+        working-directory: ${{ matrix.dir }}
+        run: npm audit --omit=dev --audit-level=moderate
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
