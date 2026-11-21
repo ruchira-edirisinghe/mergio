@@ -33,7 +33,7 @@ Please give me a reasonable chance to fix a problem before you share details pub
 
 ## In scope
 
-- The Mergio app: the local server (`127.0.0.1:8787`), control panel, chat and alerts overlays, platform connectors, auto-updater
+- The Mergio app: the local server (`127.0.0.1:8787`), control panel, chat, alerts, viewer count and follower goals overlays, platform connectors, follower lookups (including the hidden browser), auto-updater
 - The installers and release builds published on GitHub
 - The website (`mergio-stream-overlay-gamma.vercel.app`)
 
@@ -57,14 +57,19 @@ Out of scope: problems in YouTube, Twitch, Kick, TikTok, Facebook or other third
 
 **Your tokens**
 
-- The Facebook Page token and TikTok key stay in `config.json` on your PC. They are never sent to the overlays or back to the control panel (it only sees that a token is saved).
-- Tokens are removed from the log file and from error messages.
+- The Facebook Page token, TikTok key and YouTube Data API key stay in `config.json` on your PC. They are never sent to the overlays or back to the control panel (it only sees that a token is saved).
+- Tokens are removed from the log file, from error messages and from the lookup errors the follower goals overlay shows.
 - The data folder is locked to your user account (plus SYSTEM and administrators on Windows), so other accounts on the same PC can't read it. The config is saved atomically, so a crash can't corrupt it.
 
 **Updates**
 
 - The update check only reads Mergio's public release list from GitHub and sends nothing about you.
 - Before an automatic update runs, the downloaded installer's SHA-256 must match the checksum GitHub publishes for that release file, and it must come from GitHub's own servers. Otherwise it's deleted and not run.
+
+**Follower goals**
+
+- Follower counts are only looked up while the follower goals overlay or its control panel page is open, and **Refresh** looks each channel up at most every 15 seconds.
+- TikTok and Facebook block plain requests, so their public profile pages are read in a hidden copy of Edge or Chrome. It can only open `https://www.tiktok.com/` and `https://www.facebook.com/` pages, runs one copy at a time with its own profile (not yours), and starts without extensions, sync or permission prompts.
 
 **Input**
 
@@ -77,7 +82,8 @@ Out of scope: problems in YouTube, Twitch, Kick, TikTok, Facebook or other third
 - **Programs running as your user** can read your data folder and talk to the local API, like on any desktop app. Keep your PC free of malware.
 - **Tools that aren't browsers** (scripts, Stream Deck plugins) can use the local API on purpose. Browsers can't.
 - **Images posted in chat** load from wherever the link points, which tells that server your IP address. Keep image embeds limited to people you trust, or turn them off.
-- **Third-party services** are used for display: profile pictures (Twitch, `decapi.me`, Kick), emotes (7TV, BTTV, FFZ), pronouns (`pronouns.alejo.io`, only when enabled), the TikTok gift list and TikTok signing (Euler Stream). They see requests from your PC, never your tokens (except the TikTok key, which goes to Euler Stream when you add one).
+- **Third-party services** are used for display: profile pictures (Twitch, `decapi.me`, Kick), emotes (7TV, BTTV, FFZ), pronouns (`pronouns.alejo.io`, only when enabled), the TikTok gift list, TikTok signing (Euler Stream) and, for follower goals, Twitch's public API, YouTube channel pages (or the YouTube Data API with your key), Kick's channel API and TikTok and Facebook pages. They see requests from your PC, never your tokens (except a key you add for that service: the TikTok key goes to Euler Stream, the YouTube key to Google, the Facebook token to Facebook).
+- **The hidden browser** runs TikTok's and Facebook's own page scripts, like visiting those pages yourself. Turn follower lookups off in Follower goals if you don't want that.
 
 ## Checking a download
 
@@ -116,6 +122,8 @@ When you change Mergio, please check:
 - [ ] New settings have a default in `src/settings.js` (that's what gives them a type) and new secrets are added to `SECRETS`.
 - [ ] Tokens never appear in URLs that get logged, in error messages or in anything sent to a page.
 - [ ] Anything that runs a program uses `execFile`/`spawn` with an argument list, never a command string built from input.
+- [ ] New pages for the hidden browser are added to its allow list in `src/browser.js` (https only), and lookups have a minimum interval.
+- [ ] New overlay pages that the panel previews are added to the embeddable list in `pageHeaders` (`src/server.js`), and never the control panel itself.
 - [ ] Channel names and ids from users are validated in `src/detect.js` and encoded with `encodeURIComponent` in URLs.
 - [ ] No inline `<script>` or `on…=` attributes in pages (the CSP blocks them).
 - [ ] New dependencies are really needed, maintained, and pass `npm audit`.
