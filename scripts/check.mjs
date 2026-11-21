@@ -58,6 +58,23 @@ test('public view hides tokens', () => {
   settings.update({ advanced: { facebookAccessToken: 'secret' } });
   assert.equal(JSON.stringify(settings.publicView()).includes('secret'), false);
 });
+test('control panel view masks tokens', () => {
+  settings.update({ advanced: { facebookAccessToken: 'EAAsecretvalue' } });
+  const v = settings.panelView();
+  assert.equal(JSON.stringify(v).includes('EAAsecretvalue'), false);
+  assert.equal(v.advanced.facebookAccessToken, settings.MASK);
+  assert.equal(settings.panelView({ ...settings.get(), advanced: { ...settings.get().advanced, tiktokSignApiKey: '' } }).advanced.tiktokSignApiKey, '');
+});
+test('sending the mask back keeps the saved token', () => {
+  settings.update({ advanced: { facebookAccessToken: settings.MASK } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
+  settings.update({ advanced: { facebookAccessToken: settings.MASK + 'typed' } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
+  settings.update({ advanced: { facebookAccessToken: '���' } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
+  settings.update({ advanced: { facebookAccessToken: '' } });
+  assert.equal(settings.get().advanced.facebookAccessToken, '');
+});
 
 console.log('Local server security');
 {

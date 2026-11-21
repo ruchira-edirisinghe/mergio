@@ -4,6 +4,9 @@ const path = require('node:path');
 const { DATA_DIR, log } = require('./util');
 
 const FILE = path.join(DATA_DIR, 'config.json');
+// Tokens and keys: the control panel only ever gets MASK back, never the saved value.
+const SECRETS = ['tiktokSignApiKey', 'facebookAccessToken'];
+const MASK = '•'.repeat(12);
 
 /** Every overlay/app option with its default. The dashboard renders its form from SCHEMA (public/dashboard). */
 const DEFAULTS = {
@@ -128,6 +131,12 @@ const get = () => current;
 
 /** Deep-merges a partial update (unknown keys are dropped, types are coerced to the default's type). */
 function update(patch) {
+  // The panel sends the mask back when a token field wasn't really changed: keep the saved token then.
+  // Real tokens and keys are plain ASCII, so anything else (the mask, or the mask with text typed after it) is ignored.
+  const adv = patch?.advanced;
+  if (adv && typeof adv === 'object') {
+    for (const k of SECRETS) if (typeof adv[k] === 'string' && /[^\x20-\x7e]/.test(adv[k].trim())) delete adv[k];
+  }
   current = merge(DEFAULTS, merge(current, patch || {}));
   save();
   return current;
@@ -146,4 +155,11 @@ function publicView(s = current) {
   return rest;
 }
 
-module.exports = { DEFAULTS, FILE, get, update, reset, save, publicView };
+/** Control-panel view: everything, but a saved token shows as MASK (so the panel knows one is set). */
+function panelView(s = current) {
+  const advanced = { ...s.advanced };
+  for (const k of SECRETS) if (advanced[k]) advanced[k] = MASK;
+  return { ...s, advanced };
+}
+
+module.exports = { DEFAULTS, FILE, MASK, get, update, reset, save, publicView, panelView };

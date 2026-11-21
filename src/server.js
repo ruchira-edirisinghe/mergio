@@ -150,7 +150,7 @@ function createServer(manager, { onQuit }) {
 
   const state = () => ({
     version: pkg.version,
-    settings: settings.get(),
+    settings: settings.panelView(),
     sources: manager.list(),
     dataDir: DATA_DIR,
     overlayUrl: `http://localhost:${settings.get().advanced.port}/overlay`,
@@ -182,8 +182,8 @@ function createServer(manager, { onQuit }) {
           const before = settings.get();
           const next = settings.update(body);
           broadcast({ op: 'settings', settings: settings.publicView(next) });
-          if (body.advanced?.tiktokSignApiKey !== undefined && body.advanced.tiktokSignApiKey !== before.advanced.tiktokSignApiKey) manager.reconnectPlatform('tiktok');
-          if (body.advanced?.facebookAccessToken !== undefined && body.advanced.facebookAccessToken !== before.advanced.facebookAccessToken) manager.reconnectPlatform('facebook');
+          if (next.advanced.tiktokSignApiKey !== before.advanced.tiktokSignApiKey) manager.reconnectPlatform('tiktok');
+          if (next.advanced.facebookAccessToken !== before.advanced.facebookAccessToken) manager.reconnectPlatform('facebook');
           return send(res, 200, state());
         }
         if (p === '/api/settings/reset' && req.method === 'POST') {
