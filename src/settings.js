@@ -247,10 +247,17 @@ const get = () => current;
 /** Deep-merges a partial update (unknown keys are dropped, types are coerced to the default's type). */
 function update(patch) {
   // The panel sends the mask back when a token field wasn't really changed: keep the saved token then.
-  // Real tokens and keys are plain ASCII, so anything else (the mask, or the mask with text typed after it) is ignored.
+  // A key typed or pasted after the mask ("••••NEWKEY") is the new key. Real tokens and keys are plain ASCII,
+  // so anything else is ignored.
   const adv = patch?.advanced;
   if (adv && typeof adv === 'object') {
-    for (const k of SECRETS) if (typeof adv[k] === 'string' && /[^\x20-\x7e]/.test(adv[k].trim())) delete adv[k];
+    for (const k of SECRETS) {
+      if (typeof adv[k] !== 'string') continue;
+      const typed = adv[k].replaceAll(MASK[0], '').trim();
+      if (!typed && adv[k].includes(MASK[0])) delete adv[k];
+      else if (/[^\x20-\x7e]/.test(typed)) delete adv[k];
+      else adv[k] = typed;
+    }
   }
   current = clamp(merge(DEFAULTS, merge(current, patch || {})), current);
   save();

@@ -92,10 +92,18 @@ test('tokens are hidden in logs and error messages', () => {
 test('sending the mask back keeps the saved token', () => {
   settings.update({ advanced: { facebookAccessToken: settings.MASK } });
   assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
-  settings.update({ advanced: { facebookAccessToken: settings.MASK + 'typed' } });
-  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
   settings.update({ advanced: { facebookAccessToken: '���' } });
   assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
+  settings.update({ advanced: { facebookAccessToken: settings.MASK.slice(2) } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
+});
+test('a key typed after the mask replaces the saved one', () => {
+  settings.update({ advanced: { facebookAccessToken: `${settings.MASK}EAAnewvalue ` } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAnewvalue');
+  settings.update({ advanced: { facebookAccessToken: `${settings.MASK.slice(3)}EAAother` } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAother');
+  settings.update({ advanced: { facebookAccessToken: 'EAA一二' } });
+  assert.equal(settings.get().advanced.facebookAccessToken, 'EAAother');
   settings.update({ advanced: { facebookAccessToken: '' } });
   assert.equal(settings.get().advanced.facebookAccessToken, '');
 });

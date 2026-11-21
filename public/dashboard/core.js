@@ -202,7 +202,10 @@
         ctl = h('textarea', { id, placeholder: f.placeholder || '', onchange: e => MG.save(section, f.key, e.target.value) }, v);
         break;
       case 'secret':
-        ctl = h('input', { type: 'password', id, value: v, placeholder: f.placeholder || '', autocomplete: 'off', onchange: e => MG.save(section, f.key, e.target.value.trim()) });
+        // A saved key shows as dots: clicking the field selects them, so typing or pasting replaces the old key.
+        ctl = h('input', { type: 'password', id, value: v, placeholder: f.placeholder || '', autocomplete: 'off',
+          onfocus: e => { if (e.target.value.includes('•')) requestAnimationFrame(() => e.target.select()); },
+          onchange: e => { const val = e.target.value.trim(); MG.save(section, f.key, val); MG.toast(!val ? 'Removed' : val.includes('•') && !val.replaceAll('•', '') ? 'Nothing changed' : 'Saved. Mergio uses it from now on.'); } });
         break;
       default:
         ctl = h('input', { type: 'text', id, value: v, placeholder: f.placeholder || '', onchange: e => MG.save(section, f.key, e.target.value) });
