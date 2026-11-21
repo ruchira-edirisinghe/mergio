@@ -56,6 +56,7 @@ const COLUMNS: { title: string; links: { label: string; href: string; external?:
     { label: 'Source code', href: REPO, external: true },
     { label: 'All releases', href: `${REPO}/releases`, external: true },
     { label: 'License', href: LICENSE, external: true },
+    { label: 'Security policy', href: `${REPO}/security/policy`, external: true },
     { label: 'Privacy policy', href: '/privacy' },
     { label: 'Terms of use', href: '/terms' },
   ] },
