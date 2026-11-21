@@ -41,6 +41,57 @@
  },
  "releases": [
   {
+   "tag": "v1.5.1",
+   "date": "2026-11-21T09:21:49Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.5.1",
+   "notes": [
+    {
+     "title": "Twitch reconnects properly",
+     "text": "After a dropped connection, Twitch no longer stays on *Connecting* and keeps its viewer count."
+    },
+    {
+     "title": "Key fields that do what you expect",
+     "text": "Click a saved key and type or paste a new one: it replaces the old key. Saving now tells you whether a key was saved, removed or left unchanged."
+    },
+    {
+     "title": "Safer settings",
+     "text": "Numbers, choices, colours and fonts are checked when you save, so a typo or an edited `config.json` can't break the overlay."
+    },
+    {
+     "title": "Alerts follow your filters",
+     "text": "Blocked words and *Hide shared chat* now apply to the alerts overlay too."
+    },
+    {
+     "title": "Follower goals recover by themselves",
+     "text": "A lookup error disappears as soon as the next lookup works."
+    },
+    {
+     "title": "No old alerts when TikTok connects",
+     "text": "Follows, shares and subscriptions from before the LIVE connected no longer pop up as new."
+    },
+    {
+     "title": "Ready for very long streams",
+     "text": "TikTok gift combos and Facebook comment history no longer keep growing."
+    },
+    {
+     "title": "Live chat fits every window",
+     "text": "The list fills the space below the filters, also in narrow OBS docks, so the newest message is always in view. Alerts no longer repeat their amount, and dark name colours are lightened so you can read them."
+    },
+    {
+     "title": "Small fixes in the control panel",
+     "text": "The *Live preview* title isn't cut off on mid-size windows, hiding the preview is only remembered when you do it, the *Use Mergio as an app* steps sit under its description, and the Help page answers viewer count and follower goal questions. The overlays have an icon and OBS logs no longer show a missing `favicon.ico`."
+    },
+    {
+     "title": "More private follower lookups",
+     "text": "The hidden browser that reads TikTok and Facebook follower counts keeps its profile in Mergio's own data folder, which only you can open, instead of the shared temp folder."
+    },
+    {
+     "title": "Reporting a security problem",
+     "text": "now goes to GitHub's private reporting. See the security policy."
+    }
+   ]
+  },
+  {
    "tag": "v1.5.0",
    "date": "2026-11-21T07:36:42Z",
    "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.5.0",
