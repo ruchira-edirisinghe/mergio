@@ -115,7 +115,7 @@
     let group = null;
     for (const p of PAGES) {
       if (p.group !== group) { group = p.group; if (GROUPS[group]) nav.append(h('div', { class: 'nav-h', text: GROUPS[group] })); }
-      const b = h('button', { class: p.id === page ? 'on' : '', style: `--n:${PAGES.indexOf(p)}`, onclick: () => MG.go(p.id), 'aria-current': p.id === page ? 'page' : null },
+      const b = h('button', { class: p.id === page ? 'on' : '', style: `--n:${PAGES.indexOf(p)}`, title: p.label, onclick: () => MG.go(p.id), 'aria-current': p.id === page ? 'page' : null },
         icon(p.icon), h('span', { class: 'lbl', text: p.label }));
       const badge = p.badge?.();
       if (badge) b.append(h('span', { class: `count ${badge.cls || ''}`, text: badge.text }));
@@ -151,6 +151,7 @@
 
   /* ---------------- reusable settings controls ---------------- */
   const fmt = (f, v) => (f.unit === '%' ? `${Math.round(v * 100)}%` : `${v}${f.unit || ''}`);
+  const ICON_BY_TYPE = { toggle: 'check', select: 'rows', range: 'size', number: 'hash', color: 'droplet', font: 'type', textarea: 'rows', secret: 'key' };
   MG.field = (section, f) => {
     const v = MG.st.settings[section][f.key];
     const id = `f-${section}-${f.key}`;
@@ -195,7 +196,9 @@
       default:
         ctl = h('input', { type: 'text', id, value: v, placeholder: f.placeholder || '', onchange: e => MG.save(section, f.key, e.target.value) });
     }
-    const el = h('div', { class: `f ${f.wide ? 'wide' : ''}`, 'data-search': `${f.label} ${f.hint || ''} ${f.keywords || ''}`.toLowerCase() }, label, ctl);
+    // Each setting is its own row: an icon, what it is (with a short line explaining it), and the control.
+    const el = h('div', { class: `f ${f.wide ? 'wide' : ''}`, 'data-search': `${f.label} ${f.hint || ''} ${f.keywords || ''}`.toLowerCase() },
+      h('span', { class: 'f-ic', 'aria-hidden': 'true' }, icon(f.icon || ICON_BY_TYPE[f.type] || 'settings')), label, h('div', { class: 'f-ctl' }, ctl));
     if (f.when) { el._when = f.when; el.classList.add('has-when'); el.classList.toggle('dep-off', !f.when(MG.st.settings)); }
     return el;
   };
@@ -313,6 +316,16 @@
   /** Shows or hides fields that only apply when another setting is on (f.when). */
   MG.refreshDeps = () => { for (const el of document.querySelectorAll('.f.has-when')) el.classList.toggle('dep-off', !el._when(MG.st.settings)); };
   MG.fields = (section, list) => h('div', { class: 'fields' }, ...list.map(f => MG.field(section, f)));
+  /** A settings row for anything that isn't a plain saved value (buttons, app switches). */
+  MG.row = (ic, title, hint, control, { search = '', wide = false } = {}) =>
+    h('div', { class: `f ${wide ? 'wide' : ''}`, 'data-search': `${title} ${hint || ''} ${search}`.toLowerCase() },
+      h('span', { class: 'f-ic', 'aria-hidden': 'true' }, icon(ic)),
+      h('label', {}, h('span', { class: 'lt' }, title), hint ? h('span', { class: 'hint', text: hint }) : null),
+      h('div', { class: 'f-ctl' }, control));
+  /** A small heading that splits a list of settings into named groups. */
+  MG.subhead = (title, text) => h('div', { class: 'f-sub' }, h('b', { text: title }), text ? h('span', { text }) : null);
+  /** A list of settings from [section, field] pairs, with { sub: 'Heading' } entries in between. */
+  MG.fieldList = items => h('div', { class: 'fields' }, ...items.map(it => (Array.isArray(it) ? MG.field(it[0], it[1]) : MG.subhead(it.sub, it.text))));
   MG.card = (title, sub, ...body) => h('section', { class: 'card' }, title ? h('h2', {}, title) : null, sub ? h('p', { class: 'sub', text: sub }) : null, ...body);
 
   /* ---------------- friendly status text for a chat ---------------- */
@@ -343,6 +356,18 @@
   window.addEventListener('resize', fitPreview);
   const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } } };
   MG.store = store;
+  /** The sidebar can shrink to just its icons (remembered on this computer). */
+  function setSideMin(min, animate = true) {
+    document.body.classList.toggle('side-anim', animate && !calm());
+    document.body.classList.toggle('side-min', min);
+    const b = $('#btnSide');
+    b.setAttribute('aria-expanded', String(!min));
+    b.title = min ? 'Expand the sidebar' : 'Shrink the sidebar';
+    b.setAttribute('aria-label', b.title);
+    store.set('mg-side', min ? 'min' : 'full');
+    navAt = null;
+    setTimeout(() => { renderNav(); fitPreview(); }, animate ? 260 : 0);
+  }
   function setPreview(open) {
     document.body.classList.toggle('no-preview', !open);
     $('#btnPreview').hidden = open; // when it's open, the × in the preview closes it
@@ -406,6 +431,8 @@
     const bc = $('#btnCopy'); bc.append(icon('copy'), h('span', { text: 'Copy overlay link' })); bc.onclick = () => MG.copy(MG.st.overlayUrl);
     const bp = $('#btnPreview'); bp.append(icon('eye'), h('span', { text: 'Show preview' })); bp.onclick = () => setPreview(document.body.classList.contains('no-preview'));
     $('#btnPreviewClose').append(icon('plus')); $('#btnPreviewClose').onclick = () => setPreview(false);
+    const bs = $('#btnSide'); bs.append(icon('sidebar')); bs.onclick = () => setSideMin(!document.body.classList.contains('side-min'));
+    setSideMin(store.get('mg-side') === 'min', false);
     for (const b of document.querySelectorAll('[data-test]')) b.onclick = () => MG.test(b.dataset.test);
     for (const b of document.querySelectorAll('#bgSeg button')) b.onclick = () => {
       document.querySelectorAll('#bgSeg button').forEach(x => x.classList.toggle('on', x === b));
