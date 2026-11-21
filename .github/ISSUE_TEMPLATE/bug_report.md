@@ -14,7 +14,7 @@ labels: bug
 
 **Operating system:**
 
-**Log lines** (from `mergio.log`; the folder is shown under Advanced → Backup & data; remove anything private):
+**Log lines** (from `mergio.log`; open the folder from Settings → Back up your style → Open folder; remove anything private):
 
 ```
 paste here
