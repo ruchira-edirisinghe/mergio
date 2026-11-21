@@ -103,7 +103,12 @@ class TikTokConnector extends Connector {
     const key = `${user.id}:${d.giftId}`;
     const streakable = g.type === 1 || g.giftType === 1 || ext.type === 1;
     let id = this.streaks.get(key);
-    if (!id) { id = `ttg${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`; this.streaks.set(key, id); }
+    if (!id) {
+      id = `ttg${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+      this.streaks.set(key, id);
+      // a combo whose end never arrives must not stay forever on a long stream
+      if (this.streaks.size > 500) this.streaks.delete(this.streaks.keys().next().value);
+    }
     if (!streakable || d.repeatEnd) this.streaks.delete(key);
     this.push({
       id, type: 'gift', user,
