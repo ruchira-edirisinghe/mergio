@@ -14,6 +14,9 @@ const { fetchText, fetchJson, curlJson, log } = require('./util');
 
 const EVERY = { twitch: 60e3, youtube: 120e3, kick: 60e3, tiktok: 300e3, facebook: 300e3 };
 const FB_TOKEN_EVERY = 60e3;
+// Refresh can't look a channel up more often than this, so a stuck button or a script can't flood the platforms
+// (which could get your IP rate limited) or start hidden browsers over and over.
+const MIN_FORCED = 15e3;
 const last = new Map();     // sourceId -> time of the last lookup
 const busy = new Set();
 const ytChannel = new Map(); // YouTube video id -> channel id
@@ -42,6 +45,7 @@ async function youtube(s) {
   let path = s.target;
   if (/^[\w-]{11}$/.test(path)) { // a single video: find its channel once
     if (!ytChannel.has(path)) {
+      if (ytChannel.size > 200) ytChannel.clear(); // keep memory bounded
       const html = await fetchText(`https://www.youtube.com/watch?v=${path}&hl=en`, { headers: { Cookie: 'SOCS=CAI; CONSENT=YES+1' } });
       ytChannel.set(path, /"channelId":"(UC[\w-]{22})"/.exec(html)?.[1] || '');
     }
@@ -131,7 +135,8 @@ function tick(force = false) {
   if (!force && !wanted()) return;
   for (const s of settings.get().sources) {
     if (s.enabled === false || !LOOKUPS[s.platform]) continue;
-    if (force || Date.now() - (last.get(s.id) || 0) >= every(s)) lookup(s);
+    const since = Date.now() - (last.get(s.id) || 0);
+    if (since >= every(s) || (force && since >= MIN_FORCED)) lookup(s);
   }
 }
 
@@ -150,4 +155,4 @@ function refresh(force = true) {
   if (settings.get().followers.enabled) tick(force);
 }
 
-module.exports = { start, refresh, parseCount };
+module.exports = { start, refresh, parseCount, MIN_FORCED };
