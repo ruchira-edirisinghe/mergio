@@ -29,6 +29,16 @@ class KickConnector extends Connector {
     this.clientId = `mergio-${Math.random().toString(36).slice(2, 12)}`;
     this.cmdId = 1;
     this.connect();
+    this.every(30000, () => this.lookViewers());
+  }
+
+  /** People watching right now (null while offline), and the follower count while we're at it. */
+  async lookViewers() {
+    if (this.state !== 'live') return;
+    const ch = await curlJson(`https://kick.com/api/v2/channels/${encodeURIComponent(this.source.target)}`);
+    if (!ch || ch.message) return;
+    this.setViewers(ch.livestream ? Number(ch.livestream.viewer_count) || 0 : null);
+    this.setFollowers(ch.followers_count ?? ch.followersCount);
   }
 
   stop() {
@@ -174,11 +184,14 @@ class KickConnector extends Connector {
         return this.push({ type: 'gift', user: { ...this.simpleUser(d.sender?.username), color: d.sender?.username_color || '' }, parts: textParts(d.message || ''), event: { kind: 'kicks', title: `sent ${g.name || 'Kicks'}`, amount: `${amount.toLocaleString()} Kicks`, image: kickGiftImage(g.gift_id), color: KICK_GREEN, value: amount } });
       }
       case 'App\\Events\\FollowersUpdated':
+        this.setFollowers(d.followersCount ?? d.followers_count);
         if (d.followed && d.username) return this.push({ type: 'follow', user: this.simpleUser(d.username), event: { kind: 'follow', title: 'followed', color: KICK_GREEN } });
         return;
       case 'App\\Events\\StreamerIsLive':
+        setTimeout(() => this.lookViewers().catch(() => {}), 5000);
         return this.setState('live', 'Connected to chat (live)');
       case 'App\\Events\\StopStreamBroadcast':
+        this.setViewers(null);
         return this.setState('live', 'Connected to chat (stream ended)');
       default:
         if (process.env.MERGIO_DEBUG) log('kick', 'unhandled', event, JSON.stringify(d).slice(0, 300));

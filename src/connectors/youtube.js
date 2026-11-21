@@ -112,6 +112,7 @@ class YouTubeConnector extends Connector {
         return this.later(() => this.run(), 30000);
       }
       for (const a of lcc.actions || []) this.onAction(a);
+      if (Date.now() - (this.viewersAt || 0) > 30000) { this.viewersAt = Date.now(); this.lookViewers().catch(() => {}); }
       const next = contOf(lcc.continuations?.[0]);
       if (next.token) this.continuation = next.token;
       this.attempt = 0;
@@ -122,6 +123,21 @@ class YouTubeConnector extends Connector {
       this.setState('waiting', `${e.message}. Retrying in ${Math.round(wait / 1000)}s`);
       this.later(() => (this.attempt > 4 ? this.run() : this.poll()), wait);
     }
+  }
+
+  /** People watching right now ("1,234 watching now"), from the same metadata the watch page polls. */
+  async lookViewers() {
+    const res = await fetch(`https://www.youtube.com/youtubei/v1/updated_metadata?prettyPrint=false${this.apiKey ? '&key=' + this.apiKey : ''}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'User-Agent': UA, Cookie: COOKIE, Origin: 'https://www.youtube.com' },
+      body: JSON.stringify({ context: { client: { clientName: 'WEB', clientVersion: this.clientVersion, hl: 'en', gl: 'US' } }, videoId: this.videoId }),
+      signal: AbortSignal.timeout(10000),
+    });
+    const r = findKey(await res.json(), 'videoViewCountRenderer');
+    if (!r || this.state !== 'live') return;
+    if (r.isLive === false) return this.setViewers(null);
+    const n = Number(r.originalViewCount ?? simple(r.viewCount).replace(/\D/g, ''));
+    if (Number.isFinite(n)) this.setViewers(n);
   }
 
   onAction(a) {
@@ -165,6 +181,14 @@ class YouTubeConnector extends Connector {
         if (process.env.MERGIO_DEBUG) log('youtube', 'unhandled renderer', kind);
     }
   }
+}
+
+/** The first object under `key` anywhere inside a JSON value. */
+function findKey(o, key, depth = 0) {
+  if (!o || typeof o !== 'object' || depth > 40) return null;
+  if (o[key]) return o[key];
+  for (const v of Array.isArray(o) ? o : Object.values(o)) { const f = findKey(v, key, depth + 1); if (f) return f; }
+  return null;
 }
 
 function contOf(c) {

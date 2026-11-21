@@ -7,6 +7,8 @@ const { log, uid } = require('../util');
  *   'message' (normalized message, see README "Message format")
  *   'delete'  ({ ids?: string[], userId?: string })   moderation sync
  *   'status'  ()                                       when state/detail changed
+ *   'viewers' (number | null)                          people watching right now (null = not live)
+ *   'followers' (number)                               the channel's follower count, when a live event tells us
  */
 class Connector extends EventEmitter {
   constructor(source, ctx) {
@@ -22,6 +24,9 @@ class Connector extends EventEmitter {
   setState(state, detail = '') {
     if (this.state === state && this.detail === detail) return;
     this.state = state; this.detail = detail;
+    if (state !== 'live') this.setViewers(null);
+    // Just connected: look up the viewer count now instead of at the next regular check.
+    else if (typeof this.lookViewers === 'function') setTimeout(() => { if (!this.stopped) this.lookViewers().catch(() => {}); }, 1500);
     log(this.source.platform, `${this.source.label}: ${state}${detail ? ' - ' + detail : ''}`);
     this.emit('status');
   }
@@ -48,8 +53,26 @@ class Connector extends EventEmitter {
     this.emit('message', msg);
   }
 
+  setViewers(n) {
+    const v = n == null ? null : Number(n);
+    if (this.viewers === v) return;
+    this.viewers = v;
+    this.emit('viewers', v);
+  }
+
+  setFollowers(n) { if (Number.isFinite(Number(n)) && Number(n) > 0) this.emit('followers', Number(n)); }
+
+  /** Runs fn every `ms` while this connector is running (used to look up the viewer count). */
+  every(ms, fn) {
+    clearInterval(this.everyTimer);
+    const tick = () => { if (!this.stopped) Promise.resolve().then(fn).catch(() => {}); };
+    tick();
+    this.everyTimer = setInterval(tick, ms);
+    this.everyTimer.unref?.();
+  }
+
   start() {}
-  stop() { this.stopped = true; this.setState('stopped'); }
+  stop() { this.stopped = true; clearInterval(this.everyTimer); this.setViewers(null); this.setState('stopped'); }
 }
 
 /** Splits plain text into parts, turning http(s) links into link parts (overlay may embed images). */

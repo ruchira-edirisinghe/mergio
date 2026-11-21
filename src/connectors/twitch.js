@@ -3,6 +3,9 @@ const WebSocket = require('ws');
 const { Connector, textParts, applyWordEmotes } = require('./base');
 const { fetchJson, backoff, log } = require('../util');
 
+const GQL = 'https://gql.twitch.tv/gql';
+const GQL_CLIENT = 'kimne78kx3ncx6brgo4mv6wki5h1ko'; // the public client id of twitch.tv itself
+
 /* Global Twitch badge images (public CDN). Channel-specific sub badges fall back to the default sub badge. */
 const BADGE = id => `https://static-cdn.jtvnw.net/badges/v1/${id}/2`;
 const BADGES = {
@@ -72,6 +75,19 @@ class TwitchConnector extends Connector {
     this.attempt = 0;
     this.thirdParty = null;
     this.connect();
+    this.every(30000, () => this.lookViewers());
+  }
+
+  /** People watching right now, from Twitch's public API (null while offline). */
+  async lookViewers() {
+    if (this.state !== 'live') return;
+    const res = await fetch(GQL, {
+      method: 'POST', headers: { 'Client-Id': GQL_CLIENT, 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ query: `query{user(login:${JSON.stringify(this.source.target)}){stream{viewersCount}}}` }),
+      signal: AbortSignal.timeout(10000),
+    });
+    const stream = (await res.json())?.data?.user?.stream;
+    this.setViewers(stream ? Number(stream.viewersCount) || 0 : null);
   }
 
   connect() {

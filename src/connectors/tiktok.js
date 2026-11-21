@@ -51,6 +51,8 @@ class TikTokConnector extends Connector {
     conn.on(WebcastEvent.MEMBER, d => fresh(d) && this.push({ type: 'join', user: this.user(d.user, d.userIdentity), event: { kind: 'join', title: 'joined the LIVE', color: TT_PINK } }));
     conn.on(WebcastEvent.GIFT, d => fresh(d) && this.onGift(d));
     conn.on(WebcastEvent.LIKE, d => fresh(d) && this.onLike(d));
+    if (WebcastEvent.ROOM_USER) conn.on(WebcastEvent.ROOM_USER, d => { const n = Number(d.total ?? d.viewerCount); if (Number.isFinite(n)) this.setViewers(n); });
+    conn.on(WebcastEvent.FOLLOW, d => this.setFollowers(d.followCount));
     conn.on(WebcastEvent.FOLLOW, d => this.push({ type: 'follow', user: this.user(d.user, d.userIdentity), event: { kind: 'follow', title: 'followed', color: TT_PINK } }));
     conn.on(WebcastEvent.SHARE, d => this.push({ type: 'share', user: this.user(d.user, d.userIdentity), event: { kind: 'share', title: 'shared the LIVE', color: TT_PINK } }));
     if (WebcastEvent.SUBSCRIBE) conn.on(WebcastEvent.SUBSCRIBE, d => this.push({ type: 'sub', user: this.user(d.user, d.userIdentity), event: { kind: 'sub', title: 'subscribed', amount: 'Subscriber', color: TT_PINK } }));
@@ -63,6 +65,11 @@ class TikTokConnector extends Connector {
       this.attempt = 0;
       this.channelName = '@' + this.source.target;
       this.setState('live', `Connected to LIVE (room ${state?.roomId || '?'})`);
+      const info = state?.roomInfo || conn.roomInfo || {};
+      const owner = info.owner || info.data?.owner || {};
+      this.setFollowers(owner.follow_info?.follower_count ?? owner.followInfo?.followerCount);
+      const watching = Number(info.user_count ?? info.data?.user_count);
+      if (Number.isFinite(watching) && watching > 0) this.setViewers(watching);
     } catch (e) {
       const msg = String(e?.message || e);
       if (/offline|not live|isn't online|UserOffline/i.test(msg) || e?.name === 'UserOfflineError') return this.later(30000, `@${this.source.target} is not live right now.`);
