@@ -135,6 +135,36 @@ test('settings stay in range, on real choices and real colours', () => {
   settings.reset();
 });
 
+console.log('Connections');
+test('Twitch is live again after a reconnect to the same channel', () => {
+  const { TwitchConnector } = require(join(root, 'src/connectors/twitch.js'));
+  const c = new TwitchConnector({ id: 's-tw', platform: 'twitch', target: 'someone', label: 'someone' }, { settings: () => settings.get() });
+  c.lookViewers = async () => {}; // no network in the check
+  c.handle({ command: 'ROOMSTATE', tags: { 'room-id': '42' } });
+  assert.equal(c.state, 'live');
+  c.attempt = 3;
+  c.setState('connecting', 'Joining Twitch chat…');
+  c.handle({ command: 'ROOMSTATE', tags: { 'room-id': '42' } });
+  assert.equal(c.state, 'live');
+  assert.equal(c.attempt, 0);
+  c.stopped = true;
+});
+
+test('a follower error goes away when the lookup works again', () => {
+  const stats = require(join(root, 'src/stats.js'));
+  stats.setFollowers('s-err', 120);
+  stats.setFollowers('s-err', null, 'network down');
+  let sent = 0;
+  const on = () => sent++;
+  stats.on('change', on);
+  stats.timer && (clearTimeout(stats.timer), stats.timer = null);
+  stats.setFollowers('s-err', 120);
+  assert.equal(stats.followers.get('s-err').err, null);
+  assert.ok(stats.timer, 'an update is on its way');
+  clearTimeout(stats.timer); stats.timer = null;
+  stats.off('change', on);
+});
+
 console.log('Local server security');
 {
   const http = require('node:http');

@@ -85,6 +85,8 @@ class FacebookConnector extends Connector {
       const fresh = (res.data || []).filter(c => !this.seen.has(c.id)).reverse();
       for (const c of fresh) {
         this.seen.add(c.id);
+        // only the newest 50 comments are ever asked for, so the last 2000 ids are plenty on a long stream
+        if (this.seen.size > 5000) this.seen = new Set([...this.seen].slice(-2000));
         if (!this.primed) continue; // skip comments that existed before we connected
         this.push({
           id: `fb${c.id}`,
