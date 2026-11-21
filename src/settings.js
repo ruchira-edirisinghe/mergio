@@ -130,6 +130,52 @@ const DEFAULTS = {
 
 const MAX_TEXT = 20000; // longest text setting (blocked words, ignored chatters, tokens)
 
+/* What each setting may be, whatever sends it (the control panel, an imported style file, a hand-edited
+   config.json or a script): numbers stay in the range the control panel offers, choices must be one of
+   the real ones and colours must be #rrggbb. Anything else keeps the value from before. */
+const RANGES = {
+  appearance: { avatarSize: [1.2, 3.5], fontSize: [12, 48], fontWeight: [100, 900, true], lineSpacing: [0, 1.5], bubbleOpacity: [0, 1], bubbleRadius: [0, 28, true],
+    opacity: [0, 1], emoteScale: [0.8, 3], maxMessages: [5, 80, true] },
+  general: { hideAfter: [5, 300, true], joinLifetime: [2, 20, true] },
+  alerts: { duration: [2, 20], size: [0.6, 2], volume: [0, 1] },
+  viewers: { fontSize: [14, 80], bgOpacity: [0, 1] },
+  followers: { fontSize: [16, 90], goalStep: [1, 1e6, true], goalYoutube: [0, 1e9, true], goalTwitch: [0, 1e9, true], goalKick: [0, 1e9, true],
+    goalTiktok: [0, 1e9, true], goalFacebook: [0, 1e9, true], goalTotal: [0, 1e9, true] },
+  tiktok: { minGiftDiamonds: [0, 100000, true] },
+};
+const CHOICES = {
+  appearance: { theme: ['glass', 'neon', 'minimal', 'soft', 'retro'], timeFormat: ['12', '24'], nameColorMode: ['user', 'platform', 'custom'],
+    animation: ['slide', 'fade', 'pop', 'none'], align: ['left', 'right'], eventStyle: ['compact', 'card'], followStyle: ['card', 'pill'] },
+  general: { scrollDirection: ['normal', 'reversed'], groupStyle: ['tuck', 'merge'], imageEmbedPermissionLevel: ['broadcaster', 'mods', 'vips', 'subs', 'everyone', 'nobody'] },
+  alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['spotlight', 'banner', 'neon', 'bubble', 'card', 'toast'], animation: ['pop', 'slide', 'fade'] },
+  viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
+  followers: { style: ['panel', 'line', 'cards', 'neon', 'bars'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
+  twitch: { sharedChat: ['show', 'highlight', 'hide'] },
+};
+const COLOR = /^#[\da-f]{6}$/i;
+const FONT = /^[\p{L}\p{N} _.-]{0,80}$/u; // a font name: letters, numbers, spaces (it ends up in CSS and a Google Fonts link)
+
+/** Keeps every setting of s valid; prev holds the values to fall back to (the ones saved before). */
+function validate(s, prev = DEFAULTS) {
+  for (const [sec, keys] of Object.entries(RANGES)) {
+    for (const [k, [min, max, whole]] of Object.entries(keys)) {
+      let n = Math.min(max, Math.max(min, Number(s[sec][k])));
+      if (whole) n = Math.round(n);
+      s[sec][k] = Number.isFinite(n) ? n : prev[sec][k];
+    }
+  }
+  for (const [sec, keys] of Object.entries(CHOICES)) {
+    for (const [k, list] of Object.entries(keys)) if (!list.includes(s[sec][k])) s[sec][k] = list.includes(prev[sec][k]) ? prev[sec][k] : DEFAULTS[sec][k];
+  }
+  for (const sec of ['appearance', 'viewers', 'followers']) {
+    for (const [k, def] of Object.entries(DEFAULTS[sec])) {
+      if (typeof def === 'string' && COLOR.test(def) && !COLOR.test(s[sec][k])) s[sec][k] = COLOR.test(prev[sec][k]) ? prev[sec][k] : def;
+    }
+    if (!FONT.test(s[sec].font)) s[sec].font = FONT.test(prev[sec].font) ? prev[sec].font : DEFAULTS[sec].font;
+  }
+  return s;
+}
+
 function merge(base, over) {
   if (Array.isArray(base)) return Array.isArray(over) ? over : base;
   if (base && typeof base === 'object') {
@@ -144,11 +190,11 @@ function merge(base, over) {
 }
 
 /** Values that must stay in range whatever was saved or sent. */
-function clamp(s) {
+function clamp(s, prev = DEFAULTS) {
   const port = Math.trunc(s.advanced.port);
   if (!(port >= 1024 && port <= 65535)) s.advanced.port = DEFAULTS.advanced.port;
   else s.advanced.port = port;
-  return s;
+  return validate(s, prev);
 }
 
 /** Brings configs from older versions up to date. */
@@ -206,7 +252,7 @@ function update(patch) {
   if (adv && typeof adv === 'object') {
     for (const k of SECRETS) if (typeof adv[k] === 'string' && /[^\x20-\x7e]/.test(adv[k].trim())) delete adv[k];
   }
-  current = clamp(merge(DEFAULTS, merge(current, patch || {})));
+  current = clamp(merge(DEFAULTS, merge(current, patch || {})), current);
   save();
   return current;
 }
