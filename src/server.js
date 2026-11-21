@@ -18,11 +18,14 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 /** Reads a file from public/ (from disk in dev, from the embedded assets in the packaged exe). */
 function readAsset(rel) {
   rel = rel.replace(/\\/g, '/').replace(/^\/+/, '');
-  if (rel.includes('..')) return null;
+  if (!rel || rel.includes('..') || rel.includes('\0') || /^[a-z]:/i.test(rel)) return null;
   if (isSea()) {
     try { return Buffer.from(require('node:sea').getAsset(`public/${rel}`)); } catch { return null; }
   }
-  try { return fs.readFileSync(path.join(PUBLIC, rel)); } catch { return null; }
+  // Never read outside public/, whatever the path looks like.
+  const file = path.resolve(PUBLIC, rel);
+  if (!file.startsWith(PUBLIC + path.sep)) return null;
+  try { return fs.readFileSync(file); } catch { return null; }
 }
 
 const AVATAR_COLORS = ['#ff6b6b', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#a855f7', '#ec4899', '#84cc16'];
