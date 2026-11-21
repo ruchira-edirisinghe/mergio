@@ -142,5 +142,34 @@ console.log('Local server security');
   server.close();
 }
 
+console.log('Updates');
+{
+  const http = require('node:http');
+  const { createHash } = require('node:crypto');
+  const { existsSync } = require('node:fs');
+  const { downloadVerified } = require(join(root, 'src/updater.js'));
+  const payload = Buffer.from('pretend installer '.repeat(5000));
+  const sha = createHash('sha256').update(payload).digest('hex');
+  const server = http.createServer((req, res) => res.end(payload));
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const url = `http://127.0.0.1:${server.address().port}/Mergio-Setup.exe`;
+  const local = { trusted: /^127\.0\.0\.1$/ };
+  const dir = mkdtempSync(join(tmpdir(), 'mergio-upd-'));
+  const atest = async (name, fn) => { try { await fn(); console.log(`  ok  ${name}`); } catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); } };
+  await atest('keeps a download whose SHA-256 matches', async () => {
+    const t = join(dir, 'good.exe');
+    await downloadVerified(url, t, { ...local, sha256: sha, size: payload.length });
+    assert.equal(existsSync(t), true);
+  });
+  await atest('deletes a download whose SHA-256 differs', async () => {
+    const t = join(dir, 'bad.exe');
+    await assert.rejects(downloadVerified(url, t, { ...local, sha256: 'f'.repeat(64) }), /checksum/);
+    assert.equal(existsSync(t), false);
+  });
+  await atest('refuses an update without a checksum', async () => assert.rejects(downloadVerified(url, join(dir, 'x.exe'), { ...local }), /no checksum/));
+  await atest('refuses downloads from other hosts', async () => assert.rejects(downloadVerified(url, join(dir, 'y.exe'), { sha256: sha }), /Unexpected download address/));
+  server.close();
+}
+
 console.log(failed ? `\n${failed} check(s) failed` : '\nAll checks passed');
 process.exit(failed ? 1 : 0);
