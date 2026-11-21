@@ -27,14 +27,29 @@ function findBrowser() {
   return found;
 }
 
+/** The only pages the hidden browser may open: public TikTok profiles and Facebook Pages. */
+const ALLOWED = /^https:\/\/www\.(tiktok|facebook)\.com\/[^\s"]*$/;
+
+// Flags that keep the hidden browser to the one page: no extensions, sync, background downloads or prompts.
+const FLAGS = ['--headless=new', '--disable-gpu', '--mute-audio', '--no-first-run', '--no-default-browser-check',
+  '--disable-extensions', '--disable-sync', '--disable-background-networking', '--disable-component-update',
+  '--disable-default-apps', '--deny-permission-prompts', '--virtual-time-budget=10000'];
+
+// One hidden browser at a time (each one is a full browser), whatever asks for pages.
+let queue = Promise.resolve();
+
 /** Loads url in a hidden browser and returns the page's HTML after its scripts ran. */
 function dumpDom(url, timeout = 60000) {
+  if (!ALLOWED.test(String(url))) return Promise.reject(new Error('browser: that page is not allowed'));
   const exe = findBrowser();
   if (!exe) return Promise.reject(new Error('needs Chrome or Edge installed'));
-  return new Promise((resolve, reject) => {
-    execFile(exe, ['--headless=new', `--user-data-dir=${path.join(os.tmpdir(), 'mergio-headless')}`, '--disable-gpu', '--mute-audio', '--no-first-run', '--virtual-time-budget=10000', '--dump-dom', url],
+  const run = () => new Promise((resolve, reject) => {
+    execFile(exe, [...FLAGS, `--user-data-dir=${path.join(os.tmpdir(), 'mergio-headless')}`, '--dump-dom', url],
       { timeout, maxBuffer: 32 * 1024 * 1024, windowsHide: true }, (err, stdout) => (err && !stdout ? reject(new Error(`browser: ${err.message}`)) : resolve(String(stdout))));
   });
+  const job = queue.then(run, run);
+  queue = job.catch(() => {});
+  return job;
 }
 
-module.exports = { findBrowser, dumpDom };
+module.exports = { findBrowser, dumpDom, ALLOWED };
