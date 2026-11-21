@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { PillLink } from '../components/ui';
 import { Reveal } from '../components/Reveal';
 import { useInView } from '../lib/hooks';
-import { AutoDetect, AvatarWall, GiftShow, MergeFlow, Placement, TidyChat } from '../visuals/FeatureVisuals';
+import { AutoDetect, AvatarWall, Counters, GiftShow, MergeFlow, Placement } from '../visuals/FeatureVisuals';
 
 function Card({ tone, title, body, wide, delay = 0, children }: { tone: 'light' | 'plum'; title: ReactNode; body: ReactNode; wide?: boolean; delay?: number; children: (active: boolean) => ReactNode }) {
   const [ref, inView] = useInView<HTMLDivElement>();
@@ -50,8 +50,8 @@ export function Info() {
           <Card tone="light" wide delay={200} title="Alerts where you want them" body="In the chat, on their own overlay, or both.">
             {a => <Placement active={a} />}
           </Card>
-          <Card tone="plum" title={'Calm and\ntidy chat.'} body="One person's messages share a box, and old ones fade.">
-            {a => <TidyChat active={a} />}
+          <Card tone="plum" title={'Viewers and\nfollower goals.'} body="Live counts from every platform, even in one line.">
+            {a => <Counters active={a} />}
           </Card>
         </div>
       </div>

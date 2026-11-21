@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { AppWindow, Filter, Gift, Info, Layers, Lock, MessageSquare, Palette, Radar, RefreshCw, ShieldCheck, Smile, Sparkles, Timer, Volume2, Zap, Plus, type LucideIcon } from 'lucide-react';
+import { Eye, Filter, Gift, Info, Languages, Layers, Lock, Palette, Radar, RefreshCw, Rows3, ShieldCheck, Smile, Sparkles, Target, Zap, Plus, type LucideIcon } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { Eyebrow } from '../components/ui';
 import { readme } from '../lib/links';
 
 const ROW_A: [LucideIcon, string][] = [
   [Sparkles, 'Six alert styles'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'], [Palette, 'Any Google Font'],
-  [Timer, 'Fading messages'], [Layers, 'A look per scene'], [Volume2, 'Alert chime'],
+  [Eye, 'Viewer count'], [Target, 'Follower goals'], [Languages, 'Any language'],
 ];
 const ROW_B: [LucideIcon, string][] = [
-  [MessageSquare, 'Name-on-top layout'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
-  [Info, 'Plain-words tips'], [RefreshCw, 'Updates itself'], [AppWindow, 'Installs as an app'], [Lock, 'Private, no cloud'],
+  [Rows3, 'Counters in one line'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
+  [Info, 'Plain-words tips'], [RefreshCw, 'Updates itself'], [Layers, 'A look per scene'], [Lock, 'Private, no cloud'],
 ];
 
 function ChipRow({ items, reverse }: { items: [LucideIcon, string][]; reverse?: boolean }) {
@@ -53,7 +53,7 @@ export function Features() {
 const FAQ: [string, string][] = [
   ['Is it really free?', 'Yes. Mergio is free and open source under the MIT License, with credit to its creator. No subscriptions, no account.'],
   ['Do I need API keys?', 'No. Type your username or paste a link. Only Facebook needs a free Page token, and the guide shows how.'],
-  ['Does it work with Streamlabs or TikTok LIVE Studio?', 'Yes. Anything that can show a web page works. Paste the same overlay link.'],
+  ['Can it show my viewers and follower goals?', 'Yes. The viewer count and follower goal overlays add up every platform live, and can sit in one line.'],
   ['Where does my chat go?', 'Nowhere. Mergio runs on your own PC, with no telemetry and no cloud.'],
   ['How do I update?', 'Mergio tells you when a new version is out. On Windows, one click downloads it, installs it and opens Mergio again.'],
 ];

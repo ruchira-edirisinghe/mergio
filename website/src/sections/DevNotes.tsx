@@ -6,7 +6,7 @@ import { Eyebrow } from '../components/ui';
 import { REPO } from '../lib/links';
 import { kindOf, useReleases, type Kind, type Release } from '../lib/releases';
 
-const SHOWN = 4;
+const SHOWN = 2;
 
 const KIND: Record<Kind, { label: string; icon: LucideIcon; badge: string }> = {
   first: { label: 'First release', icon: Rocket, badge: 'bg-[#22c55e]/15 text-[#86efac] ring-[#22c55e]/30' },
