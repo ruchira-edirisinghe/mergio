@@ -48,6 +48,7 @@
     twitch: 'New followers are not available: Twitch only shares them with logged-in apps.',
     facebook: 'Facebook needs a free Page token. Add it in Settings → Accounts.',
   };
+  const EV_ICON = { messages: 'chat', gifts: 'gift', follows: 'follow', subs: 'star', joins: 'join', likes: 'heart', shares: 'share', giftSubs: 'gift', cheers: 'cheer', raids: 'raid', announcements: 'megaphone', redemptions: 'sparkle', watchStreaks: 'flame', thirdPartyEmotes: 'smile', superChats: 'money', superStickers: 'sparkle', memberships: 'crown', milestones: 'crown', giftedMemberships: 'gift', kicksGifts: 'coin', hosts: 'host', rewards: 'sparkle' };
   const ORDER = ['tiktok', 'twitch', 'youtube', 'kick', 'facebook'];
 
   /* ---------- where alerts show: in the chat, on their own overlay, or both ---------- */
@@ -115,20 +116,33 @@
         h('button', { class: `place ${cur === id ? 'on' : ''}`, role: 'radio', 'aria-checked': String(cur === id), onclick: () => choose(id) }, placeArt(id), h('b', { text: name }), h('span', { text: desc })))));
     if (cur === 'chat' && MG.overlays.alerts?.count) card.append(h('p', { class: 'hint', text: 'Your alerts overlay is open. Pick "Their own overlay" or "Both" to use it.' }));
     c.append(card);
+    if (cur !== 'overlay') {
+      const P = 'appearance';
+      c.append(MG.card('Alerts inside the chat', 'How subs, gifts and Super Chats look between the chat messages.',
+        MG.fieldList([
+          [P, { key: 'eventStyle', icon: 'chat', help: 'Chat lines: a calm line with the gift picture, like a normal message. Big cards: a highlighted card that stands out.', label: 'Alerts in the chat look like', type: 'select', dropdown: true, options: [['compact', 'Chat lines with the gift picture (calm)'], ['card', 'Big highlighted cards']], keywords: 'highlight card compact' }],
+          [P, { key: 'showEventLabels', icon: 'tag', label: 'Label with the platform', hint: 'e.g. NEW FOLLOWER · on TikTok', type: 'toggle', when: s => s.appearance.eventStyle === 'card' }],
+          [P, { key: 'followStyle', icon: 'follow', help: "Like other alerts: new followers look like subs and gifts. Small note: a quiet line that doesn't take much space.", label: 'New followers appear as', type: 'select', options: [['card', 'Like other alerts'], ['pill', 'Small note']] }],
+        ])));
+    }
     if (cur === 'chat') return;
     c.append(stylePicker());
     const A = 'alerts';
-    c.append(MG.card('Timing, size and sound', 'The preview shows alerts at the top.',
-      h('div', { class: 'fields' },
-        MG.field(A, { key: 'duration', label: 'Each alert stays for', type: 'range', min: 2, max: 20, unit: 's', keywords: 'time seconds' }),
-        MG.field(A, { key: 'size', label: 'Size', type: 'range', min: 0.6, max: 2, step: 0.1, unit: '×', keywords: 'scale bigger smaller' }),
-        MG.field(A, { key: 'position', label: 'Where in its box', hint: 'Within the browser source', type: 'select', options: [['top', 'Top'], ['center', 'Middle'], ['bottom', 'Bottom']] }),
-        MG.field(A, { key: 'animation', label: 'How alerts appear', hint: 'The other styles have their own entrance', type: 'select', options: [['pop', 'Tilt up'], ['slide', 'Slide up'], ['fade', 'Fade in']], when: s => s.alerts.style === 'card' }),
-        MG.field(A, { key: 'showAvatar', label: 'Profile picture', type: 'toggle' }),
-        MG.field(A, { key: 'showMessage', label: 'Their message', hint: 'Super Chats, resubs and more', type: 'toggle' }),
-        MG.field(A, { key: 'sound', label: 'Play a chime', hint: 'A short sound with each alert, made by Mergio', type: 'toggle', keywords: 'sound audio chime volume' }),
-        MG.field(A, { key: 'volume', label: 'Chime volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'sound audio', when: s => s.alerts.sound })),
-      h('div', { class: 'btn-row' }, h('span', { class: 'lbl', text: 'Try:' }),
+    c.append(MG.card('Alerts overlay settings', 'The preview shows alerts at the top.',
+      MG.fieldList([
+        { sub: 'Timing and size' },
+        [A, { key: 'duration', icon: 'timer', label: 'Each alert stays for', hint: 'Seconds on screen', type: 'range', min: 2, max: 20, unit: 's', keywords: 'time seconds' }],
+        [A, { key: 'size', icon: 'size', label: 'Size', hint: 'Bigger or smaller than normal', type: 'range', min: 0.6, max: 2, step: 0.1, unit: '×', keywords: 'scale bigger smaller' }],
+        [A, { key: 'position', icon: 'move', label: 'Where in its box', hint: 'Within the browser source', type: 'select', options: [['top', 'Top'], ['center', 'Middle'], ['bottom', 'Bottom']] }],
+        [A, { key: 'animation', icon: 'sparkle', label: 'How alerts appear', hint: 'The other styles have their own entrance', type: 'select', options: [['pop', 'Tilt up'], ['slide', 'Slide up'], ['fade', 'Fade in']], when: s => s.alerts.style === 'card' }],
+        { sub: 'What each alert shows' },
+        [A, { key: 'showAvatar', icon: 'image', label: 'Profile picture', type: 'toggle' }],
+        [A, { key: 'showMessage', icon: 'chat', label: 'Their message', hint: 'Super Chats, resubs and more', type: 'toggle' }],
+        { sub: 'Sound' },
+        [A, { key: 'sound', icon: 'volume', label: 'Play a chime', hint: 'A short sound with each alert, made by Mergio', type: 'toggle', keywords: 'sound audio chime volume' }],
+        [A, { key: 'volume', icon: 'volume', label: 'Chime volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'sound audio', when: s => s.alerts.sound }],
+      ]),
+      h('div', { class: 'btn-row try-row' }, h('span', { class: 'lbl', text: 'Try:' }),
         ...[['gift', 'Gift'], ['sub', 'Sub'], ['superchat', 'Super Chat'], ['follow', 'Follow'], ['raid', 'Raid']].map(([k, t]) => h('button', { class: 'btn ghost sm', onclick: () => MG.test(k) }, icon('play'), t)))));
     c.append(MG.alertsSetup());
   }
@@ -139,12 +153,13 @@
     const order = [...ORDER].sort((a, b) => used.has(b) - used.has(a));
     placement(c);
     c.append(h('h2', { class: 'section-h', text: 'Which alerts and messages to show' }));
-    c.append(h('div', { class: 'note' }, icon('info'), h('span', {}, 'Press ', h('b', { text: 'Try' }), ' to see any alert in the preview (and in OBS). Change how alerts look inside the chat in ', h('a', { href: '#style', onclick: e => { e.preventDefault(); MG.go('style'); } }, 'Style → Alert look'), '.')));
+    c.append(h('div', { class: 'note' }, icon('info'), h('span', {}, 'Press ', h('b', { text: 'Try' }), ' to see any alert in the preview (and in OBS). Turn off anything you don’t want on stream.')));
     for (const p of order) {
       const sec = MG.st.settings[p];
       const rows = EVENTS[p].map(([key, label, desc, kind]) => {
         const id = `ev-${p}-${key}`;
         return h('div', { class: 'ev-row' },
+          h('span', { class: 'f-ic', 'aria-hidden': 'true' }, icon(EV_ICON[key] || 'star')),
           h('label', { for: id }, h('b', { text: label }), h('span', { text: desc })),
           kind ? h('button', { class: 'btn ghost sm', onclick: () => MG.test(kind) }, icon('play'), 'Try') : h('span'),
           h('span', { class: 'switch' }, h('input', { type: 'checkbox', id, checked: !!sec[key], onchange: e => { MG.save(p, key, e.target.checked); syncAll(); } }), h('span')));
@@ -154,8 +169,8 @@
       allBox.onchange = () => { for (const [k] of EVENTS[p]) MG.save(p, k, allBox.checked); MG.render(); };
       syncAll();
       const extra = [];
-      if (p === 'twitch') extra.push(MG.field('twitch', { key: 'sharedChat', label: 'Messages from Shared Chat partners', type: 'select', options: [['show', 'Show'], ['highlight', 'Show and highlight'], ['hide', 'Hide']] }));
-      if (p === 'tiktok') extra.push(MG.field('tiktok', { key: 'minGiftDiamonds', label: 'Only show gifts worth at least', hint: 'In diamonds. 0 = every gift', type: 'number', min: 0, max: 100000 }));
+      if (p === 'twitch') extra.push(MG.field('twitch', { key: 'sharedChat', icon: 'raid', label: 'Messages from Shared Chat partners', type: 'select', options: [['show', 'Show'], ['highlight', 'Show and highlight'], ['hide', 'Hide']] }));
+      if (p === 'tiktok') extra.push(MG.field('tiktok', { key: 'minGiftDiamonds', icon: 'gem', label: 'Only show gifts worth at least', hint: 'In diamonds. 0 = every gift', type: 'number', min: 0, max: 100000 }));
       c.append(h('details', { class: 'card fold pcard', style: `--pc: var(--${p})`, open: used.has(p) || !used.size },
         h('summary', {}, MG.colorIcon(p), h('b', { text: MG.pname(p) }), h('span', { text: used.has(p) ? 'In use' : 'Not connected' }),
           h('label', { class: 'all', onclick: e => e.stopPropagation() }, h('span', { text: 'All' }), h('span', { class: 'switch' }, allBox, h('span')))),
