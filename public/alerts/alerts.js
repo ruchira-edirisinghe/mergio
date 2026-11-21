@@ -127,7 +127,10 @@
     const el = h('div', 'name');
     const text = String(name || '');
     const seg = typeof Intl !== 'undefined' && Intl.Segmenter ? [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text)].map(x => x.segment) : Array.from(text);
-    if (seg.length > 32) { el.textContent = text; return el; }
+    // Joined scripts (Arabic, Hebrew, Sinhala, Tamil, Hindi, Thai…) must stay in one piece, or their letters lose their shapes.
+    // They animate in as a whole word; scripts whose letters stand alone animate letter by letter.
+    const solo = /^[\p{Script=Latin}\p{Script=Cyrillic}\p{Script=Greek}\p{Script=Armenian}\p{Script=Georgian}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Common}\p{Script=Inherited}]*$/u.test(text);
+    if (!solo || seg.length > 32) { const l = h('span', 'l', text); l.style.setProperty('--i', 0); el.appendChild(l); el.setAttribute('aria-label', text); return el; }
     seg.forEach((ch, i) => { const l = h('span', 'l', ch); l.style.setProperty('--i', i); el.appendChild(l); });
     el.setAttribute('aria-label', text);
     return el;

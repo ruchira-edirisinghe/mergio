@@ -208,3 +208,6 @@ body.align-right .enter-slide { animation-name: in-slide-r; }
 .leaving { animation: out-fade .4s ease-in forwards !important; }
 @keyframes out-fade { to { opacity: 0; transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .msg, .card::after, .amount.bump { animation: none !important; } }
+
+/* Any language: right-to-left names and messages (Arabic, Hebrew…) keep their own direction without mixing up the line */
+.body, .reply, .ev-title, .lk { unicode-bidi: plaintext; }
