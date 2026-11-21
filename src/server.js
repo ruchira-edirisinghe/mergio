@@ -210,7 +210,16 @@ function createServer(manager, { onQuit }) {
   });
 
   /* ---------- live updates over WebSocket ---------- */
-  const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
+  // Websites can open WebSockets to any address, so the live connection checks who is asking, like the API does:
+  // without this, any page open in the browser could read the chat and the settings as they change.
+  const wss = new WebSocketServer({
+    server, path: '/ws', maxPayload: 64 * 1024,
+    verifyClient: ({ req }) => {
+      const ok = toThisMachine(req) && fromOwnPage(req);
+      if (!ok) log('server', `blocked live connection from ${req.headers.origin || 'unknown'}`);
+      return ok;
+    },
+  });
   // ws re-emits the HTTP server's errors (e.g. port already in use); main.js handles those on the server itself.
   wss.on('error', () => {});
   /** Open overlays (not previews): how many, and whether one of them runs inside OBS. Same for the alerts overlay. */
@@ -224,8 +233,6 @@ function createServer(manager, { onQuit }) {
     for (const c of wss.clients) if (c.readyState === 1) c.send(data);
   };
   wss.on('connection', (ws, req) => {
-    const host = (req.headers.host || '').split(':')[0];
-    if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) return ws.close();
     // Overlays identify themselves so the control panel can show "Mergio is in OBS".
     const q = new URL(req.url, 'http://localhost').searchParams;
     const client = q.get('client');
