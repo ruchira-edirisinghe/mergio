@@ -5,7 +5,7 @@ const { DATA_DIR, log } = require('./util');
 
 const FILE = path.join(DATA_DIR, 'config.json');
 // Tokens and keys: the control panel only ever gets MASK back, never the saved value.
-const SECRETS = ['tiktokSignApiKey', 'facebookAccessToken'];
+const SECRETS = ['tiktokSignApiKey', 'facebookAccessToken', 'youtubeApiKey'];
 const MASK = '•'.repeat(12);
 
 /** Every overlay/app option with its default. The dashboard renders its form from SCHEMA (public/dashboard). */
@@ -92,12 +92,39 @@ const DEFAULTS = {
     background: '#0d0d14',
     bgOpacity: 0.78,
   },
+  followers: {
+    enabled: true,              // look follower counts up (off = no lookups at all)
+    style: 'panel',             // panel | line | cards | neon | bars
+    layout: 'row',              // row | column
+    align: 'left',              // left | center | right
+    showTitle: true,
+    title: 'Follower goals',
+    showTotal: false,           // every platform added up, as one extra goal
+    showNames: false,           // platform names next to the logos
+    hideEmpty: true,            // hide platforms whose number is not known yet
+    youtube: true, twitch: true, kick: true, tiktok: true, facebook: true, // platforms to show
+    showGoal: true,             // "436 / 500"
+    goalStep: 100,              // automatic goals: the next multiple of this
+    goalYoutube: 0, goalTwitch: 0, goalKick: 0, goalTiktok: 0, goalFacebook: 0, goalTotal: 0, // 0 = automatic
+    showBar: true,              // a progress bar towards the goal
+    showToGo: true,             // "64 to go"
+    showPlus: true,             // "+3" pops up when followers come in
+    celebrate: true,            // the goal flashes when it is reached
+    animate: true,
+    font: 'Bungee',
+    fontSize: 34,
+    textColor: '#ffffff',
+    goalColor: '#ffe2bf',
+    ink: '#4b2358',             // number outline, badges and the card edge
+    barColor: '#a6ff94',
+    outline: true,              // thick outline around the numbers
+  },
   twitch: { messages: true, cheers: true, announcements: true, subs: true, giftSubs: true, raids: true, redemptions: true, watchStreaks: true, joins: false, sharedChat: 'show', thirdPartyEmotes: true },
   youtube: { messages: true, superChats: true, superStickers: true, memberships: true, giftedMemberships: true, milestones: true },
   kick: { messages: true, subs: true, giftSubs: true, hosts: true, rewards: true, kicksGifts: true, follows: true },
   tiktok: { messages: true, joins: true, gifts: true, likes: true, follows: true, shares: false, subs: true, minGiftDiamonds: 0 },
   facebook: { messages: true },
-  advanced: { configVersion: 2, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
+  advanced: { configVersion: 2, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', youtubeApiKey: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
   sources: [],
 };
 
