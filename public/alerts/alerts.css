@@ -233,3 +233,7 @@ body.pos-bottom #stage { justify-content: flex-end; }
   .st-neon .tube rect { stroke-dasharray: 1 0; }
   .alert.out { opacity: 0; transition: opacity .3s; }
 }
+
+/* Any language: right-to-left names and messages (Arabic, Hebrew…) keep their own direction */
+.name, .title, .msg { unicode-bidi: plaintext; }
+.name .l:only-child { white-space: normal; }
