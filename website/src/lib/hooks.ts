@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { readCache, writeCache } from './cache';
+import { compareTags } from './releases';
 
 /** True while the element is on (or near) the screen, so animations pause when nobody can see them. */
 export function useInView<T extends Element>(rootMargin = '150px') {
@@ -60,22 +62,22 @@ export function useFeed<T>(script: T[], ms: number, active: boolean, max = 8, pr
 }
 
 const FALLBACK_VERSION = 'v1.5.1';
+/** Never show a version older than the one this page shipped with. */
+const newest = (tag: string) => (compareTags(tag, FALLBACK_VERSION) > 0 ? tag : FALLBACK_VERSION);
 
-/** The latest release tag from GitHub (cached for the visit), falling back to the version this page shipped with. */
+/** The latest release tag from GitHub (saved for 10 minutes), falling back to the version this page shipped with. */
 export function useLatestVersion() {
   const [version, setVersion] = useState(FALLBACK_VERSION);
   useEffect(() => {
     let cancelled = false;
-    try {
-      const cached = sessionStorage.getItem('mergio-version');
-      if (cached) { setVersion(cached); return; }
-    } catch { /* storage blocked */ }
+    const cached = readCache<string>('mergio-version');
+    if (typeof cached === 'string' && cached) { setVersion(newest(cached)); return; }
     fetch('https://api.github.com/repos/ruchira-edirisinghe/mergio/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
       .then(r => (r.ok ? r.json() : null))
       .then(j => {
         if (cancelled || !j?.tag_name) return;
-        setVersion(j.tag_name);
-        try { sessionStorage.setItem('mergio-version', j.tag_name); } catch { /* storage blocked */ }
+        setVersion(newest(String(j.tag_name)));
+        writeCache('mergio-version', String(j.tag_name));
       })
       .catch(() => { /* offline: keep the fallback */ });
     return () => { cancelled = true; };

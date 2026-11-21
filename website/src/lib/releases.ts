@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import bundled from './releases.json';
+import { readCache, writeCache } from './cache';
 
 export interface Note { title: string; text: string }
 export interface Release { tag: string; date: string; url: string; notes: Note[] }
@@ -29,7 +30,9 @@ export function parseNotes(body: string): Note[] {
 
 /** 1.10.0 > 1.9.2 */
 const parts = (tag: string) => tag.replace(/^v/i, '').split('-')[0].split('.').map(n => parseInt(n, 10) || 0);
-const byVersion = (a: Release, b: Release) => { const x = parts(a.tag), y = parts(b.tag); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return (y[i] || 0) - (x[i] || 0); return 0; };
+/** Positive when tag a is newer than tag b. */
+export function compareTags(a: string, b: string) { const x = parts(a), y = parts(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return (x[i] || 0) - (y[i] || 0); return 0; }
+const byVersion = (a: Release, b: Release) => compareTags(b.tag, a.tag);
 
 /** What kind of release this was compared with the one before it. */
 export function kindOf(list: Release[], i: number): Kind {
@@ -55,17 +58,16 @@ export function useReleases() {
   const [list, setList] = useState<Release[]>(BUNDLED);
   useEffect(() => {
     let cancelled = false;
-    try {
-      const cached = JSON.parse(sessionStorage.getItem(CACHE) || 'null');
-      if (Array.isArray(cached) && cached.length) { setList(cached); return; }
-    } catch { /* storage blocked */ }
+    // a copy saved before a release this page already knows about is out of date
+    const cached = readCache<Release[]>(CACHE);
+    if (Array.isArray(cached) && cached.length && compareTags(cached[0].tag, BUNDLED[0]?.tag || 'v0.0.0') >= 0) { setList(cached); return; }
     fetch(API, { headers: { Accept: 'application/vnd.github+json' } })
       .then(r => (r.ok ? r.json() : null))
       .then(j => {
         const live = fromGitHub(j);
         if (cancelled || !live.length) return;
         setList(live);
-        try { sessionStorage.setItem(CACHE, JSON.stringify(live)); } catch { /* storage blocked */ }
+        writeCache(CACHE, live);
       })
       .catch(() => { /* offline: keep the copy this page shipped with */ });
     return () => { cancelled = true; };
