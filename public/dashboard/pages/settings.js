@@ -28,7 +28,9 @@
         MG.field('advanced', { key: 'facebookAccessToken', icon: 'key', label: 'Facebook Page token', hint: 'Needed for Facebook comments', help: 'Facebook only lets apps read Live comments with a free token from your Page. Click Show me how for step-by-step pictures.', type: 'secret', placeholder: 'Paste your token here' }),
         MG.fbGuideCallout(),
         MG.subhead('TikTok'),
-        MG.field('advanced', { key: 'tiktokSignApiKey', icon: 'key', label: 'TikTok key (optional)', hint: 'TikTok works without it', help: 'A free key from eulerstream.com. TikTok limits how often apps can connect; with a key Mergio skips that limit.', type: 'secret', placeholder: 'Optional' }))));
+        MG.field('advanced', { key: 'tiktokSignApiKey', icon: 'key', label: 'TikTok key (optional)', hint: 'TikTok works without it', help: 'A free key from eulerstream.com. TikTok limits how often apps can connect; with a key Mergio skips that limit.', type: 'secret', placeholder: 'Optional' }),
+        MG.subhead('YouTube'),
+        MG.field('advanced', { key: 'youtubeApiKey', icon: 'key', label: 'YouTube Data API key (optional)', hint: 'Only for the follower goals overlay', help: 'Mergio reads your subscriber count from your channel page. With a free key from the Google Cloud console (YouTube Data API v3) it asks YouTube directly instead, which is steadier.', type: 'secret', placeholder: 'Optional' }))));
 
     // ----- backup -----
     const file = h('input', { type: 'file', accept: '.json,application/json', hidden: true, onchange: async e => {
