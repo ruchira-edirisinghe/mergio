@@ -977,3 +977,13 @@ body.side-min .upd-pill > :not(.upd-dot) { display: none; }
 .try-row { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
 .card > .fields { margin-top: 4px; }
 .install-how { max-width: 280px; font-size: 12px; }
+/* live chat: the same layout as the overlay (picture column, name line, message underneath) */
+.fi { grid-template-columns: 36px minmax(0, 1fr); gap: 12px; padding: 9px 10px; }
+.fi img.av { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: var(--panel-2); box-shadow: 0 0 0 1px rgba(255, 255, 255, .08); }
+.fi .fb { min-width: 0; display: grid; gap: 2px; }
+.fi .fh { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.fi .fh .p { width: 15px; height: 15px; flex: none; color: var(--pc); margin: 0; }
+.fi .fh .p svg { width: 100%; height: 100%; }
+.fi .fh b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fi .fh time { margin: 0 0 0 auto; flex: none; }
+.fi .t { color: #dcdce8; }
