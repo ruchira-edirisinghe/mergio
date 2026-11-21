@@ -69,7 +69,7 @@ Out of scope: problems in YouTube, Twitch, Kick, TikTok, Facebook or other third
 **Follower goals**
 
 - Follower counts are only looked up while the follower goals overlay or its control panel page is open, and **Refresh** looks each channel up at most every 15 seconds.
-- TikTok and Facebook block plain requests, so their public profile pages are read in a hidden copy of Edge or Chrome. It can only open `https://www.tiktok.com/` and `https://www.facebook.com/` pages, runs one copy at a time with its own profile (not yours), and starts without extensions, sync or permission prompts.
+- TikTok and Facebook block plain requests, so their public profile pages are read in a hidden copy of Edge or Chrome. It can only open `https://www.tiktok.com/` and `https://www.facebook.com/` pages, runs one copy at a time with its own profile (not yours, kept in the data folder that only you can open), and starts without extensions, sync or permission prompts.
 
 **Input**
 
