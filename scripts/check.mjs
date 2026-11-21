@@ -67,6 +67,22 @@ test('control panel view masks tokens', () => {
   assert.equal(v.advanced.facebookAccessToken, settings.MASK);
   assert.equal(settings.panelView({ ...settings.get(), advanced: { ...settings.get().advanced, tiktokSignApiKey: '' } }).advanced.tiktokSignApiKey, '');
 });
+test('the YouTube key is masked like the other tokens', () => {
+  settings.update({ advanced: { youtubeApiKey: 'AIzaSyFakeKey0123456789abcdefghijklmn' } });
+  assert.equal(settings.panelView().advanced.youtubeApiKey, settings.MASK);
+  assert.equal(JSON.stringify(settings.publicView()).includes('AIza'), false);
+  settings.update({ advanced: { youtubeApiKey: '' } });
+});
+test('follower lookup errors shown on overlays hide tokens', () => {
+  const stats = require(join(root, 'src/stats.js'));
+  stats.setFollowers('s-test', null, 'HTTP 400 for https://www.googleapis.com/youtube/v3/channels?part=statistics&key=AIzaSyFakeKey0123456789');
+  assert.equal(stats.followers.get('s-test').err.includes('AIza'), false);
+});
+test('the hidden browser only opens TikTok and Facebook pages', () => {
+  const { ALLOWED } = require(join(root, 'src/browser.js'));
+  for (const ok of ['https://www.tiktok.com/@someone?lang=en', 'https://www.facebook.com/somepage']) assert.equal(ALLOWED.test(ok), true, ok);
+  for (const bad of ['https://evil.example/', 'http://www.tiktok.com/@a', 'https://www.tiktok.com.evil.example/', 'file:///C:/x', '--remote-debugging-port=9222']) assert.equal(ALLOWED.test(bad), false, bad);
+});
 test('tokens are hidden in logs and error messages', () => {
   const { redact } = require(join(root, 'src/util.js'));
   const out = redact('HTTP 400 for https://graph.facebook.com/v21.0/123?fields=id&access_token=EAABsbCS1iHgBAKZBZCq12345678901234567890 &key=AIzaXYZ token EAAG0123456789abcdefghijABCDEFGHIJ0123');
@@ -114,7 +130,15 @@ console.log('Local server security');
   await atest('blocks a page on another local port', async () => assert.equal((await call('/api/clear', { method: 'POST', headers: { ...json, Origin: 'http://127.0.0.1:1' }, body: '{}' })).status, 403));
   await atest('blocks DNS rebinding (foreign Host header)', async () => assert.equal((await call('/api/state', { headers: { Host: `evil.example:${port}` } })).status, 403));
   await atest('rejects text/plain disguised as JSON', async () => assert.equal((await call('/api/clear', { method: 'POST', headers: { 'Content-Type': 'text/plain; x=application/json' }, body: '{}' })).status, 415));
-  await atest('rejects bodies over 1 MB', async () => assert.equal((await call('/api/clear', { method: 'POST', headers: json, body: JSON.stringify({ x: 'a'.repeat(1_100_000) }) })).status, 413));
+  await atest('rejects bodies over 1 MB', async () => {
+    // The server answers 413 and closes while the body is still being sent, which can reset the socket before the
+    // answer is read; try a few times instead of failing on that race.
+    let status;
+    for (let i = 0; i < 4 && status === undefined; i++) {
+      try { status = (await call('/api/clear', { method: 'POST', headers: json, body: JSON.stringify({ x: 'a'.repeat(1_100_000) }) })).status; } catch { /* reset: try again */ }
+    }
+    assert.equal(status, 413);
+  });
   await atest('rejects bad JSON with 400', async () => assert.equal((await call('/api/clear', { method: 'POST', headers: json, body: '{nope' })).status, 400));
   await atest('does not serve files outside public/', async () => {
     for (const p of ['/..%2f..%2fpackage.json', '/%2e%2e/%2e%2e/package.json', '/shared/..%5c..%5cpackage.json']) assert.equal((await call(p)).status, 404, p);
@@ -131,6 +155,15 @@ console.log('Local server security');
     assert.match(h['content-security-policy'], /script-src 'self'(;|$)/);
     assert.doesNotMatch(h['content-security-policy'], /frame-ancestors/);
   });
+  await atest('counter overlays have a CSP and can be embedded', async () => {
+    for (const p of ['/viewers', '/followers']) {
+      const { status, headers: h } = await call(p);
+      assert.equal(status, 200, p);
+      assert.match(h['content-security-policy'], /script-src 'self'(;|$)/, p);
+      assert.doesNotMatch(h['content-security-policy'], /frame-ancestors/, p);
+    }
+  });
+  await atest('follower refresh is only for the control panel', async () => assert.equal((await call('/api/followers/refresh', { method: 'POST', headers: { ...json, Origin: 'https://evil.example' }, body: '{}' })).status, 403));
   const wsOpen = origin => new Promise(resolve => {
     const ws = new WebSocket(`ws://127.0.0.1:${port}/ws`, origin ? { origin } : {});
     ws.on('message', d => { resolve(JSON.parse(d).op); ws.close(); });

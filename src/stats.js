@@ -3,6 +3,7 @@
    followers each channel has. Connectors report viewers; src/followers.js (and some live events) report
    followers. Everything is keyed by chat source, and 'change' fires (throttled) when a number moves. */
 const { EventEmitter } = require('node:events');
+const { redact } = require('./util');
 
 class Stats extends EventEmitter {
   constructor() {
@@ -34,6 +35,8 @@ class Stats extends EventEmitter {
   }
 
   setFollowers(sourceId, count, err = null) {
+    // The reason a lookup failed is shown on the overlays: never let a token or key slip into it.
+    if (err) err = redact(String(err)).slice(0, 200);
     const old = this.followers.get(sourceId);
     if (count == null || !Number.isFinite(Number(count))) {
       // keep the last good number; just remember what went wrong
