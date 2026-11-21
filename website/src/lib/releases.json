@@ -41,6 +41,45 @@
  },
  "releases": [
   {
+   "tag": "v1.5.0",
+   "date": "2026-11-21T07:36:42Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.5.0",
+   "notes": [
+    {
+     "title": "Viewer count overlay",
+     "text": "A new overlay at `http://localhost:8787/viewers` adds up everyone watching on every platform, live, in five styles. Set it up on the new *Viewer count* page."
+    },
+    {
+     "title": "Follower goals overlay",
+     "text": "`http://localhost:8787/followers` shows each platform's followers with a goal and a progress bar that celebrates when you reach it. The next goal appears by itself, or you can set your own. Set it up on the new *Follower goals* page."
+    },
+    {
+     "title": "All in one line",
+     "text": "Both counters can sit in a single row that shrinks to fit any browser source."
+    },
+    {
+     "title": "Every language looks right",
+     "text": "Names and messages in Arabic, Hebrew and other right-to-left scripts keep their direction, default profile pictures show the first letter of any script, and alert names in joined scripts like Sinhala and Arabic animate as whole words. *Send test* now includes messages in other languages too."
+    },
+    {
+     "title": "Neater chat and Live chat",
+     "text": "The profile picture has its own column, so long messages stay lined up, and the *Live chat* page now looks like the overlay. You can filter it by platform."
+    },
+    {
+     "title": "A control panel for every screen",
+     "text": "It fits any window size, the sidebar shrinks to icons, every setting has its own row with an icon, and settings sections start folded. The header button takes you straight to *Add to OBS*."
+    },
+    {
+     "title": "A new installer look",
+     "text": "The Windows installer is dark and guides you through each step."
+    },
+    {
+     "title": "Safer by design",
+     "text": "Other websites can't reach Mergio's local server or its live connection, saved keys never go back to the control panel or the overlays, and tokens are kept out of the log. Your settings can only be read by you, and updates only install when their checksum matches the one GitHub publishes. The security policy has the full list."
+    }
+   ]
+  },
+  {
    "tag": "v1.4.2",
    "date": "2026-11-20T17:05:49Z",
    "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.4.2",
