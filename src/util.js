@@ -52,7 +52,8 @@ function protectDataDir(dir = DATA_DIR, done = () => {}) {
   if (process.platform !== 'win32') {
     try {
       fs.chmodSync(dir, 0o700);
-      for (const f of fs.readdirSync(dir)) fs.chmodSync(path.join(dir, f), 0o600);
+      // files owner-only; folders (the hidden browser's profile) owner-only too, but still openable by you
+      for (const f of fs.readdirSync(dir)) { const p = path.join(dir, f); fs.chmodSync(p, fs.statSync(p).isDirectory() ? 0o700 : 0o600); }
       return done(true);
     } catch (e) { log('app', `could not protect the data folder: ${e.message}`); return done(false); }
   }

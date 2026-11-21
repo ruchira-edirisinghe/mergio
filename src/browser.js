@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const { execFile } = require('node:child_process');
+const { DATA_DIR } = require('./util');
 
 let found;
 function findBrowser() {
@@ -35,6 +36,12 @@ const FLAGS = ['--headless=new', '--disable-gpu', '--mute-audio', '--no-first-ru
   '--disable-extensions', '--disable-sync', '--disable-background-networking', '--disable-component-update',
   '--disable-default-apps', '--deny-permission-prompts', '--virtual-time-budget=10000'];
 
+// The hidden browser's own profile lives in Mergio's data folder, which only you can open. (The temp folder can be
+// shared with other accounts on macOS and Linux, so someone else could have put a profile there first.)
+const PROFILE = path.join(DATA_DIR, 'browser-profile');
+// Copies before 1.5.1 kept it in the temp folder; on Windows that folder is yours alone, so tidy it away once.
+if (process.platform === 'win32') fs.rm(path.join(os.tmpdir(), 'mergio-headless'), { recursive: true, force: true }, () => {});
+
 // One hidden browser at a time (each one is a full browser), whatever asks for pages.
 let queue = Promise.resolve();
 
@@ -44,7 +51,7 @@ function dumpDom(url, timeout = 60000) {
   const exe = findBrowser();
   if (!exe) return Promise.reject(new Error('needs Chrome or Edge installed'));
   const run = () => new Promise((resolve, reject) => {
-    execFile(exe, [...FLAGS, `--user-data-dir=${path.join(os.tmpdir(), 'mergio-headless')}`, '--dump-dom', url],
+    execFile(exe, [...FLAGS, `--user-data-dir=${PROFILE}`, '--dump-dom', url],
       { timeout, maxBuffer: 32 * 1024 * 1024, windowsHide: true }, (err, stdout) => (err && !stdout ? reject(new Error(`browser: ${err.message}`)) : resolve(String(stdout))));
   });
   const job = queue.then(run, run);
@@ -52,4 +59,4 @@ function dumpDom(url, timeout = 60000) {
   return job;
 }
 
-module.exports = { findBrowser, dumpDom, ALLOWED };
+module.exports = { findBrowser, dumpDom, ALLOWED, PROFILE };

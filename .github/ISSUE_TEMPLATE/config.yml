@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security problem privately
+    url: https://github.com/ruchira-edirisinghe/mergio/security/advisories/new
+    about: Found a way to read someone's tokens, reach Mergio from a website or run code? Please report it here, not in a public issue.
+  - name: Complete guide and troubleshooting
+    url: https://github.com/ruchira-edirisinghe/mergio#complete-guide
+    about: Step-by-step setup for every platform and fixes for common problems.

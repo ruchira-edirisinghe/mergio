@@ -83,6 +83,11 @@ test('the hidden browser only opens TikTok and Facebook pages', () => {
   for (const ok of ['https://www.tiktok.com/@someone?lang=en', 'https://www.facebook.com/somepage']) assert.equal(ALLOWED.test(ok), true, ok);
   for (const bad of ['https://evil.example/', 'http://www.tiktok.com/@a', 'https://www.tiktok.com.evil.example/', 'file:///C:/x', '--remote-debugging-port=9222']) assert.equal(ALLOWED.test(bad), false, bad);
 });
+test("the hidden browser keeps its profile in Mergio's own data folder", () => {
+  const { PROFILE } = require(join(root, 'src/browser.js'));
+  const { DATA_DIR } = require(join(root, 'src/util.js'));
+  assert.equal(PROFILE.startsWith(DATA_DIR), true, PROFILE);
+});
 test('tokens are hidden in logs and error messages', () => {
   const { redact } = require(join(root, 'src/util.js'));
   const out = redact('HTTP 400 for https://graph.facebook.com/v21.0/123?fields=id&access_token=EAABsbCS1iHgBAKZBZCq12345678901234567890 &key=AIzaXYZ token EAAG0123456789abcdefghijABCDEFGHIJ0123');
