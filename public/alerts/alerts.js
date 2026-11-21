@@ -77,10 +77,18 @@
     const key = PLATFORM_KEYS[m.platform]?.[m.type];
     if (key && sec[key] === false) return false;
     if (m.platform === 'tiktok' && m.type === 'gift' && (m.event.diamonds || 0) < (sec.minGiftDiamonds || 0)) return false;
+    if (m.platform === 'twitch' && m.flags?.shared && sec.sharedChat === 'hide') return false; // same as the chat
     const who = [m.user.name, m.user.login].map(x => String(x || '').toLowerCase());
     if (list(S.general.ignoreChatters).some(n => who.includes(n))) return false;
     return true;
   }
+
+  /** The message has a word from Blocked words (the alert still shows, without the message). */
+  const blocked = m => {
+    const bad = list(S.general.blockedWords);
+    const text = (m.parts || []).map(p => p.text || p.name || '').join('').toLowerCase();
+    return bad.length > 0 && bad.some(w => text.includes(w));
+  };
 
   /* ---------------- one alert ---------------- */
   function build(m) {
@@ -115,7 +123,7 @@
     if (ev.title) info.appendChild(h('div', 'title', ev.title));
     const num = String(ev.amount || '').match(/\d[\d.,]*/)?.[0];
     if (num && (/^[×x]/i.test(ev.amount) || !(ev.title || '').includes(num))) info.appendChild(h('div', 'amount', ev.amount));
-    if (a.showMessage) { const msg = message(m); if (msg) info.appendChild(msg); }
+    if (a.showMessage && !blocked(m)) { const msg = message(m); if (msg) info.appendChild(msg); }
     if (pic) el.classList.add('has-gift');
     el.append(decor(), art, info, h('div', 'timer'));
     el.lastChild.appendChild(h('i'));
