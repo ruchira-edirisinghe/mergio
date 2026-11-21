@@ -122,9 +122,21 @@ function load() {
 
 function save() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try { fs.writeFileSync(FILE, JSON.stringify(current, null, 2)); } catch (e) { log('settings', 'save failed:', e.message); }
-  }, 250);
+  saveTimer = setTimeout(writeNow, 250);
+}
+
+/** Writes a temporary file and swaps it in, so a crash or power cut never leaves half a config. Owner-only. */
+function writeNow() {
+  const data = JSON.stringify(current, null, 2);
+  const tmp = `${FILE}.tmp`;
+  try {
+    fs.writeFileSync(tmp, data, { mode: 0o600 });
+    fs.renameSync(tmp, FILE);
+  } catch (e) {
+    // Some antivirus tools briefly lock the file: fall back to writing it in place.
+    try { fs.writeFileSync(FILE, data, { mode: 0o600 }); } catch (e2) { log('settings', 'save failed:', e2.message); }
+    try { fs.rmSync(tmp, { force: true }); } catch { /* ignore */ }
+  }
 }
 
 const get = () => current;
