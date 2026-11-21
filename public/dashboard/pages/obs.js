@@ -1,4 +1,4 @@
-/* Add to OBS: the two overlays (chat and alerts) side by side, live detection, and step-by-step instructions. */
+/* Add to OBS: the overlays (chat, alerts and the optional counters), live detection, and step-by-step instructions. */
 (() => {
   const { h, icon } = MG;
   const alertsOn = () => MG.st.settings.alerts.placement !== 'chat';
@@ -43,7 +43,18 @@
             h('p', { class: 'hint', text: 'Off right now: alerts show inside the chat. Turn it on to give them their own spot on your stream.' }),
             h('div', { class: 'btn-row' },
               h('button', { class: 'btn primary', onclick: () => turnOn('overlay', 'Alerts overlay is on. Copy its link and add it to OBS.') }, icon('bell'), 'Turn on alerts overlay'),
-              h('button', { class: 'btn ghost', onclick: () => turnOn('both', 'Alerts show in the chat and on their own overlay') }, 'Use both'))) }));
+              h('button', { class: 'btn ghost', onclick: () => turnOn('both', 'Alerts show in the chat and on their own overlay') }, 'Use both'))) }),
+      ...counterCards());
+  }
+
+  /** The optional counter overlays, each linking to its own page. */
+  function counterCards() {
+    const st = MG.st;
+    const more = (id, label) => h('div', { class: 'ov-meta' }, h('span', { text: 'Optional. Add it only if you want it on stream.' }),
+      h('a', { href: `#${id}`, onclick: e => { e.preventDefault(); MG.go(id); } }, label));
+    return [
+      overlayCard({ cls: 'ov-viewers', ic: 'raid', title: 'Viewer count', text: 'How many people watch right now, in total and on each platform.', o: MG.overlays.viewers, url: st.viewersUrl, name: 'Mergio Viewers', w: 800, ht: 200, extra: more('viewers', 'Pick a style') }),
+    ];
   }
 
   function render(c) {
