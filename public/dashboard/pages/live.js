@@ -38,6 +38,23 @@
     el.scrollTop = el.scrollHeight;
   }
 
+  /** The list fills the window below the filters, so the newest message is always in view, in a wide window and in a
+      narrow OBS dock alike (there the top bar and the filters take more room). */
+  function fitFeed() {
+    const el = document.getElementById('feed'), content = document.getElementById('content');
+    if (!el || !content) return;
+    // layout offsets, not the on-screen box: they ignore scrolling and the page's slide-in animation
+    let top = 0;
+    for (let n = el; n; n = n.offsetParent) top += n.offsetTop;
+    const card = el.closest('.feed-card');
+    const below = (card ? parseFloat(getComputedStyle(card).paddingBottom) || 0 : 0) + (parseFloat(getComputedStyle(content).paddingBottom) || 0) + 2;
+    const atEnd = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    el.style.maxHeight = `${Math.max(220, Math.floor(innerHeight - top - below))}px`;
+    if (atEnd) el.scrollTop = el.scrollHeight;
+  }
+  addEventListener('resize', () => { if (MG.current() === 'live') fitFeed(); });
+  const toolsWatch = window.ResizeObserver ? new ResizeObserver(() => fitFeed()) : null;
+
   /** The platforms worth a filter chip: the ones you added chats for, plus any that sent messages. */
   const shownPlatforms = () => {
     const used = new Set([...(MG.st.sources || []).map(x => x.platform), ...MG.feed.map(m => m.platform)]);
@@ -93,6 +110,9 @@
         } }, icon('trash'), 'Clear')));
     c.append(h('section', { class: 'card feed-card' }, tools, h('div', { class: 'feed', id: 'feed' })));
     fill();
+    // the filters wrap onto more lines in narrow windows, so fit again whenever they change size
+    if (toolsWatch) { toolsWatch.disconnect(); toolsWatch.observe(tools); }
+    requestAnimationFrame(fitFeed);
   }
 
   MG.page({ id: 'live', order: 50, group: 'live', label: 'Live chat', icon: 'chat', title: 'Live chat', subtitle: 'Read all your chats in one list. Not affected by overlay filters', render });
