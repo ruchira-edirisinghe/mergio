@@ -135,6 +135,21 @@ test('settings stay in range, on real choices and real colours', () => {
   settings.reset();
 });
 
+console.log('Connections');
+test('Twitch is live again after a reconnect to the same channel', () => {
+  const { TwitchConnector } = require(join(root, 'src/connectors/twitch.js'));
+  const c = new TwitchConnector({ id: 's-tw', platform: 'twitch', target: 'someone', label: 'someone' }, { settings: () => settings.get() });
+  c.lookViewers = async () => {}; // no network in the check
+  c.handle({ command: 'ROOMSTATE', tags: { 'room-id': '42' } });
+  assert.equal(c.state, 'live');
+  c.attempt = 3;
+  c.setState('connecting', 'Joining Twitch chat…');
+  c.handle({ command: 'ROOMSTATE', tags: { 'room-id': '42' } });
+  assert.equal(c.state, 'live');
+  assert.equal(c.attempt, 0);
+  c.stopped = true;
+});
+
 console.log('Local server security');
 {
   const http = require('node:http');

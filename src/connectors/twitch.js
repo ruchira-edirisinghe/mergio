@@ -191,10 +191,11 @@ class TwitchConnector extends Connector {
       case 'RECONNECT': try { this.ws.close(); } catch { /* ignore */ } return;
       case '001': return;
       case 'ROOMSTATE':
-        if (tags['room-id'] && this.roomId !== tags['room-id']) {
+        if (!tags['room-id']) return;
+        // Every join, also after Twitch closed the connection and we joined again, means we're reading chat.
+        if (this.state !== 'live') { this.attempt = 0; this.setState('live', 'Connected to chat'); }
+        if (this.roomId !== tags['room-id']) {
           this.roomId = tags['room-id'];
-          this.attempt = 0;
-          this.setState('live', 'Connected to chat');
           loadChannelEmotes(this.roomId).then(m => { this.thirdParty = m; }).catch(() => {});
         }
         return;
