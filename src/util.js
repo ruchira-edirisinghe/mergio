@@ -58,9 +58,15 @@ function isSea() {
 const DATA_DIR = resolveDataDir();
 const LOG_FILE = path.join(DATA_DIR, 'mergio.log');
 
+/* ---------- keeping tokens out of logs and error messages ---------- */
+const SECRET_PARAM = /([?&](?:access_token|input_token|client_secret|api_key|apikey|key|token|sign_?api_?key)=)[^&#\s"']+/gi;
+const SECRET_VALUE = /\bEA[A-Za-z0-9]{30,}\b/g; // Facebook tokens
+/** Hides tokens in URLs and text: "...?access_token=EAAB..." -> "...?access_token=[hidden]". */
+const redact = text => String(text).replace(SECRET_PARAM, '$1[hidden]').replace(SECRET_VALUE, '[hidden]');
+
 /* ---------- tiny logger (file + console, file is trimmed at 1 MB) ---------- */
 function log(scope, ...args) {
-  const line = `${new Date().toISOString()} [${scope}] ${args.map(a => (a instanceof Error ? a.message : typeof a === 'string' ? a : JSON.stringify(a))).join(' ')}`;
+  const line = redact(`${new Date().toISOString()} [${scope}] ${args.map(a => (a instanceof Error ? a.message : typeof a === 'string' ? a : JSON.stringify(a))).join(' ')}`);
   try { process.stdout.write(line + '\n'); } catch { /* no console */ }
   try {
     const st = fs.statSync(LOG_FILE, { throwIfNoEntry: false });
@@ -77,7 +83,7 @@ async function fetchText(url, opts = {}) {
     signal: AbortSignal.timeout(opts.timeout || 15000),
   });
   const text = await res.text();
-  if (!res.ok) { const e = new Error(`HTTP ${res.status} for ${url}`); e.status = res.status; e.body = text; throw e; }
+  if (!res.ok) { const e = new Error(`HTTP ${res.status} for ${redact(url)}`); e.status = res.status; e.body = text; throw e; }
   return text;
 }
 
@@ -93,7 +99,7 @@ function curlJson(url, body) {
     if (body !== undefined) args.push('-H', 'Content-Type: application/json', '-X', 'POST', '--data-binary', JSON.stringify(body));
     args.push(url);
     execFile(bin, args, { maxBuffer: 8 * 1024 * 1024, windowsHide: true }, (err, stdout) => {
-      if (err) return reject(new Error(`curl failed: ${err.message}`));
+      if (err) return reject(new Error(`curl failed: ${redact(err.message)}`));
       try { resolve(JSON.parse(stdout)); } catch { reject(new Error(`Unexpected response from ${new URL(url).host}`)); }
     });
   });
@@ -109,4 +115,4 @@ function backoff(attempt, base = 2000, cap = 60000) {
 let idCounter = 0;
 const uid = (p = 'm') => `${p}${Date.now().toString(36)}${(idCounter++).toString(36)}`;
 
-module.exports = { UA, DATA_DIR, LOG_FILE, isSea, log, fetchText, fetchJson, curlJson, sleep, backoff, uid };
+module.exports = { UA, DATA_DIR, LOG_FILE, isSea, log, redact, fetchText, fetchJson, curlJson, sleep, backoff, uid };

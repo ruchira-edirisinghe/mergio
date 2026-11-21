@@ -65,6 +65,12 @@ test('control panel view masks tokens', () => {
   assert.equal(v.advanced.facebookAccessToken, settings.MASK);
   assert.equal(settings.panelView({ ...settings.get(), advanced: { ...settings.get().advanced, tiktokSignApiKey: '' } }).advanced.tiktokSignApiKey, '');
 });
+test('tokens are hidden in logs and error messages', () => {
+  const { redact } = require(join(root, 'src/util.js'));
+  const out = redact('HTTP 400 for https://graph.facebook.com/v21.0/123?fields=id&access_token=EAABsbCS1iHgBAKZBZCq12345678901234567890 &key=AIzaXYZ token EAAG0123456789abcdefghijABCDEFGHIJ0123');
+  assert.equal(/EAAB|AIza|EAAG/.test(out), false, out);
+  assert.match(out, /fields=id&access_token=\[hidden\]/);
+});
 test('sending the mask back keeps the saved token', () => {
   settings.update({ advanced: { facebookAccessToken: settings.MASK } });
   assert.equal(settings.get().advanced.facebookAccessToken, 'EAAsecretvalue');
