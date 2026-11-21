@@ -53,9 +53,10 @@ class TikTokConnector extends Connector {
     conn.on(WebcastEvent.LIKE, d => fresh(d) && this.onLike(d));
     if (WebcastEvent.ROOM_USER) conn.on(WebcastEvent.ROOM_USER, d => { const n = Number(d.total ?? d.viewerCount); if (Number.isFinite(n)) this.setViewers(n); });
     conn.on(WebcastEvent.FOLLOW, d => this.setFollowers(d.followCount));
-    conn.on(WebcastEvent.FOLLOW, d => this.push({ type: 'follow', user: this.user(d.user, d.userIdentity), event: { kind: 'follow', title: 'followed', color: TT_PINK } }));
-    conn.on(WebcastEvent.SHARE, d => this.push({ type: 'share', user: this.user(d.user, d.userIdentity), event: { kind: 'share', title: 'shared the LIVE', color: TT_PINK } }));
-    if (WebcastEvent.SUBSCRIBE) conn.on(WebcastEvent.SUBSCRIBE, d => this.push({ type: 'sub', user: this.user(d.user, d.userIdentity), event: { kind: 'sub', title: 'subscribed', amount: 'Subscriber', color: TT_PINK } }));
+    // like chat and gifts, only follows, shares and subs from after we connected (the first batch holds older ones)
+    conn.on(WebcastEvent.FOLLOW, d => fresh(d) && this.push({ type: 'follow', user: this.user(d.user, d.userIdentity), event: { kind: 'follow', title: 'followed', color: TT_PINK } }));
+    conn.on(WebcastEvent.SHARE, d => fresh(d) && this.push({ type: 'share', user: this.user(d.user, d.userIdentity), event: { kind: 'share', title: 'shared the LIVE', color: TT_PINK } }));
+    if (WebcastEvent.SUBSCRIBE) conn.on(WebcastEvent.SUBSCRIBE, d => fresh(d) && this.push({ type: 'sub', user: this.user(d.user, d.userIdentity), event: { kind: 'sub', title: 'subscribed', amount: 'Subscriber', color: TT_PINK } }));
     conn.on(WebcastEvent.STREAM_END, () => this.later(30000, 'The LIVE has ended.'));
     conn.on(ControlEvent.DISCONNECTED, () => { if (!this.stopped && this.state === 'live') this.later(backoff(this.attempt++, 3000), 'Disconnected.'); });
     conn.on(ControlEvent.ERROR, e => log('tiktok', e?.info || e?.message || String(e)));
