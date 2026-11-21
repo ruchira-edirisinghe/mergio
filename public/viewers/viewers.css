@@ -79,3 +79,14 @@ html.mid #root { align-items: center; }
 .st-minimal .eye { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); }
 
 @media (prefers-reduced-motion: reduce) { .live, .pl .num { animation: none !important; } .share .seg { transition: none; } }
+
+/* ---------- All in one line: the total and every platform side by side, never wrapping ----------
+   (viewers.js shrinks it to fit when it is wider than the browser source) */
+.lay-line .box, .lay-line .plats { flex-wrap: nowrap; }
+.lay-line .box { flex-direction: row; align-items: center; position: relative; }
+.st-glass.lay-line .box, .st-neon.lay-line .box { flex-direction: row; align-items: center; gap: .7em; padding-bottom: .7em; }
+.lay-line .share { position: absolute; left: .7em; right: .7em; bottom: .3em; width: auto; min-width: 0; height: .14em; }
+.st-broadcast.lay-line .box { display: flex; flex-wrap: nowrap; }
+.st-broadcast.lay-line .share { left: 0; right: 0; bottom: -.16em; border-radius: 0; }
+
+.lay-line .box { flex: none; }

@@ -9,6 +9,7 @@ const autostart = require('./autostart');
 const avatars = require('./avatars');
 const updater = require('./updater');
 const stats = require('./stats');
+const followers = require('./followers');
 const { checkToken: checkFacebookToken } = require('./connectors/facebook');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
@@ -122,7 +123,7 @@ function pageHeaders(file, host) {
   ];
   // The control panel can't be shown inside another website (so nobody can trick you into clicking its buttons).
   // The overlays only show chat and numbers, so other tools (and the panel's previews) may still embed them.
-  const panel = !/^(overlay|alerts|viewers)\//.test(file);
+  const panel = !/^(overlay|alerts|viewers|followers)\//.test(file);
   if (!panel) return { 'Content-Security-Policy': csp.join('; ') };
   csp.push("frame-ancestors 'none'");
   return { 'Content-Security-Policy': csp.join('; '), 'X-Frame-Options': 'DENY', 'Cross-Origin-Opener-Policy': 'same-origin' };
@@ -162,6 +163,7 @@ function createServer(manager, { onQuit }) {
     overlayUrl: `http://localhost:${settings.get().advanced.port}/overlay`,
     alertsUrl: `http://localhost:${settings.get().advanced.port}/alerts`,
     viewersUrl: `http://localhost:${settings.get().advanced.port}/viewers`,
+    followersUrl: `http://localhost:${settings.get().advanced.port}/followers`,
     stats: stats.view(),
     testKinds: testdata.KINDS,
     autostart: { supported: autostart.supported(), enabled: autostart.isEnabled() },
@@ -193,6 +195,7 @@ function createServer(manager, { onQuit }) {
           broadcast({ op: 'settings', settings: settings.publicView(next) });
           if (next.advanced.tiktokSignApiKey !== before.advanced.tiktokSignApiKey) manager.reconnectPlatform('tiktok');
           if (next.advanced.facebookAccessToken !== before.advanced.facebookAccessToken) manager.reconnectPlatform('facebook');
+          if (next.advanced.youtubeApiKey !== before.advanced.youtubeApiKey || (next.followers.enabled && !before.followers.enabled)) followers.refresh();
           return send(res, 200, state());
         }
         if (p === '/api/settings/reset' && req.method === 'POST') {
@@ -216,6 +219,7 @@ function createServer(manager, { onQuit }) {
           try { await autostart.setEnabled(!!body.enabled); } catch (e) { return send(res, 400, { error: e.message }); }
           return send(res, 200, state());
         }
+        if (p === '/api/followers/refresh' && req.method === 'POST') { followers.refresh(body.force !== false); return send(res, 200, { ok: true }); }
         if (p === '/api/clear' && req.method === 'POST') { manager.recent = []; broadcast({ op: 'clear' }); return send(res, 200, { ok: true }); }
         if (p === '/api/open-data' && req.method === 'POST') {
           const [cmd, args] = process.platform === 'win32' ? ['explorer.exe', [DATA_DIR]] : process.platform === 'darwin' ? ['open', [DATA_DIR]] : ['xdg-open', [DATA_DIR]];
@@ -250,6 +254,7 @@ function createServer(manager, { onQuit }) {
       const file = p === '/overlay' || p === '/overlay/' ? 'overlay/index.html'
         : p === '/alerts' || p === '/alerts/' ? 'alerts/index.html'
         : p === '/viewers' || p === '/viewers/' ? 'viewers/index.html'
+        : p === '/followers' || p === '/followers/' ? 'followers/index.html'
         : p === '/manifest.webmanifest' ? 'dashboard/manifest.webmanifest'
         : p === '/sw.js' ? 'dashboard/sw.js' // served from the root so it can look after /dashboard
         : p === '/dashboard' || p === '/dashboard/' ? 'dashboard/index.html'
@@ -282,7 +287,7 @@ function createServer(manager, { onQuit }) {
   function overlayStatus() {
     const open = [...wss.clients].filter(c => c.overlay && c.readyState === 1);
     const of = kind => { const l = open.filter(c => c.overlay.kind === kind); return { count: l.length, obs: l.some(c => c.overlay.obs) }; };
-    return { ...of('chat'), alerts: of('alerts'), viewers: of('viewers') };
+    return { ...of('chat'), alerts: of('alerts'), viewers: of('viewers'), followers: of('followers') };
   }
   const broadcast = obj => {
     const data = JSON.stringify(obj);
@@ -292,12 +297,13 @@ function createServer(manager, { onQuit }) {
     // Overlays identify themselves so the control panel can show "Mergio is in OBS".
     const q = new URL(req.url, 'http://localhost').searchParams;
     const client = q.get('client');
-    if (['overlay', 'alerts', 'viewers'].includes(client)) {
+    if (['overlay', 'alerts', 'viewers', 'followers'].includes(client)) {
       // OBS browser sources expose window.obsstudio (sent as obs=1); the user agent is a fallback.
       ws.overlay = { kind: client === 'overlay' ? 'chat' : client, obs: q.get('obs') === '1' || /\bOBS\//.test(req.headers['user-agent'] || '') };
       if (client === 'overlay' && !settings.get().advanced.overlaySeen) settings.update({ advanced: { overlaySeen: true } });
       ws.on('close', () => broadcast({ op: 'overlays', ...overlayStatus() }));
       broadcast({ op: 'overlays', ...overlayStatus() });
+      if (client === 'followers') followers.refresh(false);
     }
     ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(-60), stats: stats.view() }));
   });
@@ -306,6 +312,8 @@ function createServer(manager, { onQuit }) {
   manager.on('status', list => broadcast({ op: 'sources', sources: list }));
   updater.onChange(update => broadcast({ op: 'update', update }));
   stats.on('change', view => broadcast({ op: 'stats', stats: view }));
+  // follower counts are looked up only while an overlay or the Follower goals page shows them
+  followers.start(() => overlayStatus().followers.count > 0);
 
   return server;
 }

@@ -10,7 +10,7 @@
     ['minimal', 'Minimal', 'Just logos and numbers, for gameplay'],
   ];
   const GROUPS = [
-    { id: 'show', icon: 'eye', title: 'What to show', sub: 'The total, each platform, and the extras', open: true, items: [
+    { id: 'show', icon: 'eye', title: 'What to show', sub: 'The total, each platform, and the extras', items: [
       { sub: 'Everyone together' },
       [V, { key: 'showTotal', icon: 'raid', label: 'Total viewers', hint: 'Everyone watching on every platform, added up', type: 'toggle' }],
       [V, { key: 'totalLabel', icon: 'type', label: 'Word after the total', hint: 'e.g. watching, viewers, live. Leave empty for none', type: 'text', placeholder: 'watching', when: s => s.viewers.showTotal }],
@@ -21,8 +21,8 @@
       [V, { key: 'hideOffline', icon: 'eye', label: 'Only platforms that are live', hint: 'Hides platforms you are not streaming on right now', type: 'toggle', when: s => s.viewers.showPlatforms }],
       [V, { key: 'showShare', icon: 'bar', help: 'A thin bar split into the platform colours, sized by how many people watch on each. Shows in the Glass, Neon and Broadcast styles.', label: 'Share bar', hint: 'Glass, Neon and Broadcast styles', type: 'toggle', when: s => s.viewers.showPlatforms }],
     ] },
-    { id: 'layout', icon: 'layout', title: 'Layout', sub: 'Side by side or stacked, and where it sits', items: [
-      [V, { key: 'layout', icon: 'rows', label: 'Platforms go', type: 'select', options: [['row', 'Side by side'], ['column', 'Under each other']] }],
+    { id: 'layout', icon: 'layout', title: 'Layout', sub: 'One line, side by side or stacked, and where it sits', items: [
+      [V, { key: 'layout', icon: 'rows', label: 'Arrange the numbers', hint: 'One line keeps everything on a single row and shrinks it to fit', type: 'select', dropdown: true, options: [['line', 'All in one line'], ['row', 'Side by side, wraps when long'], ['column', 'Under each other']] }],
       [V, { key: 'align', icon: 'align', label: 'Line up on the', hint: 'Inside the browser source', type: 'select', options: [['left', 'Left'], ['center', 'Middle'], ['right', 'Right']] }],
       [V, { key: 'animate', icon: 'sparkle', label: 'Numbers roll to the new value', hint: 'Off = they change straight away', type: 'toggle' }],
     ] },
@@ -54,7 +54,7 @@
 
   function render(c) {
     c.append(nowCard());
-    c.append(MG.card('Pick a style', 'Click one to use it. Fine-tune it below.', MG.counterStyles({ section: V, path: '/viewers', styles: STYLES, extra: '&align=center&fontSize=30' })));
+    c.append(MG.card('Pick a style', 'Click one to use it. Fine-tune it below.', MG.counterStyles({ section: V, path: '/viewers', styles: STYLES, extra: '&align=center&fontSize=24' })));
     c.append(...GROUPS.map(g => MG.counterFold(g, open)));
     c.append(MG.counterObs({ title: 'Add it to OBS', url: MG.st.viewersUrl, name: 'Mergio Viewers', w: 800, ht: 200, o: MG.overlays.viewers,
       note: 'Shows your live viewer count on stream. It updates by itself, so you only add it once.' }));

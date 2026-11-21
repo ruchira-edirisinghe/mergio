@@ -54,6 +54,7 @@
       h('a', { href: `#${id}`, onclick: e => { e.preventDefault(); MG.go(id); } }, label));
     return [
       overlayCard({ cls: 'ov-viewers', ic: 'raid', title: 'Viewer count', text: 'How many people watch right now, in total and on each platform.', o: MG.overlays.viewers, url: st.viewersUrl, name: 'Mergio Viewers', w: 800, ht: 200, extra: more('viewers', 'Pick a style') }),
+      overlayCard({ cls: 'ov-followers', ic: 'target', title: 'Follower goals', text: 'Your follower counts with goals and progress bars.', o: MG.overlays.followers, url: st.followersUrl, name: 'Mergio Followers', w: 1000, ht: 300, extra: more('followers', 'Pick a style') }),
     ];
   }
 

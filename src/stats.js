@@ -37,7 +37,7 @@ class Stats extends EventEmitter {
     const old = this.followers.get(sourceId);
     if (count == null || !Number.isFinite(Number(count))) {
       // keep the last good number; just remember what went wrong
-      if (old) { old.err = err; return; }
+      if (old) { if (old.err !== err) { old.err = err; this.changed(); } return; }
       this.followers.set(sourceId, { count: null, at: Date.now(), err });
       return this.changed();
     }

@@ -1,0 +1,95 @@
+/* Mergio follower goals. Colours, font and size come from your settings (CSS variables set by followers.js). */
+:root { --font: 'Bungee', Impact, sans-serif; --fs: 34px; --text: #fff; --goal: #ffe2bf; --ink: #4b2358; --bar: #a6ff94; --label: 'Segoe UI', system-ui, sans-serif; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: transparent; }
+body { font-family: var(--label); font-size: var(--fs); color: var(--text); line-height: 1.1; -webkit-font-smoothing: antialiased; }
+
+#root { position: absolute; inset: 0; padding: .45em .5em; display: flex; align-items: flex-start; }
+#root.al-center { justify-content: center; }
+#root.al-right { justify-content: flex-end; }
+html.mid #root { align-items: center; }
+.box { position: relative; display: flex; flex-direction: column; gap: .3em; }
+.al-center .box { align-items: center; }
+.al-right .box { align-items: flex-end; }
+.items { display: flex; flex-wrap: wrap; align-items: center; gap: .55em .9em; }
+.lay-column .items { flex-direction: column; align-items: stretch; gap: .4em; }
+
+.title { font-size: .44em; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.num { font-family: var(--font); font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
+.it { position: relative; display: flex; align-items: center; gap: .38em; }
+.it.empty { opacity: .5; }
+.ic { flex: none; width: 1.3em; height: 1.3em; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: #fff; }
+.ic svg { width: 56%; height: 56%; }
+.tx { display: flex; flex-direction: column; gap: .14em; min-width: 0; }
+.nm { font-size: .36em; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .9; }
+.top { display: flex; align-items: baseline; gap: .22em; }
+.cnt, .goal { display: inline-block; }
+.cnt { font-size: 1em; }
+.goal { font-size: .6em; color: var(--goal); }
+.bar { position: relative; height: .2em; min-width: 4.4em; border-radius: 99px; overflow: hidden; background: rgba(0, 0, 0, .35); box-shadow: inset 0 0 0 .03em rgba(255, 255, 255, .25); }
+.bar i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: inherit; background: var(--bar); transition: width .9s cubic-bezier(.22, 1, .36, 1); }
+.togo { align-self: flex-start; font-size: .36em; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: .12em .6em; border-radius: 99px; background: var(--ink); color: var(--goal); white-space: nowrap; }
+.done .togo { background: var(--bar); color: var(--ink); }
+
+/* new followers: "+3" floats up, the numbers bump, and a reached goal flashes */
+.plus { position: absolute; right: -.4em; top: -.55em; font-size: .62em; color: #a6ff94; opacity: 0; pointer-events: none; z-index: 2; }
+.plus.go { animation: plus 2.2s ease-out forwards; }
+@keyframes plus { 0% { opacity: 0; transform: translateY(.3em) scale(.6); } 15% { opacity: 1; transform: none; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-.7em); } }
+.it.hit .cnt, .it.hit .goal { animation: hit .5s ease-in-out 3; }
+@keyframes hit { 50% { transform: scale(1.12); filter: brightness(1.25); } }
+.it.win .goal { animation: win 1s ease-in-out 5; }
+.it.win .bar i { animation: glow 1s ease-in-out 5; }
+@keyframes win { 50% { color: #fff36e; transform: scale(1.18); } }
+@keyframes glow { 50% { filter: brightness(1.6); box-shadow: 0 0 .4em var(--bar); } }
+
+/* ---------- Panel: a glass card with the title on a tab (the classic look) ---------- */
+#root.st-panel { padding-top: .85em; }
+.st-panel .box { padding: .62em 1em .5em; border-radius: .8em; background: linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, .14)); border: .08em solid rgba(255, 255, 255, .85); box-shadow: 0 .3em .9em rgba(60, 20, 80, .28), inset 0 1px 0 rgba(255, 255, 255, .6); backdrop-filter: blur(10px); }
+.st-panel .title { position: absolute; left: 50%; top: 0; transform: translate(-50%, -60%); white-space: nowrap; padding: .15em 1em; border-radius: 99px; background: #fff; color: var(--ink); box-shadow: 0 0 0 .14em var(--ink); }
+.st-panel .ic, .st-line .ic { box-shadow: 0 0 0 .08em rgba(255, 255, 255, .9); }
+
+/* ---------- Line: small, no background ---------- */
+.st-line .title { text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
+.st-line .ic { width: 1.05em; height: 1.05em; }
+.st-line .bar { height: .14em; }
+
+/* ---------- Cards: a dark card for each platform ---------- */
+.st-cards .title { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
+.st-cards .items { gap: .4em; }
+.st-cards .it { padding: .38em .6em .38em .45em; border-radius: .38em; background: rgba(13, 13, 20, .84); box-shadow: inset 0 .09em 0 var(--pc), 0 .2em .6em rgba(0, 0, 0, .35); }
+.st-cards .ic { background: var(--pc); }
+.st-cards .p-kick .ic, .st-bars .p-kick .ic { color: #0b0b10; }
+.st-cards .bar i { background: var(--pc); }
+
+/* ---------- Neon: a dark card with glowing numbers and bars ---------- */
+.st-neon .box { padding: .5em .8em .55em; border-radius: .45em; background: rgba(6, 6, 12, .85); box-shadow: inset 0 0 0 .05em var(--bar), 0 0 .5em color-mix(in srgb, var(--bar) 60%, transparent), inset 0 0 .6em color-mix(in srgb, var(--bar) 30%, transparent); }
+.st-neon .title { color: var(--bar); text-shadow: 0 0 .4em var(--bar); }
+.st-neon .num { text-shadow: 0 0 .05em #fff, 0 0 .3em var(--pc), 0 0 .7em color-mix(in srgb, var(--pc) 60%, transparent); }
+.st-neon .ic { background: transparent; color: var(--pc); filter: drop-shadow(0 0 .2em var(--pc)); }
+.st-neon .ic svg { width: 80%; height: 80%; }
+.st-neon .bar { background: rgba(255, 255, 255, .08); box-shadow: none; }
+.st-neon .bar i { background: var(--pc); box-shadow: 0 0 .35em var(--pc); }
+.st-neon .togo { background: transparent; color: var(--goal); padding: 0; }
+
+/* ---------- Bars: a wide bar for each platform that fills towards the goal ---------- */
+.st-bars .title { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
+.st-bars .it { min-width: 9.5em; padding: .3em .7em .3em .3em; border-radius: 99px; overflow: hidden; background: rgba(13, 13, 20, .82); box-shadow: 0 .2em .6em rgba(0, 0, 0, .35); }
+.st-bars .tx { flex: 1; flex-direction: row; align-items: center; justify-content: space-between; gap: .5em; }
+.st-bars .bar { position: absolute; inset: 0; height: auto; min-width: 0; border-radius: 0; background: none; box-shadow: none; z-index: 0; }
+.st-bars .bar i { border-radius: 0 99px 99px 0; background: linear-gradient(90deg, color-mix(in srgb, var(--pc) 30%, transparent), color-mix(in srgb, var(--pc) 70%, transparent)); }
+.st-bars .ic, .st-bars .top, .st-bars .nm, .st-bars .togo, .st-bars .plus { position: relative; z-index: 1; }
+.st-bars .plus { position: absolute; }
+.st-bars .ic { background: var(--pc); }
+.st-bars .togo { align-self: center; background: rgba(0, 0, 0, .45); margin-left: auto; }
+.st-bars .plus { right: auto; left: 1.2em; }
+
+@media (prefers-reduced-motion: reduce) { .it, .it *, .plus { animation: none !important; transition: none !important; } }
+
+/* ---------- All in one line: the title and every goal side by side, never wrapping ----------
+   (followers.js shrinks it to fit when it is wider than the browser source) */
+.lay-line .box { flex-direction: row; align-items: center; gap: .8em; }
+.lay-line .items { flex-wrap: nowrap; }
+.st-bars.lay-line .items { flex-direction: row; align-items: center; }
+.st-bars.lay-line .it { min-width: 8.5em; }
+
+.lay-line .box { flex: none; }
