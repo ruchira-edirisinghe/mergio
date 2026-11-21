@@ -27,7 +27,7 @@ function Inline({ text }: { text: string }) {
     <>
       {text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*\s][^*]*\*)/).map((part, k) => {
         if (part.startsWith('**') && part.endsWith('**') && part.length > 4) return <strong key={k} className="font-semibold text-white/85">{part.slice(2, -2)}</strong>;
-        if (part.startsWith('`') && part.endsWith('`') && part.length > 2) return <code key={k} className="rounded-md bg-white/[.08] px-1.5 py-0.5 font-mono text-[.85em] text-[#d8ceff]">{part.slice(1, -1)}</code>;
+        if (part.startsWith('`') && part.endsWith('`') && part.length > 2) return <code key={k} className="rounded-md bg-white/[.08] px-1.5 py-0.5 font-mono text-[.85em] text-[#d8ceff] [overflow-wrap:anywhere]">{part.slice(1, -1)}</code>;
         if (part.startsWith('*') && part.endsWith('*') && part.length > 2) return <em key={k} className="not-italic text-white/80">{part.slice(1, -1)}</em>;
         return <Fragment key={k}>{part}</Fragment>;
       })}
@@ -58,7 +58,7 @@ function Entry({ r, kind, latest }: { r: Release; kind: Kind; latest: boolean })
           {r.notes.map((n, k) => (
             <li key={k} className="flex gap-3.5">
               <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-gradient-to-br from-violet to-pink" />
-              <p className="text-[15px] leading-relaxed text-white/60">
+              <p className="min-w-0 text-[15px] leading-relaxed text-white/60">
                 {n.title && <strong className="mr-1.5 font-semibold text-white">{n.title}.</strong>}
                 <Inline text={n.text} />
               </p>
@@ -133,10 +133,11 @@ export function DevNotes() {
           </div>
         </Reveal>
 
-        <div>
+        {/* min-w-0: a long link in a note must wrap instead of making the column wider than a phone */}
+        <div className="min-w-0">
           <ol className="relative grid gap-6 before:absolute before:bottom-6 before:left-[17px] before:top-6 before:w-px before:bg-gradient-to-b before:from-violet/70 before:via-white/10 before:to-transparent sm:before:left-[21px]">
             {shown.map((r, i) => (
-              <Reveal as="li" key={r.tag} delay={i < SHOWN ? i * 80 : 0} className="relative pl-12 sm:pl-16">
+              <Reveal as="li" key={r.tag} delay={i < SHOWN ? i * 80 : 0} className="relative min-w-0 pl-12 sm:pl-16">
                 <Entry r={r} kind={kindOf(releases, releases.indexOf(r))} latest={r === latest} />
               </Reveal>
             ))}
