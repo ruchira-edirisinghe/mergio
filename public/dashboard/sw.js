@@ -1,8 +1,8 @@
 /* Mergio control panel service worker (served as /sw.js). It makes the panel installable as an app and shows
    a friendly "Mergio isn't running" page instead of a browser error when the app window opens before Mergio. */
-const CACHE = 'mergio-v1';
+const CACHE = 'mergio-v2';
 const OFFLINE = '/dashboard/offline.html';
-const ASSETS = [OFFLINE, '/shared/app-192.png'];
+const ASSETS = [OFFLINE, '/dashboard/offline.js', '/shared/app-192.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

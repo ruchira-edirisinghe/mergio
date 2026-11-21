@@ -18,11 +18,14 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 /** Reads a file from public/ (from disk in dev, from the embedded assets in the packaged exe). */
 function readAsset(rel) {
   rel = rel.replace(/\\/g, '/').replace(/^\/+/, '');
-  if (rel.includes('..')) return null;
+  if (!rel || rel.includes('..') || rel.includes('\0') || /^[a-z]:/i.test(rel)) return null;
   if (isSea()) {
     try { return Buffer.from(require('node:sea').getAsset(`public/${rel}`)); } catch { return null; }
   }
-  try { return fs.readFileSync(path.join(PUBLIC, rel)); } catch { return null; }
+  // Never read outside public/, whatever the path looks like.
+  const file = path.resolve(PUBLIC, rel);
+  if (!file.startsWith(PUBLIC + path.sep)) return null;
+  try { return fs.readFileSync(file); } catch { return null; }
 }
 
 const AVATAR_COLORS = ['#ff6b6b', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#a855f7', '#ec4899', '#84cc16'];
@@ -48,15 +51,101 @@ async function pronouns(login) {
   } catch { pronounCache.set(login, ''); return ''; }
 }
 
+/* ---------- who may talk to the local server ---------- */
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+const MAX_BODY = 1024 * 1024;
+
+/** The host name of a Host header without its port ("[::1]:8787" -> "[::1]"). */
+function hostName(header) {
+  const m = /^(\[[^\]]*\]|[^:]*)(?::\d+)?$/.exec(String(header || '').trim().toLowerCase());
+  return m ? m[1] : '';
+}
+
+/** Only requests addressed to this machine (blocks DNS-rebinding tricks from websites). */
+const toThisMachine = req => LOCAL_HOSTS.has(hostName(req.headers.host));
+
+/**
+ * True when a request comes from one of Mergio's own pages, or from a tool that isn't a browser (curl, scripts).
+ * Browsers always say which site a request comes from, so another website open in the same browser can't use
+ * the API to change settings, add chats, read tokens or quit the app.
+ */
+function fromOwnPage(req) {
+  const site = req.headers['sec-fetch-site'];
+  if (site && site !== 'same-origin' && site !== 'none') return false;
+  const origin = req.headers.origin;
+  if (origin === undefined) return true;
+  try {
+    const u = new URL(origin);
+    return u.protocol === 'http:' && LOCAL_HOSTS.has(u.hostname) && u.host === String(req.headers.host || '').toLowerCase();
+  } catch { return false; }
+}
+
+/** "application/json; charset=utf-8" -> "application/json" */
+const mediaType = req => String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
+const hasBody = req => Number(req.headers['content-length']) > 0 || req.headers['transfer-encoding'] !== undefined;
+
+/* ---------- security headers ---------- */
+const BASE_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'no-referrer',
+  'Cross-Origin-Resource-Policy': 'same-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+};
+// Anything that isn't one of Mergio's pages (an SVG opened on its own, JSON) can't run scripts or load anything.
+const LOCKED_CSP = "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'";
+
+/**
+ * Content Security Policy for Mergio's pages: scripts only from Mergio itself, so even a chat message that
+ * somehow got turned into HTML could never run code. Pictures (emotes, badges, profile pictures, gifts) come from
+ * the chat platforms over https, fonts from Google Fonts.
+ */
+function pageHeaders(file, host) {
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "media-src 'self' data: blob: https:",
+    `connect-src 'self' ws://${host}`,
+    "object-src 'none'",
+    "base-uri 'none'",
+    "form-action 'self'",
+    "worker-src 'self'",
+    "manifest-src 'self'",
+  ];
+  // The control panel can't be shown inside another website (so nobody can trick you into clicking its buttons).
+  // The overlays only show chat, so other tools may still embed them.
+  const panel = !/^(overlay|alerts)\//.test(file);
+  if (!panel) return { 'Content-Security-Policy': csp.join('; ') };
+  csp.push("frame-ancestors 'none'");
+  return { 'Content-Security-Policy': csp.join('; '), 'X-Frame-Options': 'DENY', 'Cross-Origin-Opener-Policy': 'same-origin' };
+}
+
 function createServer(manager, { onQuit }) {
   const send = (res, code, body, type = 'application/json; charset=utf-8', extra = {}) => {
-    res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', ...extra });
+    res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', ...BASE_HEADERS, 'Content-Security-Policy': LOCKED_CSP, ...extra });
     res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
   };
+  const httpError = (status, message) => Object.assign(new Error(message), { status });
   const readBody = req => new Promise((resolve, reject) => {
-    let data = '';
-    req.on('data', c => { data += c; if (data.length > 1e6) req.destroy(); });
-    req.on('end', () => { try { resolve(data ? JSON.parse(data) : {}); } catch { reject(new Error('Bad JSON')); } });
+    const chunks = [];
+    let size = 0;
+    req.on('data', c => {
+      size += c.length;
+      // Stop keeping the data; the answer closes the connection, so the rest is thrown away.
+      if (size > MAX_BODY) { chunks.length = 0; reject(httpError(413, 'Request too large')); } else chunks.push(c);
+    });
+    req.on('end', () => {
+      if (size > MAX_BODY) return;
+      const data = Buffer.concat(chunks).toString('utf8');
+      try {
+        const body = data ? JSON.parse(data) : {};
+        if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error();
+        resolve(body);
+      } catch { reject(httpError(400, 'Bad JSON')); }
+    });
+    req.on('error', reject);
   });
 
   const state = () => ({
@@ -75,13 +164,17 @@ function createServer(manager, { onQuit }) {
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const p = url.pathname;
-    // Only answer requests addressed to this machine (blocks DNS-rebinding tricks from websites).
-    const host = (req.headers.host || '').split(':')[0];
-    if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) return send(res, 403, { error: 'forbidden' });
+    if (!toThisMachine(req)) return send(res, 403, { error: 'forbidden' });
 
     try {
       if (p.startsWith('/api/')) {
-        if (req.method !== 'GET' && !(req.headers['content-type'] || '').includes('application/json')) return send(res, 415, { error: 'JSON only' });
+        if (!fromOwnPage(req)) {
+          log('server', `blocked ${req.method} ${p} from ${req.headers.origin || req.headers['sec-fetch-site']}`);
+          return send(res, 403, { error: 'Only the Mergio control panel can do that.' });
+        }
+        // A body must be JSON: plain forms and text can't be sent here from a web page without the browser asking first.
+        if (req.method !== 'GET' && hasBody(req) && mediaType(req) !== 'application/json') return send(res, 415, { error: 'JSON only' });
+        if (Number(req.headers['content-length']) > MAX_BODY) return send(res, 413, { error: 'Request too large' }, undefined, { Connection: 'close' });
         const body = req.method === 'GET' ? {} : await readBody(req);
         let m;
         if (p === '/api/state' && req.method === 'GET') return send(res, 200, state());
@@ -152,15 +245,26 @@ function createServer(manager, { onQuit }) {
         : p.slice(1);
       const buf = readAsset(file);
       if (!buf) return send(res, 404, 'Not found', 'text/plain');
-      return send(res, 200, buf, TYPES[path.extname(file)] || 'application/octet-stream', { 'Cache-Control': 'no-cache' });
+      const type = TYPES[path.extname(file)] || 'application/octet-stream';
+      return send(res, 200, buf, type, { 'Cache-Control': 'no-cache', ...(type.startsWith('text/html') ? pageHeaders(file, req.headers.host) : {}) });
     } catch (e) {
+      if (e.status) return send(res, e.status, { error: e.message }, undefined, e.status === 413 ? { Connection: 'close' } : {});
       log('server', e);
-      return send(res, 500, { error: e.message });
+      return send(res, 500, { error: 'Something went wrong. See mergio.log in the data folder.' });
     }
   });
 
   /* ---------- live updates over WebSocket ---------- */
-  const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 64 * 1024 });
+  // Websites can open WebSockets to any address, so the live connection checks who is asking, like the API does:
+  // without this, any page open in the browser could read the chat and the settings as they change.
+  const wss = new WebSocketServer({
+    server, path: '/ws', maxPayload: 64 * 1024,
+    verifyClient: ({ req }) => {
+      const ok = toThisMachine(req) && fromOwnPage(req);
+      if (!ok) log('server', `blocked live connection from ${req.headers.origin || 'unknown'}`);
+      return ok;
+    },
+  });
   // ws re-emits the HTTP server's errors (e.g. port already in use); main.js handles those on the server itself.
   wss.on('error', () => {});
   /** Open overlays (not previews): how many, and whether one of them runs inside OBS. Same for the alerts overlay. */
@@ -174,8 +278,6 @@ function createServer(manager, { onQuit }) {
     for (const c of wss.clients) if (c.readyState === 1) c.send(data);
   };
   wss.on('connection', (ws, req) => {
-    const host = (req.headers.host || '').split(':')[0];
-    if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) return ws.close();
     // Overlays identify themselves so the control panel can show "Mergio is in OBS".
     const q = new URL(req.url, 'http://localhost').searchParams;
     const client = q.get('client');
