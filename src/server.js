@@ -34,10 +34,14 @@ const AVATAR_COLORS = ['#ff6b6b', '#f59e0b', '#10b981', '#06b6d4', '#6366f1', '#
 function defaultAvatar(name) {
   let n = '?';
   try { n = decodeURIComponent(name || '?').slice(0, 100); } catch { /* broken %-escape: show "?" */ }
-  const letter = (Array.from(n.replace(/^[@_\W]+/, ''))[0] || '?').toUpperCase().replace(/[<>&"]/g, '');
+  // the first letter in any script (a whole grapheme, so "राहुल" shows "रा" and emoji stay whole), skipping @ _ and punctuation
+  const rest = n.replace(/^[\s@_\p{P}\p{S}]+/u, '') || n;
+  let letter = '?';
+  try { letter = new Intl.Segmenter().segment(rest)[Symbol.iterator]().next().value?.segment || '?'; } catch { letter = Array.from(rest)[0] || '?'; }
+  letter = letter.toUpperCase().replace(/[<>&"']/g, '') || '?';
   let h = 0; for (const ch of n) h = (h * 31 + ch.codePointAt(0)) >>> 0;
   const c = AVATAR_COLORS[h % AVATAR_COLORS.length];
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="${c}"/><text x="32" y="42" font-family="Segoe UI,Arial,sans-serif" font-size="30" font-weight="700" text-anchor="middle" fill="#fff">${letter}</text></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="${c}"/><text x="32" y="42" font-family="Segoe UI,Nirmala UI,Arial,sans-serif" font-size="30" font-weight="700" text-anchor="middle" fill="#fff">${letter}</text></svg>`;
 }
 
 /* ---------- pronouns (Twitch, via the community pronouns.alejo.io service) ---------- */
