@@ -59,7 +59,7 @@ export function useFeed<T>(script: T[], ms: number, active: boolean, max = 8, pr
   return items;
 }
 
-const FALLBACK_VERSION = 'v1.4.2';
+const FALLBACK_VERSION = 'v1.5.0';
 
 /** The latest release tag from GitHub (cached for the visit), falling back to the version this page shipped with. */
 export function useLatestVersion() {
