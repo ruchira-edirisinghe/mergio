@@ -21,6 +21,23 @@ const LINES = [
   'this overlay looks so clean 🔥', 'GG that was insane', 'hello everyone 👋', 'first time catching the stream live!',
   'what game is next?', 'LETS GOOOO', 'that clutch tho 😂', 'can you do a giveaway?', 'love the vibes today', 'W streamer',
 ];
+/** Chat in other languages and scripts, so you can check your font shows them (RTL included). */
+const WORLD = [
+  ['youtube', 'සඳුනි', 'ආයුබෝවන්! නියමයි 🔥'],
+  ['tiktok', 'தமிழ்செல்வி', 'வணக்கம் நண்பர்களே 👋'],
+  ['twitch', 'राहुल', 'नमस्ते, शानदार स्ट्रीम!'],
+  ['kick', 'ليلى', 'مرحبا بالجميع! بث رائع 🔥'],
+  ['youtube', 'יעל', 'שלום לכולם, איזה כיף'],
+  ['tiktok', 'さくら', 'こんにちは！最高の配信 ✨'],
+  ['twitch', '민준', '안녕하세요! 오늘 방송 최고 👍'],
+  ['youtube', '小龙', '大家好！直播太棒了'],
+  ['kick', 'สมชาย', 'สวัสดีครับ สตรีมสนุกมาก'],
+  ['facebook', 'Алексей', 'Привет всем! Отличный стрим'],
+  ['twitch', 'Γιώργος', 'Γεια σας! Τέλειο'],
+  ['tiktok', 'Minh Anh', 'Xin chào mọi người! Tuyệt vời quá'],
+  ['youtube', '𝓢𝓽𝓪𝓻𝓵𝓲𝓰𝓱𝓽 ✨', 'fancy names work too 💜'],
+  ['tiktok', 'Ayşe', 'Merhaba! Çok güzel yayın'],
+];
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const COLORS = ['#ff6b6b', '#ffd36e', '#6ee7ff', '#a78bfa', '#7cf29c', '#ff8fd8'];
 
@@ -66,10 +83,14 @@ function make(kind) {
       const [id, name, amount] = pick(KICK_GIFTS);
       return { ...base, platform: 'kick', channel: 'kick', type: 'gift', user: user('kick'), parts: t('for the vibes'), event: { kind: 'kicks', title: `sent ${name}`, amount: `${amount.toLocaleString()} Kicks`, image: gifts.kickGiftImage(id), color: '#53fc18', value: amount } };
     }
+    case 'world': {
+      const [platform, name, text] = pick(WORLD);
+      return { ...base, platform, channel: platform, type: 'chat', user: { ...user(platform, { color: platform === 'twitch' || platform === 'kick' ? pick(COLORS) : '' }), id: name, login: name, name, avatar: `/avatar/default/${encodeURIComponent(name)}` }, parts: t(text) };
+    }
     default: return make(pick(['twitch', 'youtube', 'kick', 'tiktok', 'facebook']));
   }
 }
 
-const KINDS = ['twitch', 'youtube', 'kick', 'tiktok', 'facebook', 'superchat', 'cheer', 'sub', 'tiktoksub', 'kicksub', 'giftsub', 'twitchgiftsub', 'raid', 'gift', 'member', 'follow', 'kickfollow', 'join', 'like', 'kicks'];
+const KINDS = ['twitch', 'youtube', 'kick', 'tiktok', 'facebook', 'superchat', 'cheer', 'sub', 'tiktoksub', 'kicksub', 'giftsub', 'twitchgiftsub', 'raid', 'gift', 'member', 'follow', 'kickfollow', 'join', 'like', 'kicks', 'world'];
 
 module.exports = { make, KINDS };
