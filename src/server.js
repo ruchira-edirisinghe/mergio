@@ -48,15 +48,61 @@ async function pronouns(login) {
   } catch { pronounCache.set(login, ''); return ''; }
 }
 
+/* ---------- who may talk to the local server ---------- */
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+const MAX_BODY = 1024 * 1024;
+
+/** The host name of a Host header without its port ("[::1]:8787" -> "[::1]"). */
+function hostName(header) {
+  const m = /^(\[[^\]]*\]|[^:]*)(?::\d+)?$/.exec(String(header || '').trim().toLowerCase());
+  return m ? m[1] : '';
+}
+
+/** Only requests addressed to this machine (blocks DNS-rebinding tricks from websites). */
+const toThisMachine = req => LOCAL_HOSTS.has(hostName(req.headers.host));
+
+/**
+ * True when a request comes from one of Mergio's own pages, or from a tool that isn't a browser (curl, scripts).
+ * Browsers always say which site a request comes from, so another website open in the same browser can't use
+ * the API to change settings, add chats, read tokens or quit the app.
+ */
+function fromOwnPage(req) {
+  const site = req.headers['sec-fetch-site'];
+  if (site && site !== 'same-origin' && site !== 'none') return false;
+  const origin = req.headers.origin;
+  if (origin === undefined) return true;
+  try {
+    const u = new URL(origin);
+    return u.protocol === 'http:' && LOCAL_HOSTS.has(u.hostname) && u.host === String(req.headers.host || '').toLowerCase();
+  } catch { return false; }
+}
+
+/** "application/json; charset=utf-8" -> "application/json" */
+const mediaType = req => String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
+const hasBody = req => Number(req.headers['content-length']) > 0 || req.headers['transfer-encoding'] !== undefined;
+
 function createServer(manager, { onQuit }) {
   const send = (res, code, body, type = 'application/json; charset=utf-8', extra = {}) => {
     res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', ...extra });
     res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
   };
+  const httpError = (status, message) => Object.assign(new Error(message), { status });
   const readBody = req => new Promise((resolve, reject) => {
-    let data = '';
-    req.on('data', c => { data += c; if (data.length > 1e6) req.destroy(); });
-    req.on('end', () => { try { resolve(data ? JSON.parse(data) : {}); } catch { reject(new Error('Bad JSON')); } });
+    const chunks = [];
+    let size = 0;
+    req.on('data', c => {
+      size += c.length;
+      if (size > MAX_BODY) { reject(httpError(413, 'Request too large')); req.destroy(); } else chunks.push(c);
+    });
+    req.on('end', () => {
+      const data = Buffer.concat(chunks).toString('utf8');
+      try {
+        const body = data ? JSON.parse(data) : {};
+        if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error();
+        resolve(body);
+      } catch { reject(httpError(400, 'Bad JSON')); }
+    });
+    req.on('error', reject);
   });
 
   const state = () => ({
@@ -75,13 +121,16 @@ function createServer(manager, { onQuit }) {
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const p = url.pathname;
-    // Only answer requests addressed to this machine (blocks DNS-rebinding tricks from websites).
-    const host = (req.headers.host || '').split(':')[0];
-    if (!['localhost', '127.0.0.1', '[::1]'].includes(host)) return send(res, 403, { error: 'forbidden' });
+    if (!toThisMachine(req)) return send(res, 403, { error: 'forbidden' });
 
     try {
       if (p.startsWith('/api/')) {
-        if (req.method !== 'GET' && !(req.headers['content-type'] || '').includes('application/json')) return send(res, 415, { error: 'JSON only' });
+        if (!fromOwnPage(req)) {
+          log('server', `blocked ${req.method} ${p} from ${req.headers.origin || req.headers['sec-fetch-site']}`);
+          return send(res, 403, { error: 'Only the Mergio control panel can do that.' });
+        }
+        // A body must be JSON: plain forms and text can't be sent here from a web page without the browser asking first.
+        if (req.method !== 'GET' && hasBody(req) && mediaType(req) !== 'application/json') return send(res, 415, { error: 'JSON only' });
         const body = req.method === 'GET' ? {} : await readBody(req);
         let m;
         if (p === '/api/state' && req.method === 'GET') return send(res, 200, state());
@@ -154,8 +203,9 @@ function createServer(manager, { onQuit }) {
       if (!buf) return send(res, 404, 'Not found', 'text/plain');
       return send(res, 200, buf, TYPES[path.extname(file)] || 'application/octet-stream', { 'Cache-Control': 'no-cache' });
     } catch (e) {
+      if (e.status) return send(res, e.status, { error: e.message });
       log('server', e);
-      return send(res, 500, { error: e.message });
+      return send(res, 500, { error: 'Something went wrong. See mergio.log in the data folder.' });
     }
   });
 
