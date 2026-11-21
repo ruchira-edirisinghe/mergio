@@ -4,18 +4,19 @@
   const off = new Set();
   let query = '';
 
+  /** One message, laid out like the overlay: the picture in its own column, then the name line and the message. */
   function item(m) {
-    const t = h('div', { class: 't' });
+    const head = h('div', { class: 'fh' }, h('span', { class: 'p' }, icon(m.platform)));
     const nm = h('b', { text: m.user.name }); nm.style.color = m.user.color || 'var(--text)';
-    t.append(nm);
+    head.append(nm, h('time', { text: new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }));
+    const t = h('div', { class: 't' });
     if (m.event && m.type !== 'chat') { const ev = h('span', { class: 'ev', text: `${m.event.title || ''}${m.event.amount ? ` · ${m.event.amount}` : ''}` }); if (m.event.color) ev.style.setProperty('--evc', m.event.color); if (/^https:\/\//.test(m.event.image || '')) ev.prepend(h('img', { class: 'e', src: m.event.image, alt: '', referrerpolicy: 'no-referrer' })); t.append(ev); }
     for (const p of m.parts || []) {
       if ((p.type === 'emote' || p.type === 'cheer') && /^https:\/\//.test(p.url)) t.append(h('img', { class: 'e', src: p.url, alt: p.name, title: p.name, referrerpolicy: 'no-referrer' }));
       else t.append(p.text || p.name || '');
     }
-    const av = h('img', { src: /^(https:\/\/|\/avatar\/)/.test(m.user.avatar) ? m.user.avatar : `/avatar/default/${encodeURIComponent(m.user.name)}`, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' });
-    return h('div', { class: 'fi', style: `--pc: var(--${m.platform})`, title: MG.pname(m.platform) }, h('span', { class: 'p' }, icon(m.platform)), av, t,
-      h('time', { text: new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }));
+    const av = h('img', { class: 'av', src: /^(https:\/\/|\/avatar\/)/.test(m.user.avatar) ? m.user.avatar : `/avatar/default/${encodeURIComponent(m.user.name)}`, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' });
+    return h('div', { class: 'fi', style: `--pc: var(--${m.platform})`, title: MG.pname(m.platform) }, av, h('div', { class: 'fb' }, head, t));
   }
   const visible = m => !off.has(m.platform) && (!query || `${m.user.name} ${(m.parts || []).map(p => p.text || p.name || '').join('')} ${m.event?.title || ''}`.toLowerCase().includes(query));
 

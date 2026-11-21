@@ -41,13 +41,23 @@ body.bubbles.accent .bubble { box-shadow: inset 3px 0 0 var(--pc); }
 body.bubbles.accent.align-right .bubble { box-shadow: inset -3px 0 0 var(--pc); }
 
 .head { display: inline; }
-body:not(.inline) .head { display: flex; align-items: center; gap: .3em; margin-bottom: .12em; flex-wrap: wrap; }
+body:not(.inline) .head { display: flex; align-items: center; gap: .35em; margin-bottom: .15em; flex-wrap: wrap; }
 body.align-right:not(.inline) .head { justify-content: flex-end; }
 body.inline .head > * { vertical-align: middle; margin-right: .28em; }
 .body { display: inline; }
 body:not(.inline) .body { display: block; }
-/* Name on top: the text starts under the badges or name, not under the profile picture (set by alignText). */
-body:not(.inline) .bubble > .body { margin-left: var(--text-x, 0); }
+/* The profile picture has its own column: name, time and message line up to its right,
+   and follow-up messages from the same person line up under the first one. */
+.msg.has-av { display: flex; align-items: flex-start; gap: .55em; }
+body.align-right .msg.has-av { flex-direction: row-reverse; }
+.msg.has-av > .bubble { min-width: 0; }
+.av-col { flex: none; display: flex; justify-content: center; width: var(--av, 2em); }
+.av-col .av { width: var(--av, 2em); height: var(--av, 2em); box-shadow: 0 0 0 .07em rgba(255, 255, 255, .16), 0 .12em .4em rgba(0, 0, 0, .4); }
+body:not(.bubbles) .av-col { margin-top: .05em; }
+body.inline .msg.has-av { align-items: center; }
+body.inline .av-col, body.inline .av-col .av { width: calc(var(--av, 2em) * .8); height: calc(var(--av, 2em) * .8); }
+.msg.grouped .av-col { visibility: hidden; }
+.msg.grouped .av-col .av { height: 0; }
 .msg.grouped .head { display: none; }
 /* "Same box" grouping: follow-up messages are extra lines in the first message's box */
 .bubble > .body.more { display: block; margin-top: calc(.2em + var(--gap) * .6); }
