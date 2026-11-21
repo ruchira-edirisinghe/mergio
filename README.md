@@ -212,7 +212,7 @@ Still stuck? [Open an issue](https://github.com/ruchira-edirisinghe/mergio/issue
 ## Privacy & security
 
 - Mergio listens on **127.0.0.1 only**, so nothing on your network can reach it, and websites in your browser can't use it.
-- No telemetry and no analytics. The only request it makes on its own is the update check to GitHub.
+- No telemetry and no analytics. The only request it makes on its own is the update check to GitHub. Follower goals look counts up only while they're on screen (TikTok and Facebook in a hidden browser that can only open their pages).
 - Keys and tokens stay in your local settings file. They never reach the overlays and are kept out of the log.
 - Updates only install when their checksum matches the one GitHub publishes. Mergio only **reads** chat: it never posts or logs in as you.
 
