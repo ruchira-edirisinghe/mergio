@@ -412,11 +412,14 @@ npm run package      # -> installers for this OS in dist/release
 
 ## Privacy & security
 
-- The server listens on **127.0.0.1 only**, so nothing on your network or the internet can reach it, and it rejects requests from other websites.
+- The server listens on **127.0.0.1 only**, so nothing on your network or the internet can reach it. Websites open in your browser can't use it either: the API and the live connection only answer Mergio's own pages, and every page runs under a strict Content Security Policy.
 - No telemetry and no analytics. The only request Mergio makes on its own behalf is the update check: it reads the public list of releases from GitHub (`api.github.com/repos/ruchira-edirisinghe/mergio/releases`) and sends nothing about you.
-- Tokens and keys stay in your local `config.json` and are never sent to the overlay.
+- Tokens and keys stay in your local `config.json`, in a data folder only your user account can open. They are never sent to the overlays or back to the control panel, and they are kept out of the log.
+- Automatic updates only run an installer whose SHA-256 matches the checksum GitHub publishes for it.
 - Mergio only **reads** chat. It never posts, moderates or logs in as you.
 - Third-party services used for display only: profile pictures for Twitch (Twitch's public API, `decapi.me` as a fallback) and Kick, the public TikTok gift list, Twitch pronouns (`pronouns.alejo.io`, only when enabled), 7TV/BTTV/FFZ emotes, TikTok signing (Euler Stream).
+
+Found a security problem? Please report it privately, see [SECURITY.md](SECURITY.md). It also lists every protection, the known limits and how to check a download.
 
 ## Troubleshooting
 
