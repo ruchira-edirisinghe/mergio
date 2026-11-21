@@ -179,6 +179,7 @@ function createServer(manager, { onQuit }) {
         let m;
         if (p === '/api/state' && req.method === 'GET') return send(res, 200, state());
         if (p === '/api/settings' && req.method === 'PUT') {
+          delete body.sources; // chats are only added and removed through /api/sources, which checks them
           const before = settings.get();
           const next = settings.update(body);
           broadcast({ op: 'settings', settings: settings.publicView(next) });
