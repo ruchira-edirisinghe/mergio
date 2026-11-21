@@ -150,6 +150,21 @@ test('Twitch is live again after a reconnect to the same channel', () => {
   c.stopped = true;
 });
 
+test('a follower error goes away when the lookup works again', () => {
+  const stats = require(join(root, 'src/stats.js'));
+  stats.setFollowers('s-err', 120);
+  stats.setFollowers('s-err', null, 'network down');
+  let sent = 0;
+  const on = () => sent++;
+  stats.on('change', on);
+  stats.timer && (clearTimeout(stats.timer), stats.timer = null);
+  stats.setFollowers('s-err', 120);
+  assert.equal(stats.followers.get('s-err').err, null);
+  assert.ok(stats.timer, 'an update is on its way');
+  clearTimeout(stats.timer); stats.timer = null;
+  stats.off('change', on);
+});
+
 console.log('Local server security');
 {
   const http = require('node:http');

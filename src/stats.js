@@ -45,7 +45,12 @@ class Stats extends EventEmitter {
       return this.changed();
     }
     const n = Math.max(0, Math.round(Number(count)));
-    if (old && old.count === n) { old.err = null; old.at = Date.now(); return; }
+    if (old && old.count === n) {
+      const hadErr = old.err;
+      old.err = null; old.at = Date.now();
+      if (hadErr) this.changed(); // the lookup works again: take the error off the screen
+      return;
+    }
     this.followers.set(sourceId, { count: n, at: Date.now(), err: null });
     this.changed();
   }
