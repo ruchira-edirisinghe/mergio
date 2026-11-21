@@ -94,6 +94,8 @@ async function check() {
     const mine = list.find(r => !newer(r.tag_name, current) && !newer(current, r.tag_name));
     if (mine) installed = { version: current, notes: parseNotes(mine.body).slice(0, 8), url: releaseLink(mine.html_url), publishedAt: mine.published_at };
     const latest = String(rel.tag_name).replace(/^v/i, '');
+    // The version ends up in a file name and the update script, so it has to be a plain version number.
+    if (!/^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(latest)) throw new Error(`unexpected release tag "${String(rel.tag_name).slice(0, 40)}"`);
     const asset = (rel.assets || []).find(a => a.name === WIN_ASSET);
     // GitHub publishes a SHA-256 for every release file; the download has to match it before it may run.
     const sha256 = /^sha256:([a-f0-9]{64})$/i.exec(asset?.digest || '')?.[1]?.toLowerCase() || null;
@@ -156,7 +158,8 @@ async function install(onQuit) {
   const url = info.asset.url;
   if (!/^https:\/\/github\.com\/ruchira-edirisinghe\/mergio\/releases\/download\//.test(url)) throw new Error('Unexpected download address');
   job = { state: 'downloading', progress: 0, error: '' }; emit();
-  const target = path.join(os.tmpdir(), 'mergio-update', `Mergio-Setup-${info.latest}.exe`);
+  // A new folder with a random name for every update, so nothing can be planted there beforehand.
+  const target = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'mergio-update-')), `Mergio-Setup-${info.latest}.exe`);
   try {
     await downloadVerified(url, target, { sha256: info.asset.sha256, size: info.asset.size, onProgress: p => { job.progress = p; emit(); } });
     log('update', `downloaded ${path.basename(target)}, SHA-256 matches the release`);
