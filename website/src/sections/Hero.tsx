@@ -1,5 +1,5 @@
 import { ArrowUpRight, BadgeCheck, Code2, Monitor, UserX } from 'lucide-react';
-import type { CSSProperties } from 'react';
+import { Fragment, type CSSProperties } from 'react';
 import { GithubIcon, PlatformIcon, PLATFORMS } from '../components/brand';
 import { ALERT_LOOKS, AlertShow, ChatFeed } from '../components/Overlay';
 import { PillLink } from '../components/ui';
@@ -34,9 +34,10 @@ export function Hero() {
               <ArrowUpRight className="h-4 w-4" />
             </a>
             <h1 className="text-white text-5xl md:text-6xl xl:text-7xl font-medium leading-[1.02] max-w-xl mb-5" style={{ letterSpacing: '-0.045em' }}>
-              {['Every', 'live', 'chat.'].map((w, k) => <span key={w} className="word-in inline-block mr-[.22em]" style={{ '--d': `${120 + k * 90}ms` } as CSSProperties}>{w}</span>)}
-              <br />
-              {['One', 'overlay.'].map((w, k) => <span key={w} className="word-in inline-block mr-[.22em] text-gradient-live pb-1" style={{ '--d': `${420 + k * 110}ms` } as CSSProperties}>{w}</span>)}
+              {/* real spaces between the words, so screen readers and search engines read "Every live chat. One overlay." */}
+              {['Every', 'live', 'chat.'].map((w, k) => <Fragment key={w}>{k > 0 && ' '}<span className="word-in inline-block" style={{ '--d': `${120 + k * 90}ms` } as CSSProperties}>{w}</span></Fragment>)}
+              {' '}<br />
+              {['One', 'overlay.'].map((w, k) => <Fragment key={w}>{k > 0 && ' '}<span className="word-in inline-block text-gradient-live pb-1" style={{ '--d': `${420 + k * 110}ms` } as CSSProperties}>{w}</span></Fragment>)}
             </h1>
             <p className="word-in text-white/75 text-base md:text-lg max-w-md mb-8 leading-relaxed" style={{ '--d': '700ms' } as CSSProperties}>
               YouTube, Twitch, Kick, TikTok and Facebook chat, merged into one beautiful OBS overlay. Free, and no accounts.
