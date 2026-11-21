@@ -35,6 +35,8 @@ const cases = [
   ['https://www.youtube.com/live/jfKfPfyJRdk?si=x', 'youtube', 'jfKfPfyJRdk'],
   ['https://www.youtube.com/@LofiGirl', 'youtube', '@LofiGirl'],
   ['https://studio.youtube.com/video/jfKfPfyJRdk/livestreaming', 'youtube', 'jfKfPfyJRdk'],
+  ['https://www.youtube.com/@%E0%B6%BB%E0%B7%94%E0%B6%A0%E0%B7%92%E0%B6%BB', 'youtube', '@රුචිර'],
+  ['https://www.youtube.com/channel/UCSJ4gkVC6NrvII8umztf0Ow', 'youtube', 'channel/UCSJ4gkVC6NrvII8umztf0Ow'],
   ['https://www.facebook.com/somepage/videos/1234567890123/', 'facebook', '1234567890123'],
   ['https://www.facebook.com/watch/?v=1234567890123', 'facebook', '1234567890123'],
   ['https://www.facebook.com/somepage', 'facebook', 'page:somepage'],
@@ -43,7 +45,7 @@ const cases = [
   ['https://www.facebook.com/profile.php?id=100089123456', 'facebook', 'page:100089123456'],
 ];
 for (const [input, platform, target] of cases) test(input, () => { const r = detect(input); assert.equal(r.platform, platform); assert.equal(r.target, target); });
-for (const bad of ['', 'hello world', 'https://example.com/x', 'https://www.facebook.com/watch/live/']) test(`rejects "${bad}"`, () => assert.throws(() => detect(bad)));
+for (const bad of ['', 'hello world', 'https://example.com/x', 'https://www.facebook.com/watch/live/', 'yt:@a/../../x', 'yt:jfKfPfyJRdk?x=1', 'https://www.youtube.com/watch?v=../../evil', 'twitch:a b', 'fb:page:a/b']) test(`rejects "${bad}"`, () => assert.throws(() => detect(bad)));
 
 console.log('Settings');
 const settings = require(join(root, 'src/settings.js'));
