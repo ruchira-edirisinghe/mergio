@@ -20,7 +20,12 @@
       qa('How do I set up Facebook?', h('p', {}, 'Facebook needs a free Page token. The guide below shows each Facebook screen and what to click, then checks and saves the token for you. After that, on ',
         goto('chats', 'Chats'), ' pick Facebook and type your Page name once. Mergio connects whenever you go live.'), MG.fbGuideCallout()),
       qa('TikTok does not connect', h('p', {}, 'Make sure you are LIVE and the username is right. If it says it is busy, add a free key from eulerstream.com in ', goto('settings', 'Settings → Accounts'), '.')),
-      qa("Why can't I see Twitch followers or Kick/YouTube joins?", h('p', { text: 'Those platforms only share them with logged-in apps (Twitch followers) or not at all (Kick and YouTube joins). Everything that is public is supported.' })),
+      qa("Why don't Twitch follows or Kick/YouTube joins show as alerts?", h('p', {}, 'Twitch only tells logged-in apps who just followed, and Kick and YouTube don\'t share joins at all. Your follower ', h('b', { text: 'counts' }), ' still work for every platform: see ', goto('followers', 'Follower goals'), '.')),
+      qa('The viewer count or a follower goal shows –', h('ul', {},
+        h('li', { text: 'Viewer count: a platform shows a number only while that chat is connected and you are live. Turn on "Only platforms that are live" to leave it out until then.' }),
+        h('li', {}, 'Follower goals: counts are looked up every minute or two while the overlay or the ', goto('followers', 'Follower goals'), ' page is open. Press Refresh to look them up now.'),
+        h('li', { text: 'TikTok and Facebook counts are read from your public profile in a hidden copy of Microsoft Edge or Google Chrome, so one of them must be installed. A Facebook video link has no follower count: add your Page instead.' }),
+        h('li', {}, 'YouTube rounds big subscriber counts. For the exact number, add a free YouTube Data API key in ', goto('settings', 'Settings → Accounts & keys'), '.'))),
       qa('Does Mergio slow down my stream?', h('p', { text: 'No. It is a tiny background app (about 50 to 80 MB of memory) and the overlay only uses smooth, GPU-friendly animations.' }))));
 
     c.append(MG.card('Still stuck?', null,
