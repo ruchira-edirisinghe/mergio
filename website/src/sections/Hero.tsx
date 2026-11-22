@@ -30,7 +30,7 @@ export function Hero() {
               style={{ '--d': '0ms' } as CSSProperties}
               className="word-in mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1.5 pl-1.5 pr-3 text-sm text-white/85 backdrop-blur-md hover:bg-white/15 transition-colors">
               <span className="rounded-full bg-gradient-to-r from-violet to-pink px-2.5 py-0.5 text-xs font-semibold text-white">{version}</span>
-              <span>New: game-style alerts<span className="hidden sm:inline"> &amp; OBS docks</span></span>
+              <span>New: 15 alert styles<span className="hidden sm:inline"> &amp; read aloud</span></span>
               <ArrowUpRight className="h-4 w-4" />
             </a>
             <h1 className="text-white text-5xl md:text-6xl xl:text-7xl font-medium leading-[1.02] max-w-xl mb-5" style={{ letterSpacing: '-0.045em' }}>
