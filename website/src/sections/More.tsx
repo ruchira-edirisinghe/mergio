@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { Eye, Filter, Gift, Info, Languages, Layers, Lock, Palette, Radar, RefreshCw, Rows3, ShieldCheck, Smile, Sparkles, Target, Zap, Plus, type LucideIcon } from 'lucide-react';
+import { Bookmark, Eye, EyeOff, Filter, Gift, Info, Languages, Layers, Lock, Palette, PanelRight, Radar, RefreshCw, Rows3, ShieldCheck, Smile, Sparkles, Target, Trophy, Zap, Plus, type LucideIcon } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { Eyebrow } from '../components/ui';
 import { readme } from '../lib/links';
 
 const ROW_A: [LucideIcon, string][] = [
-  [Sparkles, 'Six alert styles'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'], [Palette, 'Any Google Font'],
-  [Eye, 'Viewer count'], [Target, 'Follower goals'], [Languages, 'Any language'],
+  [Sparkles, 'Ten alert themes'], [Trophy, 'Gift rarity & levels'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'],
+  [Palette, 'Any Google Font'], [Eye, 'Viewer count'], [Target, 'Follower goals'], [Languages, 'Any language'], [Bookmark, 'Three saved looks'],
 ];
 const ROW_B: [LucideIcon, string][] = [
-  [Rows3, 'Counters in one line'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
+  [PanelRight, 'OBS docks'], [EyeOff, 'Hide any message'], [Rows3, 'Counters in one line'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
   [Info, 'Plain-words tips'], [RefreshCw, 'Updates itself'], [Layers, 'A look per scene'], [Lock, 'Private, no cloud'],
 ];
 
@@ -54,7 +54,8 @@ export function Features() {
 export const FAQ: [string, string][] = [
   ['Is it really free?', 'Yes. Mergio is free and open source under the MIT License, with credit to its creator. No subscriptions, no account.'],
   ['Do I need API keys?', 'No. Type your username or paste a link. Only Facebook needs a free Page token, and the guide shows how.'],
-  ['Can it show my viewers and follower goals?', 'Yes. The viewer count and follower goal overlays add up every platform live, and can sit in one line.'],
+  ['Can it show my viewers and follower goals?', 'Yes. The viewer count and follower goal overlays add up every platform live, can sit in one line, and show only the numbers you pick.'],
+  ['Can I take a message off the stream?', 'Yes. In Live chat, hide any message from the overlay in one click, or keep only the ones you pick and clear the rest.'],
   ['Where does my chat go?', 'Nowhere. Mergio runs on your own PC, with no telemetry and no cloud.'],
   ['Is it safe?', "Mergio only listens on your own PC, and websites you visit can't talk to it. Your keys never reach the overlays, chat is always shown as plain text, and updates are checked before they install. The security policy, linked at the bottom of this page, has the details."],
   ['How do I update?', 'Mergio tells you when a new version is out. On Windows, one click downloads it, installs it and opens Mergio again.'],

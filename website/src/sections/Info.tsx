@@ -50,7 +50,7 @@ export function Info() {
           <Card tone="light" wide delay={200} title="Alerts where you want them" body="In the chat, on their own overlay, or both.">
             {a => <Placement active={a} />}
           </Card>
-          <Card tone="plum" title={'Viewers and\nfollower goals.'} body="Live counts from every platform, even in one line.">
+          <Card tone="plum" title={'Viewers and\nfollower goals.'} body="Live counts from every platform. You pick which ones show.">
             {a => <Counters active={a} />}
           </Card>
         </div>
