@@ -236,7 +236,7 @@
       for (let i = 0; i < 4; i++) { const b = h('i'); b.style.setProperty('--i', i); sig.appendChild(b); }
       el.appendChild(sig);
       readOut(info.querySelector('.msg'));
-    } else if (style === 'bounty') el.appendChild(h('i', 'badge'));
+    } else if (style === 'bounty') art.appendChild(h('i', 'badge')); // beside the picture, where no name or title can run under it
   }
 
   /** Transmission: the message comes in one word at a time (words keep their letters together in every script). */
