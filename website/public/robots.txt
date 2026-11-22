@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mergio-stream-overlay-gamma.vercel.app/sitemap.xml

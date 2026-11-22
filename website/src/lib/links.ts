@@ -1,4 +1,6 @@
 export const REPO = 'https://github.com/ruchira-edirisinghe/mergio';
+/** The live website (the same address is in index.html for link previews). */
+export const SITE = 'https://mergio-stream-overlay-gamma.vercel.app';
 export const RELEASES = `${REPO}/releases/latest`;
 export const readme = (anchor: string) => `${REPO}#${anchor}`;
 const asset = (file: string) => `${REPO}/releases/latest/download/${file}`;

@@ -41,6 +41,127 @@
  },
  "releases": [
   {
+   "tag": "v1.7.0",
+   "date": "2026-11-22T08:51:01Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.7.0",
+   "notes": [
+    {
+     "title": "Five new alert styles",
+     "text": "*Gacha pull* cracks a capsule open and counts the rarity in stars. *Item roulette* spins a slot that lands on the gift, longer for rarer ones. *CRT broadcast* tunes an old TV in through static to a channel that goes up with the alert. *Transmission* settles hyperspace streaks into a hologram that reads the message out. *Bounty poster* nails a wanted poster to a board and stamps it with a sheriff badge. That makes fifteen styles in all."
+    },
+    {
+     "title": "Read messages aloud",
+     "text": "A voice can read Super Chats, Bits and other messages from the alerts overlay, so OBS records it with the alert. It uses your computer's own voices, works offline and never reads a message with a blocked word. Choose which alerts get read, the voice and the speed."
+    },
+    {
+     "title": "A sound for each tier",
+     "text": "Give Common, Rare, Epic and Legendary alerts their own sound, with two new ones: Fanfare and Sparkle. Press *Hear it* to listen before you pick."
+    },
+    {
+     "title": "Space between alerts",
+     "text": "When several alerts come in at once, add a pause between them so each one gets its moment."
+    },
+    {
+     "title": "Matching packs",
+     "text": "One click on *Chat style* gives your chat, alerts, viewer count and follower goals the same look. Ten packs, from Arcade and Cyber to Wild West and Bubbly, and *Undo* puts back what you had."
+    }
+   ]
+  },
+  {
+   "tag": "v1.6.0",
+   "date": "2026-11-22T07:55:20Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.6.0",
+   "notes": [
+    {
+     "title": "Game-style alerts",
+     "text": "Ten alert styles: seven game themes (Level up, Achievement, Loot drop, Arcade, Combo, Quest and Cyber HUD) plus Spotlight, Neon and Bubbly. Bigger gifts get a rarer tier, from common to legendary. Pick the colours, font, headline, what shows and one of five sounds. Banner, Card and Minimal are retired, and alerts that used them switch to Level up."
+    },
+    {
+     "title": "Pause and skip alerts",
+     "text": "*Pause* holds new alerts until you resume, so none are lost. *Skip* ends the one on screen."
+    },
+    {
+     "title": "Pin a message",
+     "text": "Keep any chat message at the top of your chat overlay until you unpin it."
+    },
+    {
+     "title": "Hide or keep picked messages",
+     "text": "In Live chat, take a single message off the overlay, or pick several and keep only those when you clear the chat."
+    },
+    {
+     "title": "Joins and likes switches",
+     "text": "Turn \"joined the LIVE\" notes and likes in the chat on or off from Chat style."
+    },
+    {
+     "title": "Choose your viewer numbers",
+     "text": "Pick which platforms the viewer count shows, whether the total counts the hidden ones, and full or short numbers (1.2K)."
+    },
+    {
+     "title": "Three saved looks per overlay",
+     "text": "Save the look of the chat, alerts, viewer count and follower goal overlays, switch with one click, or give a scene its own look with `?slot=2`."
+    },
+    {
+     "title": "OBS docks",
+     "text": "Three small panels inside OBS: the full chat, the gifts you received with your top supporters (replay any alert), and your live viewers with the peak. One button installs them."
+    },
+    {
+     "title": "A new installer",
+     "text": "that explains every step: what it installs, where and why."
+    }
+   ]
+  },
+  {
+   "tag": "v1.5.1",
+   "date": "2026-11-21T09:21:49Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.5.1",
+   "notes": [
+    {
+     "title": "Twitch reconnects properly",
+     "text": "After a dropped connection, Twitch no longer stays on *Connecting* and keeps its viewer count."
+    },
+    {
+     "title": "Key fields that do what you expect",
+     "text": "Click a saved key and type or paste a new one: it replaces the old key. Saving now tells you whether a key was saved, removed or left unchanged."
+    },
+    {
+     "title": "Safer settings",
+     "text": "Numbers, choices, colours and fonts are checked when you save, so a typo or an edited `config.json` can't break the overlay."
+    },
+    {
+     "title": "Alerts follow your filters",
+     "text": "Blocked words and *Hide shared chat* now apply to the alerts overlay too."
+    },
+    {
+     "title": "Follower goals recover by themselves",
+     "text": "A lookup error disappears as soon as the next lookup works."
+    },
+    {
+     "title": "No old alerts when TikTok connects",
+     "text": "Follows, shares and subscriptions from before the LIVE connected no longer pop up as new."
+    },
+    {
+     "title": "Ready for very long streams",
+     "text": "TikTok gift combos and Facebook comment history no longer keep growing."
+    },
+    {
+     "title": "Live chat fits every window",
+     "text": "The list fills the space below the filters, also in narrow OBS docks, so the newest message is always in view. Alerts no longer repeat their amount, and dark name colours are lightened so you can read them."
+    },
+    {
+     "title": "Small fixes in the control panel",
+     "text": "The *Live preview* title isn't cut off on mid-size windows, hiding the preview is only remembered when you do it, the *Use Mergio as an app* steps sit under its description, and the Help page answers viewer count and follower goal questions. The overlays have an icon and OBS logs no longer show a missing `favicon.ico`."
+    },
+    {
+     "title": "More private follower lookups",
+     "text": "The hidden browser that reads TikTok and Facebook follower counts keeps its profile in Mergio's own data folder, which only you can open, instead of the shared temp folder."
+    },
+    {
+     "title": "Reporting a security problem",
+     "text": "now goes to GitHub's private reporting. See the security policy."
+    }
+   ]
+  },
+  {
    "tag": "v1.5.0",
    "date": "2026-11-21T07:36:42Z",
    "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.5.0",

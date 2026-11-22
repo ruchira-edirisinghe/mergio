@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, Radio } from 'lucide-react';
 import { MergioMark, PlatformIcon, PLATFORMS, platformColor, type PlatformId } from '../components/brand';
-import { Face } from '../components/Face';
 import { GiftArt } from '../components/GiftArt';
-import { ChatFeed } from '../components/Overlay';
+import { ChatFeed, type ThemeId } from '../components/Overlay';
 import { VideoBackdrop } from './Backdrop';
-import { CHATS, GIFTS, USERS, avatarGradient, initial, type GiftId } from '../lib/chat';
+import { CHATS, GIFTS, type GiftId } from '../lib/chat';
 import { useCycle, useFeed, useInterval } from '../lib/hooks';
 
 /* ---------- 1. Five chats flow into Mergio and out as one overlay ---------- */
@@ -81,25 +80,35 @@ export function GiftShow({ active }: { active: boolean }) {
   );
 }
 
-/* ---------- 3. Letter avatars turn into real profile pictures ---------- */
-const WALL = [...USERS, ...USERS.slice(0, 6).map(u => ({ ...u, name: `${u.name}_` }))].slice(0, 16);
-export function AvatarWall({ active }: { active: boolean }) {
-  const [step, setStep] = useState(0);
-  useInterval(() => setStep(v => (v + 1) % (WALL.length + 8)), active ? 260 : null);
+/* ---------- 3. Three saved looks: one click restyles the overlay, ?slot=N gives a scene its own ---------- */
+const LOOKS: { name: string; theme: ThemeId; avatars: boolean; size: number }[] = [
+  { name: 'Gameplay', theme: 'glass', avatars: true, size: 10.5 },
+  { name: 'Chatting', theme: 'neon', avatars: true, size: 11.5 },
+  { name: 'Retro night', theme: 'retro', avatars: false, size: 11 },
+];
+export function SavedLooks({ active }: { active: boolean }) {
+  const [i] = useCycle(LOOKS.length, 2800, active);
+  const items = useFeed(CHATS, 1300, active, 4, 3);
+  const look = LOOKS[i];
   return (
-    <div className="grid w-full max-w-[232px] grid-cols-4 gap-3" aria-hidden="true">
-      {WALL.map((u, i) => {
-        const loaded = i < step;
-        return (
-          <div key={i} className="relative aspect-square">
-            <span className={`absolute inset-0 grid place-items-center rounded-full text-sm font-bold text-white transition-opacity duration-300 ${loaded ? 'opacity-0' : 'opacity-100'}`} style={{ background: avatarGradient(u.name) }}>{initial(u.name)}</span>
-            {loaded && <Face name={u.name} index={i} className="absolute inset-0 h-full w-full rounded-full anim-pop" />}
-            <span className="absolute -bottom-0.5 -right-0.5 grid h-[38%] w-[38%] place-items-center rounded-full bg-[#2B2644]">
-              <PlatformIcon id={u.platform} colored className="h-[62%] w-[62%]" />
-            </span>
-          </div>
-        );
-      })}
+    <div className="w-full max-w-[260px]" aria-hidden="true">
+      <div className="mb-3 grid grid-cols-3 gap-1.5">
+        {LOOKS.map((l, k) => (
+          <span key={l.name} className={`relative flex flex-col items-start gap-0.5 rounded-xl px-2 py-1.5 text-left ring-1 transition-colors duration-300 ${k === i ? 'bg-white text-black ring-white' : 'bg-white/[.06] text-white/70 ring-white/10'}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${k === i ? 'text-black/50' : 'text-white/40'}`}>Slot {k + 1}</span>
+            <span className="w-full truncate text-[11.5px] font-semibold">{l.name}</span>
+            {k === i && <Check className="absolute right-1.5 top-1.5 h-3 w-3 anim-pop" />}
+          </span>
+        ))}
+      </div>
+      <div className="relative h-[150px] overflow-hidden rounded-xl bg-night ring-1 ring-white/10">
+        <VideoBackdrop clip="neon-gamer" active={active} />
+        <div className="absolute inset-0 bg-black/35" />
+        <ChatFeed key={i} items={items} theme={look.theme} showAvatar={look.avatars} fontSize={look.size} className="absolute inset-0 p-2 anim-rise [mask-image:linear-gradient(180deg,transparent,#000_30%)]" />
+      </div>
+      <div className="mt-2.5 flex items-center gap-2 rounded-lg bg-black/30 px-2.5 py-1.5 font-mono text-[11px] text-white/55 ring-1 ring-white/10">
+        <span className="truncate">localhost:8787/overlay?slot=<b key={i} className="inline-block text-white anim-bump">{i + 1}</b></span>
+      </div>
     </div>
   );
 }
