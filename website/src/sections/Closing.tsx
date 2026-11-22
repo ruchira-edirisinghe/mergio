@@ -36,7 +36,7 @@ export function DownloadCta() {
   );
 }
 
-const CREATOR = { name: 'Ruchira Edirisinghe', url: 'https://ruchiraedirisinghe.vercel.app', photo: '/ruchira.webp' };
+export const CREATOR = { name: 'Ruchira Edirisinghe', url: 'https://ruchiraedirisinghe.vercel.app', photo: '/ruchira.webp' };
 const LICENSE = `${REPO}/blob/main/LICENSE`;
 const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
 
@@ -56,6 +56,7 @@ const COLUMNS: { title: string; links: { label: string; href: string; external?:
     { label: 'Source code', href: REPO, external: true },
     { label: 'All releases', href: `${REPO}/releases`, external: true },
     { label: 'License', href: LICENSE, external: true },
+    { label: 'Security policy', href: `${REPO}/security/policy`, external: true },
     { label: 'Privacy policy', href: '/privacy' },
     { label: 'Terms of use', href: '/terms' },
   ] },

@@ -58,20 +58,42 @@ const DEFAULTS = {
     highlightMentions: true,
     mentionNames: '',
     imageEmbedPermissionLevel: 'vips', // broadcaster | mods | vips | subs | everyone | nobody
+    showJoins: true,            // "X joined" notes in the chat (TikTok, Twitch)
     joinLifetime: 6,
+    showLikes: true,            // TikTok likes in the chat
     uwuMode: false,
   },
   alerts: {
     placement: 'chat',          // chat | overlay (own browser source) | both
     duration: 6,                // seconds each alert stays on the alerts overlay
+    gap: 0,                     // seconds of rest after an alert before the next one shows
     position: 'center',         // top | center | bottom of the alerts browser source
     size: 1,
-    style: 'spotlight',         // spotlight | banner | neon | bubble | card | toast
-    animation: 'pop',           // pop | slide | fade (Card style)
+    style: 'levelup',           // levelup | achievement | loot | arcade | combo | quest | cyber | gacha | roulette | crt | transmission | bounty | spotlight | neon | bubble
+    animation: 'pop',           // (only the old Card style used it)
     showMessage: true,
     showAvatar: true,
-    sound: false,               // a short chime with each alert
+    showLabel: true,            // "NEW SUBSCRIBER"
+    showPlatform: true,         // "on Twitch"
+    showHeadline: true,         // the theme's big word: "LEVEL UP!", "Epic drop"…
+    headline: '',               // your own big word ('' = the theme's)
+    showTimer: true,            // the bar that shows how long the alert stays
+    colorMode: 'platform',      // platform | tier (by how big the alert is) | custom
+    accent: '#8b5cf6',
+    textColor: '#ffffff',
+    font: '',                   // '' = the theme's own font
+    sound: false,               // a short sound with each alert
+    soundType: 'chime',         // chime | coin | levelup | arcade | soft | fanfare | sparkle
+    tierSounds: false,          // a different sound for bigger alerts (by tier)
+    soundCommon: 'same', soundRare: 'same', soundEpic: 'same', soundLegendary: 'same', // 'same' = the main sound
     volume: 0.6,
+    readAloud: false,           // a voice reads the alert on the alerts overlay (made on this computer, offline)
+    readWhat: 'message',        // message (only what they wrote) | full (who, what, then the message)
+    readMin: 'all',             // all | rare | epic | legendary: the smallest alert that gets read
+    ttsVoice: '',               // '' = the computer's default voice
+    ttsRate: 1,                 // speed
+    ttsVolume: 0.8,
+    ttsMaxLength: 200,          // longer messages are cut (letters)
   },
   viewers: {
     style: 'pill',              // pill | glass | neon | broadcast | minimal
@@ -80,6 +102,9 @@ const DEFAULTS = {
     showTotal: true,            // one number for every platform together
     totalLabel: 'watching',
     showPlatforms: true,        // a number for each platform
+    youtube: true, twitch: true, kick: true, tiktok: true, facebook: true, // which platforms get their own number
+    totalAll: true,             // the total still counts platforms whose own number is hidden
+    numberFormat: 'full',       // full (1,234) | short (1.2K)
     showNames: false,           // "Twitch 120" instead of just the logo
     hideOffline: true,          // only platforms that are live right now
     showLiveDot: true,
@@ -124,9 +149,42 @@ const DEFAULTS = {
   kick: { messages: true, subs: true, giftSubs: true, hosts: true, rewards: true, kicksGifts: true, follows: true },
   tiktok: { messages: true, joins: true, gifts: true, likes: true, follows: true, shares: false, subs: true, minGiftDiamonds: 0 },
   facebook: { messages: true },
-  advanced: { configVersion: 2, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', youtubeApiKey: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
+  advanced: { configVersion: 3, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', youtubeApiKey: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
   sources: [],
+  templates: { chat: [null, null, null], alerts: [null, null, null], viewers: [null, null, null], followers: [null, null, null] },
 };
+
+/* ---------- saved looks: three slots for each overlay type ---------- */
+// Which settings a saved look keeps. Lists that are about you rather than the look (bots, blocked words,
+// your nicknames) and where alerts show stay as they are when a look is used.
+const TEMPLATE_TYPES = { chat: ['appearance', 'general'], alerts: ['alerts'], viewers: ['viewers'], followers: ['followers'] };
+const TEMPLATE_SKIP = { general: ['ignoreChatters', 'blockedWords', 'mentionNames'], alerts: ['placement'], followers: ['enabled'] };
+const SLOTS = 3;
+
+/** The parts of the current settings a look of this type keeps. */
+function snapshot(type, s) {
+  const values = {};
+  for (const sec of TEMPLATE_TYPES[type]) {
+    values[sec] = { ...s[sec] };
+    for (const k of TEMPLATE_SKIP[sec] || []) delete values[sec][k];
+  }
+  return values;
+}
+
+/** Keeps saved looks well formed, whatever config.json holds: known keys, valid values, short names. */
+function cleanTemplates(raw) {
+  const out = structuredClone(DEFAULTS.templates);
+  for (const type of Object.keys(TEMPLATE_TYPES)) {
+    const list = Array.isArray(raw?.[type]) ? raw[type] : [];
+    for (let i = 0; i < SLOTS; i++) {
+      const t = list[i];
+      if (!t || typeof t !== 'object' || !t.values || typeof t.values !== 'object') continue;
+      const full = validate(merge(DEFAULTS, t.values));
+      out[type][i] = { name: String(t.name || `Look ${i + 1}`).replace(/[\u0000-\u001f]/g, '').trim().slice(0, 40) || `Look ${i + 1}`, at: Number(t.at) || 0, values: snapshot(type, full) };
+    }
+  }
+  return out;
+}
 
 const MAX_TEXT = 20000; // longest text setting (blocked words, ignored chatters, tokens)
 
@@ -137,18 +195,22 @@ const RANGES = {
   appearance: { avatarSize: [1.2, 3.5], fontSize: [12, 48], fontWeight: [100, 900, true], lineSpacing: [0, 1.5], bubbleOpacity: [0, 1], bubbleRadius: [0, 28, true],
     opacity: [0, 1], emoteScale: [0.8, 3], maxMessages: [5, 80, true] },
   general: { hideAfter: [5, 300, true], joinLifetime: [2, 20, true] },
-  alerts: { duration: [2, 20], size: [0.6, 2], volume: [0, 1] },
+  alerts: { duration: [2, 20], gap: [0, 30], size: [0.6, 2], volume: [0, 1], ttsRate: [0.6, 1.8], ttsVolume: [0, 1], ttsMaxLength: [20, 300] },
   viewers: { fontSize: [14, 80], bgOpacity: [0, 1] },
   followers: { fontSize: [16, 90], goalStep: [1, 1e6, true], goalYoutube: [0, 1e9, true], goalTwitch: [0, 1e9, true], goalKick: [0, 1e9, true],
     goalTiktok: [0, 1e9, true], goalFacebook: [0, 1e9, true], goalTotal: [0, 1e9, true] },
   tiktok: { minGiftDiamonds: [0, 100000, true] },
 };
+const SOUND_TYPES = ['chime', 'coin', 'levelup', 'arcade', 'soft', 'fanfare', 'sparkle'];
 const CHOICES = {
   appearance: { theme: ['glass', 'neon', 'minimal', 'soft', 'retro'], timeFormat: ['12', '24'], nameColorMode: ['user', 'platform', 'custom'],
     animation: ['slide', 'fade', 'pop', 'none'], align: ['left', 'right'], eventStyle: ['compact', 'card'], followStyle: ['card', 'pill'] },
   general: { scrollDirection: ['normal', 'reversed'], groupStyle: ['tuck', 'merge'], imageEmbedPermissionLevel: ['broadcaster', 'mods', 'vips', 'subs', 'everyone', 'nobody'] },
-  alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['spotlight', 'banner', 'neon', 'bubble', 'card', 'toast'], animation: ['pop', 'slide', 'fade'] },
-  viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
+  alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['levelup', 'achievement', 'loot', 'arcade', 'combo', 'quest', 'cyber', 'gacha', 'roulette', 'crt', 'transmission', 'bounty', 'spotlight', 'neon', 'bubble'],
+    animation: ['pop', 'slide', 'fade'], colorMode: ['platform', 'tier', 'custom'], soundType: SOUND_TYPES,
+    soundCommon: ['same', ...SOUND_TYPES], soundRare: ['same', ...SOUND_TYPES], soundEpic: ['same', ...SOUND_TYPES], soundLegendary: ['same', ...SOUND_TYPES],
+    readWhat: ['message', 'full'], readMin: ['all', 'rare', 'epic', 'legendary'] },
+  viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'], numberFormat: ['full', 'short'] },
   followers: { style: ['panel', 'line', 'cards', 'neon', 'bars'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
   twitch: { sharedChat: ['show', 'highlight', 'hide'] },
 };
@@ -167,7 +229,7 @@ function validate(s, prev = DEFAULTS) {
   for (const [sec, keys] of Object.entries(CHOICES)) {
     for (const [k, list] of Object.entries(keys)) if (!list.includes(s[sec][k])) s[sec][k] = list.includes(prev[sec][k]) ? prev[sec][k] : DEFAULTS[sec][k];
   }
-  for (const sec of ['appearance', 'viewers', 'followers']) {
+  for (const sec of ['appearance', 'alerts', 'viewers', 'followers']) {
     for (const [k, def] of Object.entries(DEFAULTS[sec])) {
       if (typeof def === 'string' && COLOR.test(def) && !COLOR.test(s[sec][k])) s[sec][k] = COLOR.test(prev[sec][k]) ? prev[sec][k] : def;
     }
@@ -209,7 +271,9 @@ function migrate(raw) {
     g.fadeMessages = Number(g.hideAfter) > 0;
     if (!g.fadeMessages) delete g.hideAfter;
   }
-  if (version < 2) { (raw.advanced ||= {}).configVersion = 2; migrated = true; }
+  // 1.6 retired the Banner, Card and Minimal alert styles: they become Level up, the new default.
+  if (version < 3 && raw.alerts && ['banner', 'card', 'toast'].includes(raw.alerts.style)) raw.alerts.style = 'levelup';
+  if (version < 3) { (raw.advanced ||= {}).configVersion = 3; migrated = true; }
   return raw;
 }
 
@@ -219,7 +283,11 @@ let current = load();
 if (migrated) save();
 
 function load() {
-  try { return clamp(merge(DEFAULTS, migrate(JSON.parse(fs.readFileSync(FILE, 'utf8'))))); }
+  try {
+    const s = clamp(merge(DEFAULTS, migrate(JSON.parse(fs.readFileSync(FILE, 'utf8')))));
+    s.templates = cleanTemplates(s.templates);
+    return s;
+  }
   catch (e) { if (e.code !== 'ENOENT') log('settings', 'could not read config, using defaults:', e.message); return structuredClone(DEFAULTS); }
 }
 
@@ -259,14 +327,42 @@ function update(patch) {
       else adv[k] = typed;
     }
   }
+  const templates = current.templates; // saved looks only change through template()
+  if (patch && typeof patch === 'object') delete patch.templates;
   current = clamp(merge(DEFAULTS, merge(current, patch || {})), current);
+  current.templates = templates;
+  save();
+  return current;
+}
+
+/**
+ * Saved looks. action: save (the current look into the slot) | load (use it) | rename | delete.
+ * Returns the settings, or throws with a message for the control panel.
+ */
+function template(action, type, slot, name) {
+  if (!Object.hasOwn(TEMPLATE_TYPES, type)) throw new Error('Unknown overlay type.');
+  const i = Math.trunc(Number(slot));
+  if (!(i >= 0 && i < SLOTS)) throw new Error('Unknown slot.');
+  const list = current.templates[type];
+  const clean = n => String(n || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 40);
+  if (action === 'save') {
+    list[i] = { name: clean(name) || list[i]?.name || `Look ${i + 1}`, at: Date.now(), values: snapshot(type, current) };
+  } else if (action === 'load') {
+    if (!list[i]) throw new Error('This slot is empty.');
+    return update(structuredClone(list[i].values));
+  } else if (action === 'rename') {
+    if (!list[i]) throw new Error('This slot is empty.');
+    list[i].name = clean(name) || list[i].name;
+  } else if (action === 'delete') {
+    list[i] = null;
+  } else throw new Error('Unknown action.');
   save();
   return current;
 }
 
 function reset(section) {
-  if (section && Object.hasOwn(DEFAULTS, section) && section !== 'sources') current[section] = structuredClone(DEFAULTS[section]);
-  else current = { ...structuredClone(DEFAULTS), sources: current.sources, advanced: current.advanced };
+  if (section && Object.hasOwn(DEFAULTS, section) && section !== 'sources' && section !== 'templates') current[section] = structuredClone(DEFAULTS[section]);
+  else current = { ...structuredClone(DEFAULTS), sources: current.sources, advanced: current.advanced, templates: current.templates };
   save();
   return current;
 }
@@ -284,4 +380,4 @@ function panelView(s = current) {
   return { ...s, advanced };
 }
 
-module.exports = { DEFAULTS, FILE, MASK, get, update, reset, save, publicView, panelView };
+module.exports = { DEFAULTS, FILE, MASK, get, update, reset, save, template, publicView, panelView };

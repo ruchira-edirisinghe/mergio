@@ -1,6 +1,6 @@
 // Quick self-test: syntax-checks every source file and unit-tests link detection and settings handling.
 //   npm run check
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, statSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -55,6 +55,51 @@ test('coerces types and drops unknown keys', () => {
   assert.equal(s.appearance.showAvatar, false);
   assert.equal('nope' in s.appearance, false);
   assert.equal('bogus' in s, false);
+});
+test('alert sounds by size accept known sounds only', () => {
+  const s = settings.update({ alerts: { tierSounds: 'true', soundEpic: 'fanfare', soundLegendary: 'sparkle', soundRare: 'nope' } });
+  assert.equal(s.alerts.tierSounds, true);
+  assert.equal(s.alerts.soundEpic, 'fanfare');
+  assert.equal(s.alerts.soundLegendary, 'sparkle');
+  assert.equal(s.alerts.soundRare, 'same');
+  settings.update({ alerts: { tierSounds: false, soundEpic: 'same', soundLegendary: 'same' } });
+});
+test('space between alerts stays between 0 and 30 seconds', () => {
+  assert.equal(settings.update({ alerts: { gap: '5' } }).alerts.gap, 5);
+  assert.equal(settings.update({ alerts: { gap: 99 } }).alerts.gap, 30);
+  assert.equal(settings.update({ alerts: { gap: -3 } }).alerts.gap, 0);
+  settings.update({ alerts: { gap: 0 } });
+});
+test('read aloud: what gets said', () => {
+  const tts = require(join(root, 'src/tts.js'));
+  const m = { user: { name: 'LunaByte' }, parts: [{ type: 'text', text: 'Keep it up!!!!!!! https://x.example/a' }, { type: 'emote', name: 'Kappa' }], event: { kind: 'superchat', title: 'sent a Super Chat', amount: '$20.00' } };
+  assert.equal(tts.textFor(m, { readWhat: 'message', ttsMaxLength: 200 }, ''), 'Keep it up!!! link');
+  assert.equal(tts.textFor(m, { readWhat: 'full', ttsMaxLength: 200 }, ''), 'LunaByte sent a Super Chat $20.00. Keep it up!!! link');
+  assert.equal(tts.textFor(m, { readWhat: 'message', ttsMaxLength: 200 }, 'keep'), '', 'blocked words are never read');
+  const g = { user: { name: 'Nova' }, parts: [], event: { kind: 'gift', title: 'sent Galaxy', amount: '×3' } };
+  assert.equal(tts.textFor(g, { readWhat: 'full', ttsMaxLength: 200 }, ''), 'Nova sent Galaxy times 3.');
+  const long = { user: { name: 'A' }, parts: [{ type: 'text', text: 'word '.repeat(80) }], event: {} };
+  assert.ok(tts.textFor(long, { readWhat: 'message', ttsMaxLength: 50 }, '').length <= 50);
+});
+test('read aloud settings stay in range', () => {
+  const s = settings.update({ alerts: { readAloud: 'true', readMin: 'epic', readWhat: 'nope', ttsRate: 9, ttsMaxLength: 5 } });
+  assert.equal(s.alerts.readAloud, true);
+  assert.equal(s.alerts.readMin, 'epic');
+  assert.equal(s.alerts.readWhat, 'message');
+  assert.equal(s.alerts.ttsRate, 1.8);
+  assert.equal(s.alerts.ttsMaxLength, 20);
+  settings.update({ alerts: { readAloud: false, readMin: 'all', ttsRate: 1, ttsMaxLength: 200 } });
+});
+test('every matching pack uses only values the settings accept', () => {
+  const MG = { h: () => ({}), icon: () => ({}) };
+  new Function('MG', readFileSync(join(root, 'public/dashboard/packs.js'), 'utf8'))(MG);
+  assert.ok(MG.PACKS.length >= 8);
+  const keep = structuredClone(settings.get());
+  for (const p of MG.PACKS) {
+    const patch = MG.packPatch(p), s = settings.update(structuredClone(patch));
+    for (const [sec, vals] of Object.entries(patch)) for (const [k, v] of Object.entries(vals)) assert.deepEqual(s[sec][k], v, `${p.name}: ${sec}.${k}`);
+  }
+  settings.update({ appearance: keep.appearance, alerts: keep.alerts, viewers: keep.viewers, followers: keep.followers });
 });
 test('public view hides tokens', () => {
   settings.update({ advanced: { facebookAccessToken: 'secret' } });
@@ -140,6 +185,50 @@ test('settings stay in range, on real choices and real colours', () => {
   settings.reset();
 });
 
+test('the viewer count can hide single platforms and shorten big numbers', () => {
+  const s = settings.update({ viewers: { kick: false, numberFormat: 'short', totalAll: 'false' } });
+  assert.equal(s.viewers.kick, false);
+  assert.equal(s.viewers.twitch, true);
+  assert.equal(s.viewers.numberFormat, 'short');
+  assert.equal(s.viewers.totalAll, false);
+  assert.equal(settings.update({ viewers: { numberFormat: 'huge' } }).viewers.numberFormat, 'short');
+  settings.reset();
+});
+
+test('saved looks: save, use, rename, delete, and nothing else can change them', () => {
+  settings.update({ appearance: { theme: 'neon', fontSize: 30 }, general: { blockedWords: 'spoiler' } });
+  settings.template('save', 'chat', 0, 'Neon  big');
+  assert.equal(settings.get().templates.chat[0].name, 'Neon big');
+  assert.equal('blockedWords' in settings.get().templates.chat[0].values.general, false);
+  settings.update({ appearance: { theme: 'soft', fontSize: 18 }, general: { blockedWords: 'other' } });
+  const s = settings.template('load', 'chat', 0);
+  assert.equal(s.appearance.theme, 'neon');
+  assert.equal(s.appearance.fontSize, 30);
+  assert.equal(s.general.blockedWords, 'other');
+  settings.update({ templates: { chat: [{ name: 'evil', values: {} }] } });
+  assert.equal(settings.get().templates.chat[0].name, 'Neon big');
+  assert.throws(() => settings.template('load', 'chat', 2));
+  assert.throws(() => settings.template('save', 'constructor', 0));
+  assert.throws(() => settings.template('save', 'chat', 5));
+  settings.template('rename', 'chat', 0, 'Night');
+  assert.equal(settings.get().templates.chat[0].name, 'Night');
+  settings.template('delete', 'chat', 0);
+  assert.equal(settings.get().templates.chat[0], null);
+  settings.reset();
+});
+
+test('OBS docks are added to OBS settings without touching anything else', () => {
+  const { withDocks, readDocks } = require(join(root, 'src/obsdocks.js'));
+  const ini = '[General]\r\nName=x\r\n\r\n[BasicWindow]\r\nDockState=abc\r\nExtraBrowserDocks=[{"title":"Mine","url":"https://example.com","uuid":"1"},{"title":"Old","url":"http://localhost:8787/dock/chat","uuid":"2"}]\r\nAlwaysOnTop=false\r\n';
+  const out = withDocks(ini, 8790);
+  const docks = readDocks(out);
+  assert.deepEqual(docks.map(d => d.title), ['Mine', 'Mergio Chat', 'Mergio Gifts', 'Mergio Viewers']);
+  assert.equal(docks[1].url, 'http://localhost:8790/dock/chat');
+  assert.ok(out.includes('DockState=abc\r\n') && out.includes('AlwaysOnTop=false') && out.includes('[General]\r\nName=x'));
+  assert.equal(readDocks(withDocks('[General]\nA=1\n', 8787)).length, 3);
+  assert.equal(readDocks(withDocks('[BasicWindow]\nX=1\n', 8787)).length, 3);
+});
+
 console.log('Connections');
 test('Twitch is live again after a reconnect to the same channel', () => {
   const { TwitchConnector } = require(join(root, 'src/connectors/twitch.js'));
@@ -177,7 +266,7 @@ console.log('Local server security');
   const WebSocket = require('ws');
   const { createServer } = require(join(root, 'src/server.js'));
   const noop = () => {};
-  const manager = Object.assign(new EventEmitter(), { list: () => [], recent: [], add: noop, remove: noop, reconnect: noop, setEnabled: noop, inject: noop, reconnectPlatform: noop });
+  const manager = Object.assign(new EventEmitter(), { list: () => [], recent: [], add: noop, remove: noop, reconnect: noop, setEnabled: noop, inject: noop, reconnectPlatform: noop, clear: noop, hide: noop });
   const server = createServer(manager, { onQuit: noop });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const port = server.address().port;
@@ -193,6 +282,23 @@ console.log('Local server security');
   const atest = async (name, fn) => { try { await fn(); console.log(`  ok  ${name}`); } catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); } };
 
   await atest('accepts the control panel (same origin, JSON)', async () => assert.equal((await call('/api/clear', { method: 'POST', headers: { ...json, Origin: self, 'Sec-Fetch-Site': 'same-origin' }, body: '{}' })).status, 200));
+  await atest('pinning needs a message from the chat list; alert controls only take known actions', async () => {
+    manager.recent.push({ id: 'pin-1', platform: 'twitch', type: 'chat', user: { name: 'a' }, parts: [] });
+    const post = (path, b) => call(path, { method: 'POST', headers: json, body: JSON.stringify(b) });
+    assert.equal((await post('/api/pin', { id: 'pin-1' })).status, 200);
+    assert.equal((await post('/api/pin', { id: 'gone' })).status, 404);
+    assert.equal((await post('/api/pin', { id: {} })).status, 404);
+    assert.equal((await post('/api/pin', { id: null })).status, 200);
+    assert.equal((await post('/api/alerts/control', { action: 'explode' })).status, 400);
+    const r = await post('/api/alerts/control', { action: 'pause' });
+    assert.equal(r.status, 200); assert.equal(JSON.parse(r.body).paused, true);
+    assert.equal(JSON.parse((await post('/api/alerts/control', { action: 'resume' })).body).paused, false);
+    manager.recent.length = 0;
+  });
+  await atest('hiding messages needs real message ids', async () => {
+    assert.equal((await call('/api/hide', { method: 'POST', headers: json, body: JSON.stringify({ ids: [1, {}, 'a b'] }) })).status, 400);
+    assert.equal((await call('/api/hide', { method: 'POST', headers: json, body: JSON.stringify({ ids: ['test-1', 'yt.Cg0KC=='] }) })).status, 200);
+  });
   await atest('accepts tools that are not browsers', async () => assert.equal((await call('/api/clear', { method: 'POST', headers: json, body: '{}' })).status, 200));
   await atest('accepts a request without a body (remove a chat)', async () => assert.equal((await call('/api/sources/s-none', { method: 'DELETE', headers: { Origin: self } })).status, 200));
   await atest('blocks other websites (Origin)', async () => assert.equal((await call('/api/quit', { method: 'POST', headers: { ...json, Origin: 'https://evil.example' }, body: '{}' })).status, 403));

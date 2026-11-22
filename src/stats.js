@@ -12,6 +12,15 @@ class Stats extends EventEmitter {
     this.followers = new Map();  // sourceId -> { count, at, err }
     this.sources = [];           // [{ id, platform, label, channel, enabled }]
     this.timer = null;
+    this.peak = 0;               // most people watching at once since Mergio started (all platforms)
+    this.history = [];           // [time, total] every 30 seconds while live, for the last hour
+    const sample = setInterval(() => {
+      const v = this.view();
+      if (!v.live) return;
+      this.history.push([Date.now(), v.totalViewers]);
+      if (this.history.length > 120) this.history.shift();
+    }, 30000);
+    sample.unref?.();
   }
 
   changed() {
@@ -61,7 +70,8 @@ class Stats extends EventEmitter {
     const viewers = on.map(s => ({ id: s.id, platform: s.platform, label: s.label, count: this.viewers.get(s.id)?.count ?? null }));
     const followers = on.map(s => { const f = this.followers.get(s.id); return { id: s.id, platform: s.platform, label: s.label, count: f?.count ?? null, err: f?.err || null, at: f?.at || 0 }; });
     const total = viewers.reduce((n, v) => n + (v.count || 0), 0);
-    return { viewers, followers, totalViewers: total, live: viewers.some(v => v.count != null), totalFollowers: followers.reduce((n, f) => n + (f.count || 0), 0) };
+    if (total > this.peak) this.peak = total;
+    return { peakViewers: this.peak, history: this.history.slice(-120), viewers, followers, totalViewers: total, live: viewers.some(v => v.count != null), totalFollowers: followers.reduce((n, f) => n + (f.count || 0), 0) };
   }
 }
 

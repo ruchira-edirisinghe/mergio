@@ -19,6 +19,8 @@ npm run build    # type-checks, then writes website/dist
 npm run preview  # serves the build locally
 ```
 
+The build renders every page to finished HTML (`src/entry-server.tsx` and `scripts/prerender.mjs`), so search engines and link previews get the whole page without running JavaScript; React then takes over that HTML in the browser. Each page's title, description and structured data (JSON-LD for the app, the site, the FAQ and breadcrumbs) live in `src/seo.ts`. The build also writes `sitemap.xml` and a `404.html`; `public/robots.txt` points search engines to the sitemap. Code that renders on the page must not touch `window` or `document` outside effects and event handlers, or the build fails.
+
 ## Deploy on Vercel
 
 1. In Vercel, choose **Add New → Project** and import this repository.

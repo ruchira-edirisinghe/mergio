@@ -2,6 +2,7 @@ import { Navbar } from './sections/Navbar';
 import { Hero } from './sections/Hero';
 import { Info } from './sections/Info';
 import { WorksWith } from './sections/WorksWith';
+import { Local } from './sections/Local';
 import { Modes } from './sections/Modes';
 import { Steps } from './sections/Steps';
 import { Faq, Features } from './sections/More';
@@ -18,6 +19,7 @@ export default function App() {
       <main>
         <Info />
         <WorksWith />
+        <Local />
         <Modes />
         <Steps />
         <Features />
