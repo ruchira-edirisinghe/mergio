@@ -12,8 +12,8 @@ interface Mode { id: string; icon: LucideIcon; tab: string; blurb: string; title
 const MODES: Mode[] = [
   { id: 'chat', icon: MessageSquare, tab: 'Chat overlay', blurb: 'Every chat in one browser source', title: 'Chat overlay', clip: 'night-gamer', link: readme('step-3--pick-a-look'),
     text: 'Every platform in one browser source. Pick a look in one click.' },
-  { id: 'alerts', icon: Bell, tab: 'Alerts overlay', blurb: 'Six animated alert styles', title: 'Alerts overlay', clip: 'celebrate', link: readme('step-4--choose-your-alerts'),
-    text: 'Six polished styles, from a TV-style banner to a neon sign. Put it anywhere on your scene.' },
+  { id: 'alerts', icon: Bell, tab: 'Alerts overlay', blurb: 'Ten game-style alert themes', title: 'Alerts overlay', clip: 'celebrate', link: readme('step-4--choose-your-alerts'),
+    text: 'Level ups, loot drops, an arcade 1UP, a quest scroll and more. Bigger gifts drop rarer alerts.' },
   { id: 'panel', icon: Palette, tab: 'Control panel', blurb: 'Change anything, see it instantly', title: 'Control panel', clip: 'neon-gamer', dim: true, link: readme('complete-guide'),
     text: 'Every setting has an icon and a plain-words tip, on any screen size. Changes show in OBS instantly.' },
   { id: 'dock', icon: PanelRight, tab: 'Live chat dock', blurb: 'Every chat in one list, with filters', title: 'Live chat dock', clip: 'rgb-desk', dim: true, link: readme('step-7--read-every-chat-while-youre-live'),

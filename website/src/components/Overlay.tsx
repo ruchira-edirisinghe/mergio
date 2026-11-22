@@ -139,20 +139,63 @@ export function ChatFeed({ items, theme = 'glass', box = true, showAvatar = true
   );
 }
 
-/** The six looks of Mergio's alerts overlay (Alerts > Style in the app). */
-export type AlertLook = 'spotlight' | 'banner' | 'neon' | 'bubble' | 'card' | 'toast';
+/** The ten themes of Mergio's alerts overlay (Alerts > Style in the app). */
+export type AlertLook = 'levelup' | 'achievement' | 'loot' | 'arcade' | 'combo' | 'quest' | 'cyber' | 'spotlight' | 'neon' | 'bubble';
 export const ALERT_LOOKS: { id: AlertLook; name: string }[] = [
+  { id: 'levelup', name: 'Level up' },
+  { id: 'achievement', name: 'Achievement' },
+  { id: 'loot', name: 'Loot drop' },
+  { id: 'arcade', name: 'Arcade' },
+  { id: 'combo', name: 'Combo' },
+  { id: 'quest', name: 'Quest' },
+  { id: 'cyber', name: 'Cyber' },
   { id: 'spotlight', name: 'Spotlight' },
-  { id: 'banner', name: 'Banner' },
   { id: 'neon', name: 'Neon' },
   { id: 'bubble', name: 'Bubbly' },
-  { id: 'card', name: 'Card' },
-  { id: 'toast', name: 'Minimal' },
 ];
 
-/** One alert from Mergio's alerts overlay, built from the same parts as the app (see alerts.css). It leaves by itself after `life` seconds.
-    With `fit`, it shrinks to fit the height of its parent (tall looks with a message would spill over what is below). */
-export function AlertShow({ item, look = 'spotlight', life = 5, size = 1, fit = false }: { item: AlertItem; look?: AlertLook; life?: number; size?: number; fit?: boolean }) {
+/* The game bits, as in the app's alerts.js: each theme's font and big word, and how rare an alert is. */
+const THEME_FONT: Partial<Record<AlertLook, string>> = { levelup: 'Lilita One', loot: 'Lilita One', arcade: "'Press Start 2P'", combo: 'Bangers', quest: 'Cinzel', cyber: 'Orbitron', achievement: 'Rubik' };
+const TIERS = ['common', 'rare', 'epic', 'legendary'] as const;
+const TIER_NAMES = ['Common', 'Rare', 'Epic', 'Legendary'];
+const TIER_COLORS = ['#a7b1c2', '#3fa1ff', '#b866ff', '#ffb627'];
+const POINTS = [50, 250, 1000, 5000];
+const TIER_STEPS: Partial<Record<AlertItem['kind'], number[]>> = { gift: [100, 1000, 10000], kicks: [100, 1000, 10000], superchat: [5, 20, 100], raid: [10, 50, 250], sub: [6, 12, 24] };
+function tierOf(item: AlertItem) {
+  const v = item.kind === 'gift' ? GIFTS[item.gift].diamonds * item.count : item.kind === 'kicks' ? item.amount : item.kind === 'superchat' ? parseFloat(item.amount.replace(/[^\d.]/g, '')) || 0
+    : item.kind === 'raid' ? item.viewers : item.kind === 'sub' ? item.months : 0;
+  const steps = TIER_STEPS[item.kind];
+  if (!steps) return 0;
+  const t = v >= steps[2] ? 3 : v >= steps[1] ? 2 : v >= steps[0] ? 1 : 0;
+  return item.kind === 'sub' ? Math.max(1, t) : t;
+}
+function headline(look: AlertLook, item: AlertItem, tier: number, label: string) {
+  switch (look) {
+    case 'levelup': return 'LEVEL UP!';
+    case 'achievement': return 'Achievement unlocked';
+    case 'loot': return `${TIER_NAMES[tier]} drop`;
+    case 'arcade': return item.kind === 'follow' ? 'NEW PLAYER!' : item.kind === 'raid' ? 'PARTY JOINED!' : '1UP!';
+    case 'combo': return 'COMBO!';
+    case 'quest': return 'Quest complete';
+    case 'cyber': return `// incoming: ${label}`;
+    default: return '';
+  }
+}
+/** The arcade score, counting up like an old high-score table. */
+function useCountUp(to: number, on: boolean) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (!on) return;
+    let raf = 0;
+    const t0 = performance.now() + 700, d = 900;
+    const step = (now: number) => { const k = Math.max(0, Math.min(1, (now - t0) / d)); setN(Math.round(to * k)); if (k < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [to, on]);
+  return n;
+}
+
+export function AlertShow({ item, look = 'levelup', life = 5, size = 1, fit = false }: { item: AlertItem; look?: AlertLook; life?: number; size?: number; fit?: boolean }) {
   const ev = eventInfo(item);
   const { user } = item;
   const [out, setOut] = useState(false);
@@ -173,22 +216,33 @@ export function AlertShow({ item, look = 'spotlight', life = 5, size = 1, fit = 
     return () => clearTimeout(t);
   }, [life]);
   const amount = shownAmount(ev.title, ev.amount);
+  const tier = tierOf(item);
+  const head = headline(look, item, tier, ev.label);
+  const level = (Array.from(user.name).reduce((s, ch) => s + ch.charCodeAt(0), 0) % 9) + 1;
+  const score = useCountUp(POINTS[tier], look === 'arcade');
+  const font = THEME_FONT[look];
   return (
-    <div ref={box} className={`mga st-${look}`} style={{ fontSize: `${22 * size}px`, ...(fit ? { transform: `scale(${scale})`, transformOrigin: 'center' } : null) }} aria-hidden="true">
-      <div className={`alert ev-${item.kind} p-${user.platform}${out ? ' out' : ''}`}
-        style={{ '--pc': platformColor(user.platform), '--ev': ev.color, '--hold': `${life}s` } as CSSProperties}>
+    <div ref={box} className={`mga st-${look}`} style={{ fontSize: `${22 * size}px`, ...(font ? { fontFamily: `${font}, 'Segoe UI', system-ui, sans-serif` } : null), ...(fit ? { transform: `scale(${scale})`, transformOrigin: 'center' } : null) }} aria-hidden="true">
+      <div className={`alert ev-${item.kind} p-${user.platform} t-${TIERS[tier]}${ev.gift ? ' has-gift' : ''}${out ? ' out' : ''}`}
+        style={{ '--pc': platformColor(user.platform), '--ev': ev.color, '--tier': TIER_COLORS[tier], '--hold': `${life}s` } as CSSProperties}>
         <div className="fx">
           {look === 'neon' && <svg className="tube"><rect className="glow" pathLength={1} /><rect className="core" pathLength={1} /></svg>}
-          {look === 'bubble' && <i className="shine" />}
-          {look === 'card' && <><i className="blob" /><i className="blob" /></>}
+          {(look === 'bubble' || look === 'loot' || look === 'achievement' || look === 'levelup') && <i className="shine" />}
+          {look === 'loot' && <i className="beam" />}
+          {look === 'combo' && <i className="streaks" />}
+          {look === 'cyber' && <><i className="scan" /><i className="corners" /></>}
+          {look === 'quest' && <><i className="roll l" /><i className="roll r" /></>}
         </div>
         <div className={`art${ev.gift ? ' gift' : ''}`}>
           {ev.gift
             ? <><GiftArt gift={ev.gift} className="gift-img" /><Face name={user.name} className="av-mini" /></>
             : <><Face name={user.name} className="av" /><span className="glyph corner">{ev.glyph}</span></>}
           <i className="ring" />
+          <div className="lvl"><span className="lv-t">LV</span><span className="lv-n"><b className="old">{level}</b><b className="new">{level + 1}</b></span></div>
+          <div className="rar">{TIER_NAMES[tier]}</div>
         </div>
         <div className="info">
+          {head && <div className="hw">{head}</div>}
           <div className="label">
             <span className="what-kind">{ev.label}</span>
             <span className="pchip"><PlatformIcon id={user.platform} />on {platformName(user.platform)}</span>
@@ -197,7 +251,9 @@ export function AlertShow({ item, look = 'spotlight', life = 5, size = 1, fit = 
           <div className="title">{ev.title}</div>
           {amount && <div className="amount">{amount}</div>}
           {ev.message && <div className="msg">{ev.message}</div>}
+          <div className="xp"><i /><span className="xp-t">+{POINTS[tier].toLocaleString('en-US')} XP</span></div>
         </div>
+        <div className="pts">{look === 'arcade' ? `SCORE +${String(score).padStart(6, '0')}` : `+${POINTS[tier].toLocaleString('en-US')}`}</div>
         <div className="timer"><i /></div>
       </div>
     </div>
