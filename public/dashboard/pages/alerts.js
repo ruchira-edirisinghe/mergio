@@ -62,6 +62,12 @@
     h('div', { class: 'chatcol' }, h('i'), id === 'overlay' ? h('i') : h('i', { class: 'al' }), h('i')),
     id === 'chat' ? null : h('div', { class: 'box' }));
 
+  /* ---------- sounds (made in shared/sounds.js) ---------- */
+  const SOUND_TYPES = window.mergioSound?.TYPES || [['chime', 'Chime (changes with the alert)']];
+  const TIER_SOUNDS = [['soundCommon', 'Common', 'Follows and small gifts'], ['soundRare', 'Rare', 'Subs and medium gifts'], ['soundEpic', 'Epic', 'Big gifts and Super Chats'], ['soundLegendary', 'Legendary', 'The biggest ones']];
+  /** Plays the sound an alert of this size gets, with the current settings (even while sounds are off, so you can choose). */
+  const hear = tier => { const a = MG.st.settings.alerts; window.mergioSound?.play(window.mergioSound.forTier(a, tier), 'gift', a.sound ? a.volume : Math.max(0.4, a.volume)); };
+
   /* ---------- alert styles, each with a little looping preview ---------- */
   const STYLES = [
     ['levelup', 'Level up', 'An RPG panel: the XP bar fills and the viewer levels up', 'Game'],
@@ -167,9 +173,13 @@
         [A, { key: 'showTimer', icon: 'timer', label: 'Time-left bar', hint: 'A thin bar that runs out', type: 'toggle' }],
         { sub: 'Sound' },
         [A, { key: 'sound', icon: 'volume', label: 'Play a sound', hint: 'A short sound with each alert, made by Mergio', type: 'toggle', keywords: 'sound audio chime volume' }],
-        [A, { key: 'soundType', icon: 'volume', label: 'Sound', type: 'select', dropdown: true, options: [['chime', 'Chime (changes with the alert)'], ['coin', 'Coin pickup'], ['levelup', 'Level up'], ['arcade', '8-bit arcade'], ['soft', 'Soft bell']], keywords: 'sound audio', when: s => s.alerts.sound }],
+        [A, { key: 'soundType', icon: 'volume', label: 'Sound', type: 'select', dropdown: true, options: SOUND_TYPES, keywords: 'sound audio', when: s => s.alerts.sound }],
+        [A, { key: 'tierSounds', icon: 'sparkle', label: 'Other sounds for bigger alerts', hint: 'Pick a sound for each size: Common to Legendary', type: 'toggle', keywords: 'sound tier rarity legendary epic', when: s => s.alerts.sound }],
+        ...TIER_SOUNDS.map(([key, label, hint]) => [A, { key, icon: 'volume', label, hint, type: 'select', dropdown: true, options: [['same', 'Same as above'], ...SOUND_TYPES], keywords: 'sound tier rarity', when: s => s.alerts.sound && s.alerts.tierSounds }]),
         [A, { key: 'volume', icon: 'volume', label: 'Volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'sound audio', when: s => s.alerts.sound }],
       ]),
+      h('div', { class: 'btn-row hear-row' }, h('span', { class: 'lbl', text: 'Hear it:' }),
+        ...['Common', 'Rare', 'Epic', 'Legendary'].map((t, i) => h('button', { class: 'btn ghost sm', title: `The sound a ${t} alert plays`, onclick: () => hear(i) }, icon('volume'), t))),
       h('div', { class: 'btn-row try-row' }, h('span', { class: 'lbl', text: 'Try:' }),
         ...[['gift', 'Gift'], ['sub', 'Sub'], ['superchat', 'Super Chat'], ['follow', 'Follow'], ['raid', 'Raid']].map(([k, t]) => h('button', { class: 'btn ghost sm', onclick: () => MG.test(k) }, icon('play'), t)))));
     c.append(MG.alertsSetup());
