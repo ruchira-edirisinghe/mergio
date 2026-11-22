@@ -144,6 +144,8 @@
     if (!sec) return false;
     const key = PLATFORM_KEYS[m.platform]?.[m.type] || 'messages';
     if (sec[key] === false) return false;
+    if (m.type === 'join' && S.general.showJoins === false) return false;
+    if (m.type === 'like' && S.general.showLikes === false) return false;
     if (S.alerts?.placement === 'overlay' && isAlert(m)) return false; // shown on the alerts overlay instead
     if (m.platform === 'tiktok' && m.type === 'gift' && (m.event?.diamonds || 0) < (sec.minGiftDiamonds || 0)) return false;
     if (m.platform === 'twitch' && m.flags?.shared && sec.sharedChat === 'hide') return false;
