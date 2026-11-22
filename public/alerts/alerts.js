@@ -317,30 +317,10 @@
     return fx;
   }
 
-  /* ---------------- sound: a short chime made on the fly (no files) ---------------- */
-  let audio = null;
-  const NOTES = { gift: [659, 880, 1319], kicks: [659, 880, 1319], cheer: [784, 988, 1319], superchat: [523, 784, 1047, 1568], hypechat: [523, 784, 1047, 1568], raid: [392, 523, 659, 784], host: [392, 523, 659, 784], follow: [880, 1175] };
-  // other sounds: [wave, notes, gap between notes, how long each rings]
-  const SOUNDS = {
-    coin: ['square', [988, 1319], 0.08, 0.35],
-    levelup: ['square', [523, 659, 784, 1047, 1319], 0.07, 0.3],
-    arcade: ['square', [262, 392, 523, 784, 1047], 0.05, 0.18],
-    soft: ['sine', [392, 523, 659], 0.14, 0.9],
-  };
-  function chime(kind) {
-    if (!S.alerts.sound || isPreview) return;
-    try {
-      audio ||= new (window.AudioContext || window.webkitAudioContext)();
-      const own = SOUNDS[S.alerts.soundType];
-      const vol = Math.min(1, Math.max(0, Number(S.alerts.volume) || 0)) * (own && own[0] === 'square' ? 0.16 : 0.35);
-      const [wave, notes, gap, ring] = own || ['triangle', NOTES[kind] || [523, 659, 784, 1047], 0.09, 0.6];
-      notes.forEach((f, i) => {
-        const t = audio.currentTime + i * gap, o = audio.createOscillator(), g = audio.createGain();
-        o.type = wave; o.frequency.value = f;
-        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + ring);
-        o.connect(g).connect(audio.destination); o.start(t); o.stop(t + ring + 0.05);
-      });
-    } catch { /* no audio here */ }
+  /* ---------------- sound: made on the fly in shared/sounds.js (no files) ---------------- */
+  function chime(kind, tier) {
+    if (!S.alerts.sound || isPreview || !window.mergioSound) return;
+    window.mergioSound.play(window.mergioSound.forTier(S.alerts, tier), kind, S.alerts.volume);
   }
 
   function message(m) {
@@ -377,7 +357,7 @@
     stage.appendChild(el);
     current = { m, el, timer: 0 };
     hold(S.alerts.duration);
-    chime(m.event.kind || m.type);
+    chime(m.event.kind || m.type, tierOf(m));
   }
 
   function hold(seconds) {
