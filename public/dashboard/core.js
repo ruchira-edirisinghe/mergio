@@ -34,6 +34,7 @@
   /* ---------------- API & state ---------------- */
   MG.st = null;
   MG.feed = [];
+  MG.hidden = new Set(); // messages taken off the overlay (hidden from here, or deleted by a moderator)
   MG.overlays = { count: 0, obs: false, alerts: { count: 0, obs: false }, viewers: { count: 0, obs: false }, followers: { count: 0, obs: false } };
   MG.api = async (method, path, body) => {
     const res = await fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
@@ -427,7 +428,8 @@
         if (i >= 0) MG.feed[i] = d.msg; else { MG.feed.push(d.msg); if (MG.feed.length > 400) MG.feed.shift(); }
         emit('msg', { msg: d.msg, updated: i >= 0 });
       }
-      if (d.op === 'clear') { MG.feed = []; emit('feed'); }
+      if (d.op === 'clear') { MG.feed = Array.isArray(d.keep) ? MG.feed.filter(m => d.keep.includes(m.id)) : []; emit('feed'); }
+      if (d.op === 'delete' && Array.isArray(d.ids)) { for (const id of d.ids) MG.hidden.add(id); emit('hidden', d.ids); }
       if (d.op === 'settings') syncSettings(d.settings);
       if (d.op === 'update') emit('update', d.update);
       if (d.op === 'stats') { MG.st.stats = d.stats; emit('stats', d.stats); }
