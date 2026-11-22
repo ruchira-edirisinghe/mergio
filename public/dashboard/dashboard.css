@@ -1229,3 +1229,22 @@ a.btn { text-decoration: none; }
   button.now-it { grid-template-columns: 30px minmax(0, 1fr); }
   button.now-it .vis { grid-row: auto; grid-column: 2; justify-self: start; white-space: nowrap; }
 }
+
+/* Matching packs (Style page): a small scene per pack in its own colours and font */
+.packs { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 12px; }
+.pack { display: flex; flex-direction: column; gap: 2px; padding: 0 0 10px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--panel-2); color: inherit; font: inherit; text-align: left; cursor: pointer; overflow: hidden; transition: border-color .15s, transform .15s; }
+.pack:hover { border-color: color-mix(in srgb, var(--pk-acc) 60%, var(--line)); transform: translateY(-2px); }
+.pack:focus-visible { outline: 2px solid var(--pk-acc); outline-offset: 2px; }
+.pack.on { border-color: var(--pk-acc); box-shadow: 0 0 0 1px var(--pk-acc); }
+.pk-scene { position: relative; height: 92px; margin-bottom: 8px; padding: 10px; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 6px; font-family: var(--pk-font), system-ui, sans-serif;
+  background: radial-gradient(120% 90% at 85% 0%, color-mix(in srgb, var(--pk-acc) 32%, transparent), transparent 60%), var(--pk-bg); }
+.pk-count { position: absolute; top: 9px; right: 9px; display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; color: #fff; background: color-mix(in srgb, var(--pk-bg) 70%, #000); box-shadow: 0 0 0 1px color-mix(in srgb, var(--pk-acc) 55%, transparent); }
+.pk-count i { width: 6px; height: 6px; border-radius: 50%; background: var(--pk-acc); box-shadow: 0 0 6px var(--pk-acc); }
+.pk-alert { font-size: 15px; font-weight: 800; line-height: 1; color: var(--pk-acc); text-shadow: 0 0 10px color-mix(in srgb, var(--pk-acc) 50%, transparent); }
+.pk-msg { max-width: 100%; padding: 3px 9px; border-radius: 8px; font-size: 13px; color: var(--pk-ink); background: var(--pk-bub); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pk-msg b { color: var(--pk-acc); }
+.pk-name { padding: 0 12px; font-size: 14px; }
+.pk-look { padding: 0 12px; font-size: 12px; color: var(--muted); }
+.pk-alerts { display: inline-flex; align-items: center; gap: 5px; margin-top: 4px; padding: 0 12px; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.pk-alerts svg { width: 13px; height: 13px; color: var(--pk-acc); }
+.pack-undo { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: var(--panel-2); font-size: 13px; }
