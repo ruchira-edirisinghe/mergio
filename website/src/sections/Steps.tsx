@@ -109,7 +109,7 @@ function Install({ active }: { active: boolean }) {
             <span className="text-white/50 tabular-nums">{done ? 'Done' : `${Math.min(pct, 100)}%`}</span>
           </div>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
-            <div className="h-full rounded-full bg-gradient-to-r from-violet to-pink transition-[width] duration-100" style={{ width: `${Math.min(pct, 100)}%` }} />
+            <div className="h-full rounded-full bg-linear-to-r from-violet to-pink transition-[width] duration-100" style={{ width: `${Math.min(pct, 100)}%` }} />
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ function Step({ n, title, text, delay, children }: { n: number; title: string; t
   return (
     <Reveal variant="up" delay={delay}>
       <div className="lift flex h-full flex-col rounded-2xl bg-surface p-6 sm:p-7 ring-1 ring-white/[.07]">
-        <span className="mb-6 grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-violet to-pink text-sm font-semibold text-white">{n}</span>
+        <span className="mb-6 grid h-10 w-10 place-items-center rounded-full bg-linear-to-br from-violet to-pink text-sm font-semibold text-white">{n}</span>
         <h3 className="mb-2 text-2xl font-medium" style={{ letterSpacing: '-0.02em' }}>{title}</h3>
         <p className="mb-7 text-base text-white/60">{text}</p>
         <div className="mt-auto">{children}</div>

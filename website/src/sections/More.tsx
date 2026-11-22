@@ -21,7 +21,7 @@ function ChipRow({ items, reverse }: { items: [LucideIcon, string][]; reverse?: 
           <div key={copy} className="flex shrink-0 gap-3 pr-3" aria-hidden={copy === 1}>
             {items.map(([Icon, label]) => (
               <span key={label} className="inline-flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-full bg-white/[.06] py-2.5 pl-2.5 pr-5 text-base font-medium text-white/85 ring-1 ring-white/10">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-violet/40 to-pink/30 text-white"><Icon className="h-4 w-4" /></span>
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-linear-to-br from-violet/40 to-pink/30 text-white"><Icon className="h-4 w-4" /></span>
                 {label}
               </span>
             ))}

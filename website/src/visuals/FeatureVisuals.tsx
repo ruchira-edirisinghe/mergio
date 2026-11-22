@@ -104,7 +104,7 @@ export function SavedLooks({ active }: { active: boolean }) {
       <div className="relative h-[150px] overflow-hidden rounded-xl bg-night ring-1 ring-white/10">
         <VideoBackdrop clip="neon-gamer" active={active} />
         <div className="absolute inset-0 bg-black/35" />
-        <ChatFeed key={i} items={items} theme={look.theme} showAvatar={look.avatars} fontSize={look.size} className="absolute inset-0 p-2 anim-rise [mask-image:linear-gradient(180deg,transparent,#000_30%)]" />
+        <ChatFeed key={i} items={items} theme={look.theme} showAvatar={look.avatars} fontSize={look.size} className="absolute inset-0 p-2 anim-rise mask-[linear-gradient(180deg,transparent,#000_30%)]" />
       </div>
       <div className="mt-2.5 flex items-center gap-2 rounded-lg bg-black/30 px-2.5 py-1.5 font-mono text-[11px] text-white/55 ring-1 ring-white/10">
         <span className="truncate">localhost:8787/overlay?slot=<b key={i} className="inline-block text-white anim-bump">{i + 1}</b></span>
@@ -164,7 +164,7 @@ export function Placement({ active }: { active: boolean }) {
           <span key={id} className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-300 ${k === i ? 'bg-white text-black' : 'text-white/60'}`}>{label}</span>
         ))}
       </div>
-      <div className="relative aspect-[16/8] w-full overflow-hidden rounded-xl bg-night">
+      <div className="relative aspect-16/8 w-full overflow-hidden rounded-xl bg-night">
         <VideoBackdrop clip="night-gamer" active={active} />
         <div className="absolute inset-0 bg-black/25" />
         {place !== 'chat' && (

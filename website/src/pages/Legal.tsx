@@ -15,7 +15,7 @@ const LICENSE = `${REPO}/blob/main/LICENSE`;
 const P = ({ children, id }: { children: ReactNode; id?: string }) => <p id={id} className="scroll-mt-24 text-[15.5px] leading-relaxed text-white/65">{children}</p>;
 const UL = ({ children }: { children: ReactNode }) => <ul className="grid gap-2.5 pl-1 text-[15.5px] leading-relaxed text-white/65">{children}</ul>;
 const LI = ({ children }: { children: ReactNode }) => (
-  <li className="flex gap-3"><span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-br from-violet to-pink" /><span>{children}</span></li>
+  <li className="flex gap-3"><span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-linear-to-br from-violet to-pink" /><span>{children}</span></li>
 );
 const B = ({ children }: { children: ReactNode }) => <strong className="font-semibold text-white/90">{children}</strong>;
 const A = ({ href, children }: { href: string; children: ReactNode }) => {
@@ -266,12 +266,12 @@ export function Legal({ doc }: { doc: LegalDoc }) {
             <p className="mt-5 text-sm text-white/40">Last updated {UPDATED}</p>
           </div>
 
-          <section aria-labelledby="short" className="mb-14 rounded-3xl bg-gradient-to-br from-[#1b1630] to-surface p-5 ring-1 ring-violet/25 sm:p-7">
+          <section aria-labelledby="short" className="mb-14 rounded-3xl bg-linear-to-br from-[#1b1630] to-surface p-5 ring-1 ring-violet/25 sm:p-7">
             <h2 id="short" className="mb-5 text-sm font-medium uppercase tracking-[.16em] text-white/50">The short version</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {d.summary.map(s => (
                 <div key={s.title} className="rounded-2xl bg-white/[.04] p-4 ring-1 ring-white/[.06]">
-                  <span className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-violet to-pink text-white shadow-[0_8px_24px_-8px_rgba(124,77,255,.8)]"><s.icon className="h-5 w-5" /></span>
+                  <span className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-linear-to-br from-violet to-pink text-white shadow-[0_8px_24px_-8px_rgba(124,77,255,.8)]"><s.icon className="h-5 w-5" /></span>
                   <p className="font-semibold text-white">{s.title}</p>
                   <p className="mt-1 text-sm leading-relaxed text-white/60">{s.text}</p>
                 </div>

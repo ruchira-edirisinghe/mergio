@@ -17,7 +17,7 @@ const STATS: [string, string][] = [['0', 'servers'], ['0', 'accounts'], ['26 MB'
 function FileRow({ icon: Icon, name, note, mono }: { icon: LucideIcon; name: string; note: string; mono?: boolean }) {
   return (
     <li className="flex items-center gap-2.5 rounded-xl bg-white/[.05] px-3 py-2 ring-1 ring-white/[.06]">
-      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-violet/40 to-pink/30"><Icon className="h-3.5 w-3.5" /></span>
+      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-linear-to-br from-violet/40 to-pink/30"><Icon className="h-3.5 w-3.5" /></span>
       <span className="min-w-0">
         <span className={`block truncate text-[12.5px] font-medium text-white ${mono ? 'font-mono' : ''}`}>{name}</span>
         <span className="block text-[11.5px] leading-snug text-white/50">{note}</span>

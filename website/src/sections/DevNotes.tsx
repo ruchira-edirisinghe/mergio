@@ -34,7 +34,7 @@ function Inline({ text }: { text: string }) {
     <>
       {text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*\s][^*]*\*)/).map((part, k) => {
         if (part.startsWith('**') && part.endsWith('**') && part.length > 4) return <strong key={k} className="font-semibold text-white/85">{part.slice(2, -2)}</strong>;
-        if (part.startsWith('`') && part.endsWith('`') && part.length > 2) return <code key={k} className="rounded-md bg-white/[.08] px-1.5 py-0.5 font-mono text-[.85em] text-[#d8ceff] [overflow-wrap:anywhere]">{part.slice(1, -1)}</code>;
+        if (part.startsWith('`') && part.endsWith('`') && part.length > 2) return <code key={k} className="rounded-md bg-white/[.08] px-1.5 py-0.5 font-mono text-[.85em] text-[#d8ceff] wrap-anywhere">{part.slice(1, -1)}</code>;
         if (part.startsWith('*') && part.endsWith('*') && part.length > 2) return <em key={k} className="not-italic text-white/80">{part.slice(1, -1)}</em>;
         return <Fragment key={k}>{part}</Fragment>;
       })}
@@ -46,11 +46,11 @@ function Entry({ r, kind, latest }: { r: Release; kind: Kind; latest: boolean })
   const K = KIND[kind];
   return (
     <>
-      <span className={`absolute left-0 top-6 grid h-9 w-9 sm:h-11 sm:w-11 place-items-center rounded-full ring-1 ${latest ? 'bg-gradient-to-br from-violet to-pink text-white ring-white/20 shadow-[0_10px_30px_-8px_rgba(124,77,255,.8)]' : 'bg-surface text-white/70 ring-white/15'}`}>
+      <span className={`absolute left-0 top-6 grid h-9 w-9 sm:h-11 sm:w-11 place-items-center rounded-full ring-1 ${latest ? 'bg-linear-to-br from-violet to-pink text-white ring-white/20 shadow-[0_10px_30px_-8px_rgba(124,77,255,.8)]' : 'bg-surface text-white/70 ring-white/15'}`}>
         {latest && <span className="absolute inset-0 rounded-full bg-violet/40 anim-ring" />}
         <K.icon className="relative h-4 w-4 sm:h-5 sm:w-5" />
       </span>
-      <article id={anchor(r.tag)} className={`scroll-mt-6 rounded-3xl p-5 sm:p-7 ring-1 transition-colors duration-300 ${latest ? 'bg-gradient-to-br from-[#1b1630] to-surface ring-violet/30' : 'bg-surface ring-white/[.07] hover:ring-white/15'}`}>
+      <article id={anchor(r.tag)} className={`scroll-mt-6 rounded-3xl p-5 sm:p-7 ring-1 transition-colors duration-300 ${latest ? 'bg-linear-to-br from-[#1b1630] to-surface ring-violet/30' : 'bg-surface ring-white/[.07] hover:ring-white/15'}`}>
         <header className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <h3 className="font-mono text-xl sm:text-2xl font-semibold tracking-tight text-white">{r.tag}</h3>
           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${K.badge}`}>{K.label}</span>
@@ -64,7 +64,7 @@ function Entry({ r, kind, latest }: { r: Release; kind: Kind; latest: boolean })
         <ul className="mt-5 grid gap-4">
           {r.notes.map((n, k) => (
             <li key={k} className="flex gap-3.5">
-              <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-gradient-to-br from-violet to-pink" />
+              <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-linear-to-br from-violet to-pink" />
               <p className="min-w-0 text-[15px] leading-relaxed text-white/60">
                 {n.title && <strong className="mr-1.5 font-semibold text-white">{n.title}.</strong>}
                 <Inline text={n.text} />
@@ -142,7 +142,7 @@ export function DevNotes() {
 
         {/* min-w-0: a long link in a note must wrap instead of making the column wider than a phone */}
         <div className="min-w-0">
-          <ol className="relative grid gap-6 before:absolute before:bottom-6 before:left-[17px] before:top-6 before:w-px before:bg-gradient-to-b before:from-violet/70 before:via-white/10 before:to-transparent sm:before:left-[21px]">
+          <ol className="relative grid gap-6 before:absolute before:bottom-6 before:left-[17px] before:top-6 before:w-px before:bg-linear-to-b before:from-violet/70 before:via-white/10 before:to-transparent sm:before:left-[21px]">
             {shown.map((r, i) => (
               <Reveal as="li" key={r.tag} delay={i < SHOWN ? i * 80 : 0} className="relative min-w-0 pl-12 sm:pl-16">
                 <Entry r={r} kind={kindOf(releases, releases.indexOf(r))} latest={r === latest} />

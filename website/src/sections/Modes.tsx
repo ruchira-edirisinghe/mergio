@@ -59,7 +59,7 @@ export function Modes() {
                       <span className="block text-sm text-white/55">{mode.blurb}</span>
                     </span>
                   </span>
-                  {on && inView && <span key={tick} className="absolute bottom-0 left-0 h-[3px] w-full origin-left bg-gradient-to-r from-violet to-pink" style={{ animation: `fill-x ${msFor(mode.id)}ms linear both` }} />}
+                  {on && inView && <span key={tick} className="absolute bottom-0 left-0 h-[3px] w-full origin-left bg-linear-to-r from-violet to-pink" style={{ animation: `fill-x ${msFor(mode.id)}ms linear both` }} />}
                 </button>
               );
             })}
@@ -70,7 +70,7 @@ export function Modes() {
         <div className="relative rounded-3xl overflow-hidden min-h-[760px] bg-night ring-1 ring-white/10" role="tabpanel" aria-label={m.title}>
           <VideoBackdrop clip={m.clip} active={inView} />
           <div className={`absolute inset-0 ${m.dim ? 'bg-[#07060c]/60' : 'bg-[#07060c]/25'}`} />
-          <div className="absolute inset-x-0 top-0 h-2/3 bg-gradient-to-b from-[#0a0716]/90 via-[#0a0716]/55 to-transparent" />
+          <div className="absolute inset-x-0 top-0 h-2/3 bg-linear-to-b from-[#0a0716]/90 via-[#0a0716]/55 to-transparent" />
           <div key={`text-${m.id}`} className="relative z-10 p-6 sm:p-8 md:p-12 anim-rise">
             <h3 className="text-white text-3xl sm:text-4xl md:text-5xl font-medium leading-tight mb-5" style={{ letterSpacing: '-0.03em' }}>{m.title}</h3>
             <p className="text-white/70 text-base max-w-md mb-8">{m.text}</p>
