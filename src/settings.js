@@ -58,7 +58,9 @@ const DEFAULTS = {
     highlightMentions: true,
     mentionNames: '',
     imageEmbedPermissionLevel: 'vips', // broadcaster | mods | vips | subs | everyone | nobody
+    showJoins: true,            // "X joined" notes in the chat (TikTok, Twitch)
     joinLifetime: 6,
+    showLikes: true,            // TikTok likes in the chat
     uwuMode: false,
   },
   alerts: {

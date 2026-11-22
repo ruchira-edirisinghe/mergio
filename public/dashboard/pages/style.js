@@ -64,7 +64,11 @@
       [A, { key: 'animation', icon: 'sparkle', label: 'How new messages appear', type: 'select', options: [['slide', 'Slide in'], ['pop', 'Pop'], ['fade', 'Fade in'], ['none', 'No animation']], keywords: 'animation' }],
       [G, { key: 'fadeMessages', icon: 'timer', help: "Old messages fade away after a while, so the chat doesn't sit on screen when nobody is talking.", label: 'Messages disappear after a while', hint: 'Only the newest messages stay on screen', type: 'toggle', keywords: 'fade disappear hide timeout timer' }],
       [G, { key: 'hideAfter', icon: 'clock', label: 'Disappear after', hint: 'Alerts stay twice as long', type: 'range', min: 5, max: 300, step: 5, unit: 's', keywords: 'fade disappear hide timeout timer', when: s => s.general.fadeMessages }],
-      [G, { key: 'joinLifetime', icon: 'join', help: 'TikTok and Twitch can say when someone joins. These notes roll through one small line and vanish after this time.', label: 'Show "joined" notes for', hint: 'They roll through one small line', type: 'range', min: 2, max: 20, unit: 's' }],
+    ] },
+    { id: 'joins', icon: 'join', title: 'Joins & likes', sub: '"Just joined" notes and likes in the chat', items: [
+      [G, { key: 'showJoins', icon: 'join', help: 'TikTok and Twitch can say when someone joins your LIVE. Turn this off to keep those notes out of the chat completely. Each platform also has its own switch on the Alerts page.', label: 'Show "joined the LIVE" in the chat', hint: 'A small note when someone joins', type: 'toggle', keywords: 'join joined joining enter viewer arrive notification' }],
+      [G, { key: 'joinLifetime', icon: 'timer', help: 'The notes roll through one small line and vanish after this time.', label: 'Each "joined" note shows for', hint: 'They roll through one small line', type: 'range', min: 2, max: 20, unit: 's', keywords: 'join joined', when: s => s.general.showJoins }],
+      [G, { key: 'showLikes', icon: 'heart', help: 'TikTok likes show as a message from that viewer with a beating heart, counting up while they tap.', label: 'Show likes in the chat', hint: 'TikTok only', type: 'toggle', keywords: 'like likes heart tap' }],
     ] },
     { id: 'emotes', icon: 'smile', title: 'Emotes & pictures', sub: 'Emote size and picture links', items: [
       [A, { key: 'emoteScale', icon: 'size', label: 'Emote size', type: 'range', min: 0.8, max: 3, step: 0.1, unit: '×' }],
