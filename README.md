@@ -39,6 +39,7 @@ Multistreaming means your viewers chat in five places. Mergio reads all of them 
 - 🎯 **Follower goals:** each platform's followers with a goal and a progress bar that celebrates when you reach it, in five styles.
 - ➖ **All in one line:** the counters can sit in a single row and shrink to fit any browser source.
 - 🎨 **Your look:** six one-click chat styles, any Google Font, colours, boxes, layout and animation. Every setting has an icon and a plain-words tip, and the preview updates as you go.
+- 🎁 **Matching packs:** one click gives the chat, alerts, viewer count and follower goals the same look. Ten packs: Level up, Arcade, Cyber, Gacha, Deep space, Late-night TV, Fantasy quest, Wild West, Bubbly and Clean.
 - 💾 **Saved looks:** keep three looks for each overlay (chat, alerts, viewer count, follower goals), switch with one click, or give a scene its own look with `?slot=2`.
 - 🌍 **Any language:** names and messages in Sinhala, Tamil, Hindi, Arabic, Hebrew, Japanese, Chinese, Korean, Thai and more show correctly, right-to-left included.
 - 💬 **Live chat page:** read every chat in one list and filter it by platform or by chat and alerts. **Pin** a message to the top of your overlay, **hide** single messages, or pick several and keep only those when you clear the chat.
@@ -119,6 +120,8 @@ Under **Sound** you can give each tier its own sound (press **Hear it** to liste
 ### Step 5 · Add counters (optional)
 
 **Viewer count** shows how many people watch on each platform and in total. **Follower goals** shows each platform's followers with a goal: with a step of 100, 436 followers aims for 500, and the next goal appears by itself. You can also set your own goal for each platform. Choose **All in one line** under *Layout* to keep everything in a single row. On **Viewer count**, click a platform under *Right now* to show or hide its own number.
+
+To make everything match in one go, open **Style → Matching packs** and pick a pack. It sets the chat style, alert style, viewer count and follower goals together, and keeps your chats, switches, goals, sizes and positions. **Undo** puts back what you had.
 
 Every overlay page has **Saved looks** at the bottom: three slots to save the look you have, switch back to it later, or copy a `?slot=N` link so one scene always uses that look.
 
