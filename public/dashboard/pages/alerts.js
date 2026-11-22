@@ -156,6 +156,7 @@
       MG.fieldList([
         { sub: 'Timing and size' },
         [A, { key: 'duration', icon: 'timer', label: 'Each alert stays for', hint: 'Seconds on screen', type: 'range', min: 2, max: 20, unit: 's', keywords: 'time seconds' }],
+        [A, { key: 'gap', icon: 'timer', label: 'Space between alerts', hint: 'Seconds of rest before the next one', help: 'When several alerts come in at once, they play one after another. This adds a pause between them so each one gets its moment. 0 = the next one follows right away.', type: 'range', min: 0, max: 30, unit: 's', keywords: 'gap pause wait delay between queue' }],
         [A, { key: 'size', icon: 'size', label: 'Size', hint: 'Bigger or smaller than normal', type: 'range', min: 0.6, max: 2, step: 0.1, unit: '×', keywords: 'scale bigger smaller' }],
         [A, { key: 'position', icon: 'move', label: 'Where in its box', hint: 'Within the browser source', type: 'select', options: [['top', 'Top'], ['center', 'Middle'], ['bottom', 'Bottom']] }],
         { sub: 'Colours and font' },
