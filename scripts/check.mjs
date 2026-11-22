@@ -1,6 +1,6 @@
 // Quick self-test: syntax-checks every source file and unit-tests link detection and settings handling.
 //   npm run check
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, statSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -89,6 +89,17 @@ test('read aloud settings stay in range', () => {
   assert.equal(s.alerts.ttsRate, 1.8);
   assert.equal(s.alerts.ttsMaxLength, 20);
   settings.update({ alerts: { readAloud: false, readMin: 'all', ttsRate: 1, ttsMaxLength: 200 } });
+});
+test('every matching pack uses only values the settings accept', () => {
+  const MG = { h: () => ({}), icon: () => ({}) };
+  new Function('MG', readFileSync(join(root, 'public/dashboard/packs.js'), 'utf8'))(MG);
+  assert.ok(MG.PACKS.length >= 8);
+  const keep = structuredClone(settings.get());
+  for (const p of MG.PACKS) {
+    const patch = MG.packPatch(p), s = settings.update(structuredClone(patch));
+    for (const [sec, vals] of Object.entries(patch)) for (const [k, v] of Object.entries(vals)) assert.deepEqual(s[sec][k], v, `${p.name}: ${sec}.${k}`);
+  }
+  settings.update({ appearance: keep.appearance, alerts: keep.alerts, viewers: keep.viewers, followers: keep.followers });
 });
 test('public view hides tokens', () => {
   settings.update({ advanced: { facebookAccessToken: 'secret' } });
