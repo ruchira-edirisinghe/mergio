@@ -90,6 +90,20 @@
     document.body.append(dlg); dlg.showModal(); (danger ? no : yes).focus();
   });
 
+  /** Asks for a short text (like a name). Resolves to the text, or null when cancelled. */
+  MG.ask = ({ title, label, value = '', ok = 'OK', max = 40 }) => new Promise(resolve => {
+    const input = h('input', { type: 'text', value, maxlength: String(max), 'aria-label': label || title });
+    const yes = h('button', { class: 'btn primary', type: 'submit', text: ok });
+    const no = h('button', { class: 'btn ghost', type: 'button', text: 'Cancel' });
+    const form = h('form', { method: 'dialog' }, h('h2', { id: 'ask-t', text: title }), label ? h('label', { class: 'ask-l', text: label }) : null, input, h('div', { class: 'ask-btns' }, no, yes));
+    const dlg = h('dialog', { class: 'ask', 'aria-labelledby': 'ask-t' }, form);
+    let answer = null;
+    form.addEventListener('submit', e => { e.preventDefault(); answer = input.value.trim(); dlg.close(); });
+    no.onclick = () => dlg.close();
+    dlg.addEventListener('close', () => { dlg.remove(); resolve(answer); });
+    document.body.append(dlg); dlg.showModal(); input.select();
+  });
+
   /* ---------------- pages & navigation ---------------- */
   const PAGES = [];
   MG.page = def => { PAGES.push(def); PAGES.sort((a, b) => a.order - b.order); };
