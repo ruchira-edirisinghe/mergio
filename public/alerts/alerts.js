@@ -343,10 +343,20 @@
     if (shown.has(m.id)) return;
     queue.push(m);
     if (queue.length > 40) queue.shift();
-    if (!current) next();
+    kick();
   }
 
   let paused = false;            // the streamer paused alerts: new ones wait in the queue
+  // Space between alerts: after one leaves, the next waits until restUntil (Alerts settings, or ?gap= per browser source)
+  let restUntil = 0, restTimer = 0;
+  /** Shows the next alert as soon as nothing is on screen and the rest after the last one is over. */
+  function kick() {
+    if (current) return;
+    const wait = restUntil - Date.now();
+    clearTimeout(restTimer);
+    if (wait > 0) { restTimer = setTimeout(kick, wait); return; }
+    next();
+  }
   function next() {
     if (paused && !isPreview && !demo) { current = null; return; }
     const m = queue.shift();
@@ -383,7 +393,8 @@
     clearTimeout(timer);
     el.classList.add('out');
     current = { m: { id: null }, el, timer: 0 }; // keep the slot busy until it has faded out
-    setTimeout(() => { el.remove(); current = null; setTimeout(() => { if (!current) next(); }, 350); }, 550);
+    const rest = demo || isPreview ? 0 : Math.min(60, Math.max(0, Number(S.alerts.gap) || 0)) * 1000;
+    setTimeout(() => { el.remove(); current = null; restUntil = Date.now() + 350 + rest; kick(); }, 550);
   }
 
   /* ---------------- samples: ?demo=1 plays example alerts on a loop (the style cards in the control panel) ---------------- */
@@ -416,12 +427,12 @@
       else if (d.op === 'replay' && !demo && d.msg?.event) {
         // played again from the Gifts dock: a fresh copy, so it isn't skipped as already shown
         const m = { ...d.msg, id: `${d.msg.id}~r${Date.now()}`, event: { ...d.msg.event, live: false } };
-        queue.push(m); if (!current) next();
+        queue.push(m); kick();
       }
       else if (d.op === 'alerts') {
         paused = !!d.paused;
         if (d.skip && current && !isPreview && !demo) leave();
-        else if (!paused && !current) next();
+        else if (!paused) kick();
       }
       else if (d.op === 'clear') { queue.length = 0; if (current && !(d.keep || []).includes(current.m.id)) leave(); }
       else if (d.op === 'delete' && Array.isArray(d.ids)) {
