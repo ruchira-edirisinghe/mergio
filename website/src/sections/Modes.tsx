@@ -14,10 +14,10 @@ const MODES: Mode[] = [
     text: 'Every platform in one browser source. Pick a look in one click.' },
   { id: 'alerts', icon: Bell, tab: 'Alerts overlay', blurb: 'Ten game-style alert themes', title: 'Alerts overlay', clip: 'celebrate', link: readme('step-4--choose-your-alerts'),
     text: 'Level ups, loot drops, an arcade 1UP, a quest scroll and more. Bigger gifts drop rarer alerts.' },
-  { id: 'panel', icon: Palette, tab: 'Control panel', blurb: 'Change anything, see it instantly', title: 'Control panel', clip: 'neon-gamer', dim: true, link: readme('complete-guide'),
-    text: 'Every setting has an icon and a plain-words tip, on any screen size. Changes show in OBS instantly.' },
-  { id: 'dock', icon: PanelRight, tab: 'Live chat dock', blurb: 'Every chat in one list, with filters', title: 'Live chat dock', clip: 'rgb-desk', dim: true, link: readme('step-7--read-every-chat-while-youre-live'),
-    text: 'Read every chat in one list, right inside OBS. Filter it by platform in one click.' },
+  { id: 'panel', icon: Palette, tab: 'Control panel', blurb: 'Change anything, save your looks', title: 'Control panel', clip: 'neon-gamer', dim: true, link: readme('complete-guide'),
+    text: 'Every overlay is yours to customize. Save three looks for each one and switch in a click. Changes show in OBS instantly.' },
+  { id: 'dock', icon: PanelRight, tab: 'OBS docks', blurb: 'Chat, gifts and viewers inside OBS', title: 'OBS docks', clip: 'rgb-desk', dim: true, link: readme('step-7--read-every-chat-while-youre-live'),
+    text: 'Every chat, every gift and your live viewers, each in its own OBS dock. Hide any message from stream in one click.' },
 ];
 const AUTO_MS = 9000;
 // The alerts tab stays until it has shown every alert look once.
