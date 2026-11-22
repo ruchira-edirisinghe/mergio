@@ -604,54 +604,16 @@ body.quit .offline-bar::after { content: ' (You closed it from Settings.)'; }
 @media (max-width: 900px) { .ovs { grid-template-columns: 1fr; } }
 
 /* ---------- Alerts → Alert style picker, with tiny looping previews ---------- */
-.astyles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.astyles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
 @media (max-width: 640px) { .astyles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .astyle { display: flex; flex-direction: column; gap: 3px; padding: 8px 8px 11px; border-radius: 14px; text-align: left; background: var(--panel-2); border: 1.5px solid var(--line); color: inherit; font: inherit; cursor: pointer; transition: border-color .2s, transform .2s, box-shadow .2s; }
 .astyle:hover { transform: translateY(-2px); border-color: rgba(167, 139, 250, .45); }
 .astyle.on { border-color: #8b5cf6; box-shadow: 0 0 0 1px #8b5cf6, 0 8px 24px -10px rgba(139, 92, 246, .7); }
 .astyle b { font-size: 14px; margin-top: 6px; padding: 0 4px; }
 .astyle span { font-size: 12px; opacity: .65; padding: 0 4px; line-height: 1.35; }
-.ast { position: relative; height: 86px; border-radius: 10px; overflow: hidden; background: radial-gradient(circle at 30% 20%, #3b2d55, #141a2b 75%); --c: #ff2d8f; }
-.ast i, .ast b { position: absolute; display: block; }
-.ast b { display: none; }
-/* spotlight: picture with an orbiting light, name rising under it */
-.ast-spotlight .a2 { left: 50%; top: 14px; width: 30px; height: 30px; margin-left: -15px; border-radius: 50%; background: radial-gradient(circle at 50% 30%, #ff5fa8, #3a1030 80%); box-shadow: 0 8px 18px -6px #ff2d8f; animation: m-sp 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-.ast-spotlight .a1 { left: 50%; top: 10px; width: 38px; height: 38px; margin-left: -19px; border-radius: 50%; background: conic-gradient(transparent 0 60%, #ff2d8fb0 82%, #fff 86%, transparent 86.5%); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); animation: ast-spin 1.6s linear infinite, m-fade 2.8s infinite; }
-.ast-spotlight .a3 { left: 32%; right: 32%; top: 56px; height: 8px; border-radius: 4px; background: #fff; box-shadow: 0 11px 0 -2px #ffffff70; animation: m-up 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-/* banner: colour block wipes in, the panel unrolls from it */
-.ast-banner .a1 { left: 12%; top: 26px; width: 30px; height: 36px; border-radius: 5px 0 0 5px; background: linear-gradient(160deg, #ff6aa8, #e11d74); transform-origin: left; animation: m-block 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-.ast-banner .a2 { left: calc(12% + 30px); right: 12%; top: 26px; height: 36px; border-radius: 0 5px 5px 0; background: #14141e; box-shadow: inset 2px 0 0 #ffb3d4, 0 6px 14px -6px #000; animation: m-wipe 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-.ast-banner .a3 { left: calc(12% + 40px); width: 30%; top: 36px; height: 6px; border-radius: 3px; background: #fff; box-shadow: 0 9px 0 -1px #ffffff70; animation: m-text 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-/* neon: the tube draws round the edge, then the name switches on */
-.ast-neon .a1 { left: 18%; right: 18%; top: 16px; bottom: 16px; border-radius: 9px; background: #07060d; box-shadow: inset 0 0 0 1.5px #ff4fa0, 0 0 10px #ff2d8f, inset 0 0 10px #ff2d8f60; animation: m-draw 2.8s cubic-bezier(.65, 0, .35, 1) infinite; }
-.ast-neon .a2 { left: 50%; top: 32px; width: 42%; height: 7px; margin-left: -21%; border-radius: 4px; background: #fff; box-shadow: 0 0 5px #ff2d8f, 0 0 12px #ff2d8f; animation: m-flick 2.8s steps(1) infinite; }
-.ast-neon .a3 { left: 50%; top: 46px; width: 28%; height: 5px; margin-left: -14%; border-radius: 3px; background: #ffffff90; animation: m-flick 2.8s steps(1) infinite; }
-/* bubbly: a sticker slaps on */
-.ast-bubble .a1 { left: 16%; right: 16%; top: 22px; height: 42px; border-radius: 12px; background: linear-gradient(150deg, #ffd6ea, #fff 60%); box-shadow: 0 0 0 3px #fff, 0 8px 14px -6px #000a; rotate: -3deg; animation: m-slap 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-.ast-bubble .a2 { left: calc(16% + 8px); top: 30px; width: 26px; height: 26px; border-radius: 8px; background: #ff2d8f; box-shadow: 0 0 0 2px #fff; rotate: 4deg; animation: m-slap 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-.ast-bubble .a3 { left: calc(16% + 42px); width: 34%; top: 35px; height: 6px; border-radius: 3px; background: #1c1530; box-shadow: 0 9px 0 -1px #1c153080; rotate: -3deg; animation: m-slap 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-/* card: frosted glass tilts up into place */
-.ast-card .a1 { left: 14%; right: 14%; top: 22px; height: 44px; border-radius: 10px; background: radial-gradient(circle at 15% 0%, #ff2d8f70, transparent 55%), linear-gradient(135deg, #ffffff22, #ffffff08), #181826d0; box-shadow: inset 0 0 0 1px #ffffff26, 0 8px 18px -8px #000; transform-origin: 50% 100%; animation: m-glass 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-.ast-card .a2 { left: calc(14% + 8px); top: 30px; width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(150deg, #ff6aa8, #b3125e); animation: m-glass 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-.ast-card .a3 { left: calc(14% + 44px); width: 34%; top: 36px; height: 6px; border-radius: 3px; background: #fff; box-shadow: 0 9px 0 -1px #ffffff70; animation: m-up 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-/* minimal: a black pill grows out of the middle */
-.ast-toast .a1 { left: 20%; right: 20%; top: 29px; height: 28px; border-radius: 99px; background: #050507; box-shadow: 0 0 0 1px #ffffff14, 0 6px 14px #0009; animation: m-island 2.8s cubic-bezier(.16, 1, .3, 1) infinite; }
-.ast-toast .a2 { left: calc(20% + 5px); top: 34px; width: 18px; height: 18px; border-radius: 50%; background: #ff2d8f; animation: m-late 2.8s infinite; }
-.ast-toast .a3 { left: calc(20% + 30px); top: 38px; width: 34%; height: 5px; border-radius: 3px; background: #fff; box-shadow: 0 7px 0 -1px #ffffff70; animation: m-late 2.8s infinite; }
-@keyframes ast-spin { to { rotate: 360deg; } }
-@keyframes m-fade { 0%, 12% { opacity: 0; } 25%, 82% { opacity: 1; } 95%, 100% { opacity: 0; } }
-@keyframes m-sp { 0% { opacity: 0; transform: scale(.5); filter: blur(4px); } 20%, 82% { opacity: 1; transform: none; filter: none; } 95%, 100% { opacity: 0; transform: translateY(-4px); filter: blur(3px); } }
-@keyframes m-up { 0%, 14% { opacity: 0; transform: translateY(8px); } 30%, 82% { opacity: 1; transform: none; } 95%, 100% { opacity: 0; } }
-@keyframes m-block { 0% { transform: scaleX(0); } 15%, 85% { transform: none; } 100% { transform: scaleX(0); } }
-@keyframes m-wipe { 0%, 8% { clip-path: inset(0 100% 0 0); } 30%, 78% { clip-path: inset(0 0 0 0); } 92%, 100% { clip-path: inset(0 100% 0 0); } }
-@keyframes m-text { 0%, 20% { opacity: 0; transform: translateX(-10px); } 34%, 76% { opacity: 1; transform: none; } 86%, 100% { opacity: 0; } }
-@keyframes m-draw { 0% { clip-path: inset(0 100% 100% 0); } 12% { clip-path: inset(0 0 100% 0); } 22% { clip-path: inset(0 0 0 0); } 85% { clip-path: inset(0 0 0 0); opacity: 1; } 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
-@keyframes m-flick { 0%, 24% { opacity: 0; } 26% { opacity: 1; } 29% { opacity: .2; } 32%, 85% { opacity: 1; } 86%, 100% { opacity: 0; } }
-@keyframes m-slap { 0% { opacity: 0; transform: scale(1.5) rotate(-10deg); } 12% { opacity: 1; transform: scale(.95); } 18%, 82% { transform: none; opacity: 1; } 95%, 100% { opacity: 0; transform: translate(6px, -8px) rotate(6deg); } }
-@keyframes m-glass { 0% { opacity: 0; transform: perspective(200px) rotateX(30deg) translateY(10px); } 22%, 82% { opacity: 1; transform: none; } 95%, 100% { opacity: 0; transform: translateY(-4px); } }
-@keyframes m-island { 0% { opacity: 0; clip-path: inset(0 calc(50% - 14px) round 99px); transform: scale(.6); } 10% { opacity: 1; transform: none; clip-path: inset(0 calc(50% - 14px) round 99px); } 30%, 76% { clip-path: inset(0 0 round 99px); } 90% { opacity: 1; clip-path: inset(0 calc(50% - 14px) round 99px); transform: none; } 100% { opacity: 0; clip-path: inset(0 calc(50% - 14px) round 99px); transform: scale(.6); } }
-@keyframes m-late { 0%, 22% { opacity: 0; } 32%, 72% { opacity: 1; } 78%, 100% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .ast *, .ast *::after { animation: none !important; } }
+.ast { position: relative; height: 104px; border-radius: 10px; overflow: hidden; background: radial-gradient(circle at 30% 20%, #3b2d55, #141a2b 75%); }
+.ast iframe { position: absolute; left: 0; top: 0; width: 800px; height: 500px; border: 0; transform-origin: 0 0; pointer-events: none; background: transparent; color-scheme: normal; }
+.astyle .tag { align-self: flex-start; margin: 4px 4px 0; padding: 1px 7px; border-radius: 99px; font-size: 10.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; opacity: 1; background: color-mix(in srgb, var(--accent) 22%, transparent); color: #c9b8ff; }
 
 /* =========================== themed controls =========================== */
 /* dropdown button */
