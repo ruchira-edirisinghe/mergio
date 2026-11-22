@@ -172,6 +172,18 @@ test('saved looks: save, use, rename, delete, and nothing else can change them',
   settings.reset();
 });
 
+test('OBS docks are added to OBS settings without touching anything else', () => {
+  const { withDocks, readDocks } = require(join(root, 'src/obsdocks.js'));
+  const ini = '[General]\r\nName=x\r\n\r\n[BasicWindow]\r\nDockState=abc\r\nExtraBrowserDocks=[{"title":"Mine","url":"https://example.com","uuid":"1"},{"title":"Old","url":"http://localhost:8787/dock/chat","uuid":"2"}]\r\nAlwaysOnTop=false\r\n';
+  const out = withDocks(ini, 8790);
+  const docks = readDocks(out);
+  assert.deepEqual(docks.map(d => d.title), ['Mine', 'Mergio Chat', 'Mergio Gifts', 'Mergio Viewers']);
+  assert.equal(docks[1].url, 'http://localhost:8790/dock/chat');
+  assert.ok(out.includes('DockState=abc\r\n') && out.includes('AlwaysOnTop=false') && out.includes('[General]\r\nName=x'));
+  assert.equal(readDocks(withDocks('[General]\nA=1\n', 8787)).length, 3);
+  assert.equal(readDocks(withDocks('[BasicWindow]\nX=1\n', 8787)).length, 3);
+});
+
 console.log('Connections');
 test('Twitch is live again after a reconnect to the same channel', () => {
   const { TwitchConnector } = require(join(root, 'src/connectors/twitch.js'));

@@ -1183,3 +1183,19 @@ body[data-page="obs"] #btnCopy { display: none; }
 .preview-head .x { flex: none; }
 /* the preview pane is 340 px wide up to 1280 px windows: keep its title whole by making the switch smaller there */
 @media (max-width: 1280px) { .preview-head { padding: 12px 10px 12px 14px; gap: 6px; } .preview-head .seg button { padding: 4px 7px; } }
+
+/* ---------- Add to OBS: the OBS docks ---------- */
+.docks-card .banner { margin: 12px 0; }
+.dock-list { display: grid; gap: 8px; margin: 4px 0 14px; }
+.dock-it { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--line); }
+.dock-it .ov-ic { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(124, 77, 255, .25), rgba(255, 45, 143, .2)); }
+.dock-it .ov-ic svg { width: 18px; height: 18px; }
+.dock-t { display: grid; gap: 2px; min-width: 0; }
+.dock-t span { color: var(--muted); font-size: 12.5px; }
+a.btn { text-decoration: none; }
+.dock-b { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.fold-in { margin-top: 14px; }
+.fold-in > summary { cursor: pointer; color: var(--muted); font-weight: 600; font-size: 13px; }
+.fold-in .big-steps { margin-top: 10px; }
+@container (max-width: 560px) { .dock-it { grid-template-columns: 36px minmax(0, 1fr); } .dock-b { grid-column: 1 / -1; justify-content: flex-start; } }
+@media (max-width: 640px) { .dock-it { grid-template-columns: 36px minmax(0, 1fr); } .dock-b { grid-column: 1 / -1; justify-content: flex-start; } }

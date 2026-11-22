@@ -10,6 +10,7 @@ const avatars = require('./avatars');
 const updater = require('./updater');
 const stats = require('./stats');
 const followers = require('./followers');
+const obsdocks = require('./obsdocks');
 const { checkToken: checkFacebookToken } = require('./connectors/facebook');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
@@ -132,6 +133,8 @@ function pageHeaders(file, host) {
   // The overlays only show chat and numbers, so other tools (and the panel's previews) may still embed them.
   const panel = !/^(overlay|alerts|viewers|followers)\//.test(file);
   if (!panel) return { 'Content-Security-Policy': csp.join('; ') };
+  // The OBS docks have buttons (hide, replay): only Mergio's own pages may show them inside a frame.
+  if (file.startsWith('dock/')) { csp.push("frame-ancestors 'self'"); return { 'Content-Security-Policy': csp.join('; '), 'X-Frame-Options': 'SAMEORIGIN' }; }
   csp.push("frame-ancestors 'none'");
   return { 'Content-Security-Policy': csp.join('; '), 'X-Frame-Options': 'DENY', 'Cross-Origin-Opener-Policy': 'same-origin' };
 }
@@ -241,6 +244,17 @@ function createServer(manager, { onQuit }) {
           broadcast(keep.length ? { op: 'clear', keep } : { op: 'clear' });
           return send(res, 200, { ok: true });
         }
+        if (p === '/api/replay' && req.method === 'POST') {
+          // plays an alert again on the alerts overlay (from the Gifts dock); the chat is left alone
+          const m = manager.events.find(x => x.id === body.id);
+          if (!m) return send(res, 404, { error: 'That alert is too old to replay.' });
+          broadcast({ op: 'replay', msg: m });
+          return send(res, 200, { ok: true });
+        }
+        if (p === '/api/obs/docks' && req.method === 'GET') return send(res, 200, await obsdocks.status(settings.get().advanced.port));
+        if (p === '/api/obs/docks' && req.method === 'POST') {
+          try { return send(res, 200, await obsdocks.install(settings.get().advanced.port)); } catch (e) { return send(res, e.running ? 409 : 400, { error: e.message, running: !!e.running }); }
+        }
         if (p === '/api/hide' && req.method === 'POST') {
           const ids = messageIds(body.ids);
           if (!ids.length) return send(res, 400, { error: 'Pick at least one message.' });
@@ -281,6 +295,7 @@ function createServer(manager, { onQuit }) {
         : p === '/alerts' || p === '/alerts/' ? 'alerts/index.html'
         : p === '/viewers' || p === '/viewers/' ? 'viewers/index.html'
         : p === '/followers' || p === '/followers/' ? 'followers/index.html'
+        : /^\/dock\/(chat|gifts|viewers)\/?$/.test(p) ? 'dock/index.html' // the OBS docks are one page that reads its name from the link
         : p === '/manifest.webmanifest' ? 'dashboard/manifest.webmanifest'
         : p === '/sw.js' ? 'dashboard/sw.js' // served from the root so it can look after /dashboard
         : p === '/favicon.ico' ? 'shared/app-192.png' // browsers (and OBS) ask for it even when a page names its icon
@@ -332,7 +347,8 @@ function createServer(manager, { onQuit }) {
       broadcast({ op: 'overlays', ...overlayStatus() });
       if (client === 'followers') followers.refresh(false);
     }
-    ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(-60), stats: stats.view() }));
+    const dock = client === 'dock';
+    ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(dock ? -150 : -60), stats: stats.view(), ...(dock ? { events: manager.events.slice(-200) } : {}) }));
   });
   manager.on('message', m => broadcast({ op: 'msg', msg: m }));
   manager.on('delete', d => broadcast({ op: 'delete', ...d }));

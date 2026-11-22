@@ -351,6 +351,11 @@
       const d = JSON.parse(e.data);
       if (d.op === 'hello' || d.op === 'settings') applySettings(d.settings); // old alerts are never replayed
       else if (d.op === 'msg') { if (!demo) onMsg(d.msg); }
+      else if (d.op === 'replay' && !demo && d.msg?.event) {
+        // played again from the Gifts dock: a fresh copy, so it isn't skipped as already shown
+        const m = { ...d.msg, id: `${d.msg.id}~r${Date.now()}`, event: { ...d.msg.event, live: false } };
+        queue.push(m); if (!current) next();
+      }
       else if (d.op === 'clear') { queue.length = 0; if (current && !(d.keep || []).includes(current.m.id)) leave(); }
       else if (d.op === 'delete' && Array.isArray(d.ids)) {
         // hidden from the control panel (or deleted by a moderator): drop it, even mid-alert
