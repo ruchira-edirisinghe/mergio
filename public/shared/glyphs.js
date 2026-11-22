@@ -25,6 +25,8 @@ window.MERGIO_GLYPHS = {
   trash: 'M3 6h18 M8 6V4h8v2 M6 6l1 15h10l1-15',
   refresh: 'M21 12a9 9 0 1 1-2.6-6.4 M21 3v6h-6',
   pause: 'M8 5v14 M16 5v14',
+  pin: 'M9 3h6 M10 3v5l-3.5 4.5h11L14 8V3 M12 12.5V21',
+  skip: 'M5 5l9 7-9 7z M18 5v14',
   play: 'M7 4l13 8-13 8z',
   link: 'M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1 M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1',
   plus: 'M12 5v14 M5 12h14',
