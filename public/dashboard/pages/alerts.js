@@ -68,6 +68,21 @@
   /** Plays the sound an alert of this size gets, with the current settings (even while sounds are off, so you can choose). */
   const hear = tier => { const a = MG.st.settings.alerts; window.mergioSound?.play(window.mergioSound.forTier(a, tier), 'gift', a.sound ? a.volume : Math.max(0.4, a.volume)); };
 
+  /** The read-aloud voices on this computer (asked once; the Voice box suggests them). */
+  const VOICES = [];
+  MG.api('GET', '/api/tts/voices').then(r => VOICES.push(...(r.voices || []))).catch(() => {});
+  let sample = null;
+  async function hearVoice() {
+    try {
+      const r = await fetch('/api/tts/sample');
+      if (r.status !== 200) { const e = await r.json().catch(() => ({})); throw new Error(e.error || 'No voice found on this computer.'); }
+      if (sample) { sample.pause(); URL.revokeObjectURL(sample.src); }
+      sample = new Audio(URL.createObjectURL(await r.blob()));
+      sample.volume = Math.max(0.3, MG.st.settings.alerts.ttsVolume);
+      sample.play();
+    } catch (e) { MG.toast(e.message, true); }
+  }
+
   /* ---------- alert styles, each with a little looping preview ---------- */
   const STYLES = [
     ['levelup', 'Level up', 'An RPG panel: the XP bar fills and the viewer levels up', 'Game'],
@@ -178,9 +193,18 @@
         [A, { key: 'tierSounds', icon: 'sparkle', label: 'Other sounds for bigger alerts', hint: 'Pick a sound for each size: Common to Legendary', type: 'toggle', keywords: 'sound tier rarity legendary epic', when: s => s.alerts.sound }],
         ...TIER_SOUNDS.map(([key, label, hint]) => [A, { key, icon: 'volume', label, hint, type: 'select', dropdown: true, options: [['same', 'Same as above'], ...SOUND_TYPES], keywords: 'sound tier rarity', when: s => s.alerts.sound && s.alerts.tierSounds }]),
         [A, { key: 'volume', icon: 'volume', label: 'Volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'sound audio', when: s => s.alerts.sound }],
+        { sub: 'Read aloud' },
+        [A, { key: 'readAloud', icon: 'chat', label: 'Read messages aloud', hint: 'A voice reads Super Chats, Bits and other messages', help: 'The voice is made on this computer with its own voices (no internet, nothing is sent anywhere) and plays from the alerts overlay, so OBS records it with the alert. Messages with a blocked word are never read.', type: 'toggle', keywords: 'tts text to speech voice read aloud speak' }],
+        [A, { key: 'readWhat', icon: 'type', label: 'What it reads', type: 'select', dropdown: true, options: [['message', 'Only their message'], ['full', 'Who, what they sent, then their message']], keywords: 'tts voice', when: s => s.alerts.readAloud }],
+        [A, { key: 'readMin', icon: 'sparkle', label: 'Which alerts', hint: 'Bigger alerts have a rarer tier', type: 'select', dropdown: true, options: [['all', 'Every alert'], ['rare', 'Rare and bigger'], ['epic', 'Epic and bigger'], ['legendary', 'Legendary only']], keywords: 'tts voice tier minimum', when: s => s.alerts.readAloud }],
+        [A, { key: 'ttsVoice', icon: 'volume', label: 'Voice', hint: 'Empty = your computer’s default voice', type: 'font', placeholder: 'Default voice', suggestions: VOICES, keywords: 'tts voice', when: s => s.alerts.readAloud }],
+        [A, { key: 'ttsRate', icon: 'timer', label: 'Speed', type: 'range', min: 0.6, max: 1.8, step: 0.1, unit: '×', keywords: 'tts voice rate', when: s => s.alerts.readAloud }],
+        [A, { key: 'ttsVolume', icon: 'volume', label: 'Voice volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'tts voice', when: s => s.alerts.readAloud }],
+        [A, { key: 'ttsMaxLength', icon: 'size', label: 'Longest message read', hint: 'Letters; longer ones are cut', type: 'range', min: 20, max: 300, step: 10, keywords: 'tts voice length', when: s => s.alerts.readAloud }],
       ]),
       h('div', { class: 'btn-row hear-row' }, h('span', { class: 'lbl', text: 'Hear it:' }),
-        ...['Common', 'Rare', 'Epic', 'Legendary'].map((t, i) => h('button', { class: 'btn ghost sm', title: `The sound a ${t} alert plays`, onclick: () => hear(i) }, icon('volume'), t))),
+        ...['Common', 'Rare', 'Epic', 'Legendary'].map((t, i) => h('button', { class: 'btn ghost sm', title: `The sound a ${t} alert plays`, onclick: () => hear(i) }, icon('volume'), t)),
+        h('button', { class: 'btn ghost sm', title: 'The read-aloud voice, with your voice and speed', onclick: hearVoice }, icon('chat'), 'Voice')),
       h('div', { class: 'btn-row try-row' }, h('span', { class: 'lbl', text: 'Try:' }),
         ...[['gift', 'Gift'], ['sub', 'Sub'], ['superchat', 'Super Chat'], ['follow', 'Follow'], ['raid', 'Raid']].map(([k, t]) => h('button', { class: 'btn ghost sm', onclick: () => MG.test(k) }, icon('play'), t)))));
     c.append(MG.alertsSetup());
