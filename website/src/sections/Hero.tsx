@@ -1,4 +1,4 @@
-import { ArrowUpRight, BadgeCheck, Code2, Monitor, UserX } from 'lucide-react';
+import { ArrowUpRight, BadgeCheck, Code2, HardDrive, Monitor, UserX } from 'lucide-react';
 import { Fragment, type CSSProperties } from 'react';
 import { GithubIcon, PlatformIcon, PLATFORMS } from '../components/brand';
 import { ALERT_LOOKS, AlertShow, ChatFeed } from '../components/Overlay';
@@ -50,6 +50,7 @@ export function Hero() {
               </a>
             </div>
             <ul className="word-in mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/70" style={{ '--d': '950ms' } as CSSProperties}>
+              <li><a href="#local" className="inline-flex items-center gap-1.5 font-medium text-white underline-offset-4 hover:underline"><HardDrive className="h-4 w-4 text-[#4ade80]" />Runs 100% on your PC</a></li>
               <li className="inline-flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-[#4ade80]" />Free forever</li>
               <li className="inline-flex items-center gap-1.5"><Code2 className="h-4 w-4 text-[#c9b8ff]" />Open source</li>
               <li className="inline-flex items-center gap-1.5"><UserX className="h-4 w-4 text-[#ff8fc7]" />No account needed</li>
