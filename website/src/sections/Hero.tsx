@@ -33,13 +33,13 @@ export function Hero() {
               <span>New: 15 alert styles<span className="hidden sm:inline"> &amp; read aloud</span></span>
               <ArrowUpRight className="h-4 w-4" />
             </a>
-            <h1 className="text-white text-5xl md:text-6xl xl:text-7xl font-medium leading-[1.02] max-w-xl mb-5" style={{ letterSpacing: '-0.045em' }}>
+            <h1 className="text-white text-5xl md:text-6xl/none xl:text-7xl/none font-medium leading-[1.02] max-w-xl mb-5" style={{ letterSpacing: '-0.045em' }}>
               {/* real spaces between the words, so screen readers and search engines read "Every live chat. One overlay." */}
               {['Every', 'live', 'chat.'].map((w, k) => <Fragment key={w}>{k > 0 && ' '}<span className="word-in inline-block" style={{ '--d': `${120 + k * 90}ms` } as CSSProperties}>{w}</span></Fragment>)}
               {' '}<br />
               {['One', 'overlay.'].map((w, k) => <Fragment key={w}>{k > 0 && ' '}<span className="word-in inline-block text-gradient-live pb-1" style={{ '--d': `${420 + k * 110}ms` } as CSSProperties}>{w}</span></Fragment>)}
             </h1>
-            <p className="word-in text-white/75 text-base md:text-lg max-w-md mb-8 leading-relaxed" style={{ '--d': '700ms' } as CSSProperties}>
+            <p className="word-in text-white/75 text-base md:text-lg/7 max-w-md mb-8 leading-relaxed" style={{ '--d': '700ms' } as CSSProperties}>
               YouTube, Twitch, Kick, TikTok and Facebook chat, merged into one beautiful OBS overlay. Free, and no accounts.
             </p>
             <div className="word-in flex flex-wrap items-center gap-3" style={{ '--d': '850ms' } as CSSProperties}>
@@ -66,7 +66,7 @@ export function Hero() {
                     <span className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-xl" style={{ background: `${p.color}24`, boxShadow: `inset 0 0 0 1px ${p.color}55` }}>
                       <PlatformIcon id={p.id} colored className="h-5 w-5 sm:h-[22px] sm:w-[22px]" />
                     </span>
-                    <span className="text-base sm:text-[17px] font-semibold tracking-tight text-white">{p.name}</span>
+                    <span className="text-base sm:text-[17px]/6 font-semibold tracking-tight text-white">{p.name}</span>
                   </li>
                 ))}
               </ul>

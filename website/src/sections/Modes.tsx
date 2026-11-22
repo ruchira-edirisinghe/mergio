@@ -41,7 +41,7 @@ export function Modes() {
       <div ref={ref} className="max-w-[88rem] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <Reveal variant="left" className="lg:pr-12 lg:pt-2 lg:sticky lg:top-8">
           <Eyebrow>Mergio in practice</Eyebrow>
-          <h2 className="text-5xl md:text-6xl font-medium leading-none mb-6" style={{ letterSpacing: '-0.04em' }}>Built for<br />your stream</h2>
+          <h2 className="text-5xl md:text-6xl/none font-medium leading-none mb-6" style={{ letterSpacing: '-0.04em' }}>Built for<br />your stream</h2>
           <p className="text-white/60 text-base leading-relaxed max-w-sm mb-8 lg:mb-10">
             Pick one to see it running.
           </p>
@@ -72,7 +72,7 @@ export function Modes() {
           <div className={`absolute inset-0 ${m.dim ? 'bg-[#07060c]/60' : 'bg-[#07060c]/25'}`} />
           <div className="absolute inset-x-0 top-0 h-2/3 bg-linear-to-b from-[#0a0716]/90 via-[#0a0716]/55 to-transparent" />
           <div key={`text-${m.id}`} className="relative z-10 p-6 sm:p-8 md:p-12 anim-rise">
-            <h3 className="text-white text-3xl sm:text-4xl md:text-5xl font-medium leading-tight mb-5" style={{ letterSpacing: '-0.03em' }}>{m.title}</h3>
+            <h3 className="text-white text-3xl sm:text-4xl/10 md:text-5xl/none font-medium leading-tight mb-5" style={{ letterSpacing: '-0.03em' }}>{m.title}</h3>
             <p className="text-white/70 text-base max-w-md mb-8">{m.text}</p>
             <a href={m.link} target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-3 text-white font-medium">
               <span className="w-9 h-9 rounded-full bg-white/80 backdrop-blur flex items-center justify-center group-hover:bg-white transition-colors"><ArrowRight className="w-4 h-4 text-black" /></span>

@@ -261,7 +261,7 @@ export function Legal({ doc }: { doc: LegalDoc }) {
             <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/[.06] px-3 py-1 text-xs font-medium uppercase tracking-[.16em] text-white/55 ring-1 ring-white/10">
               <FileText className="h-3.5 w-3.5" />Legal
             </p>
-            <h1 className="text-5xl font-medium leading-[1.02] text-white md:text-6xl" style={{ letterSpacing: '-0.045em' }}>{d.title}</h1>
+            <h1 className="text-5xl font-medium leading-[1.02] text-white md:text-6xl/none" style={{ letterSpacing: '-0.045em' }}>{d.title}</h1>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/65">{d.tagline}</p>
             <p className="mt-5 text-sm text-white/40">Last updated {UPDATED}</p>
           </div>
@@ -297,7 +297,7 @@ export function Legal({ doc }: { doc: LegalDoc }) {
             <div className="grid max-w-3xl gap-12">
               {d.sections.map((s, i) => (
                 <section key={s.id} id={s.id} className="scroll-mt-24">
-                  <h2 className="mb-4 flex items-baseline gap-3 text-2xl font-semibold tracking-tight text-white md:text-[28px]" style={{ letterSpacing: '-0.02em' }}>
+                  <h2 className="mb-4 flex items-baseline gap-3 text-2xl font-semibold tracking-tight text-white md:text-[28px]/8" style={{ letterSpacing: '-0.02em' }}>
                     <span className="font-mono text-base font-medium text-gradient">{String(i + 1).padStart(2, '0')}</span>{s.title}
                   </h2>
                   <div className="grid gap-4">{s.body}</div>

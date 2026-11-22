@@ -101,7 +101,7 @@ export function Local() {
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <Reveal variant="left">
             <Eyebrow><span className="inline-flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />100% local</span></Eyebrow>
-            <h2 className="mb-5 text-4xl font-medium leading-tight md:text-5xl" style={{ letterSpacing: '-0.03em' }}>Runs on your PC.<br /><span className="text-white/55">Nothing in the cloud.</span></h2>
+            <h2 className="mb-5 text-4xl font-medium leading-tight md:text-5xl/none" style={{ letterSpacing: '-0.03em' }}>Runs on your PC.<br /><span className="text-white/55">Nothing in the cloud.</span></h2>
             <p className="mb-8 max-w-lg text-lg text-white/70">Mergio isn't a website or an online service. It's a small app on your own computer, and everything it does stays there.</p>
             <ul className="space-y-5">
               {POINTS.map(([icon, title, text]) => <Point key={title} icon={icon} title={title}>{text}</Point>)}

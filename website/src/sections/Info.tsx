@@ -26,10 +26,10 @@ export function Info() {
       <div className="max-w-[88rem] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12 lg:mb-16 items-start">
           <Reveal variant="left">
-            <h2 className="text-white text-4xl md:text-5xl font-medium leading-tight mb-8" style={{ letterSpacing: '-0.03em' }}>Meet Mergio.</h2>
+            <h2 className="text-white text-4xl md:text-5xl/none font-medium leading-tight mb-8" style={{ letterSpacing: '-0.03em' }}>Meet Mergio.</h2>
             <PillLink href="#modes">See it in action</PillLink>
           </Reveal>
-          <Reveal as="p" variant="blur" delay={150} className="text-white/70 text-2xl sm:text-3xl lg:text-4xl leading-snug" style={{ letterSpacing: '-0.02em' }}>
+          <Reveal as="p" variant="blur" delay={150} className="text-white/70 text-2xl sm:text-3xl/9 lg:text-4xl/10 leading-snug" style={{ letterSpacing: '-0.02em' }}>
             Your viewers chat in five places. <span className="text-white">Mergio puts them all in one.</span>
           </Reveal>
         </div>

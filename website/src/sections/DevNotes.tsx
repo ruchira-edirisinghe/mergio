@@ -108,7 +108,7 @@ export function DevNotes() {
       <div className="mx-auto grid max-w-[88rem] grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-16">
         <Reveal variant="left" className="lg:sticky lg:top-8">
           <Eyebrow>Dev notes</Eyebrow>
-          <h2 className="mb-4 text-4xl md:text-5xl font-medium leading-tight" style={{ letterSpacing: '-0.03em' }}>What's new,<br />version by version.</h2>
+          <h2 className="mb-4 text-4xl md:text-5xl/none font-medium leading-tight" style={{ letterSpacing: '-0.03em' }}>What's new,<br />version by version.</h2>
           <p className="mb-6 max-w-sm text-base text-white/60">Every Mergio release and what it brought. You don't need to check here: Mergio tells you when a new version is out and shows these notes after it updates.</p>
           <div className="rounded-3xl bg-surface p-5 ring-1 ring-white/[.07]">
             <div className="flex items-center justify-between gap-3">

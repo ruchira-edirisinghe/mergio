@@ -18,7 +18,7 @@ export function DownloadCta() {
                 <MergioMark className="h-16 w-16" />
               </div>
             </div>
-            <h2 className="text-white text-4xl md:text-6xl font-medium leading-[1.05] mb-5" style={{ letterSpacing: '-0.04em' }}>Bring every<br />chat together.</h2>
+            <h2 className="text-white text-4xl md:text-6xl/none font-medium leading-[1.05] mb-5" style={{ letterSpacing: '-0.04em' }}>Bring every<br />chat together.</h2>
             <p className="text-white/65 text-base md:text-lg max-w-md mb-8">Free, forever. Download it from GitHub.</p>
             <div className="flex items-center gap-4 text-white/70">
               {PLATFORMS.map(p => <PlatformIcon key={p.id} id={p.id} className="h-6 w-6" aria-label={p.name} />)}

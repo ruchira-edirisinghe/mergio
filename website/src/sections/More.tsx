@@ -37,7 +37,7 @@ export function Features() {
     <section className="bg-ink pb-20 md:pb-24">
       <Reveal className="mx-auto mb-10 max-w-[88rem] px-4 sm:px-6 text-center">
         <Eyebrow>And there's more</Eyebrow>
-        <h2 className="text-4xl md:text-5xl font-medium leading-tight" style={{ letterSpacing: '-0.03em' }}>Everything a multistream needs.</h2>
+        <h2 className="text-4xl md:text-5xl/none font-medium leading-tight" style={{ letterSpacing: '-0.03em' }}>Everything a multistream needs.</h2>
       </Reveal>
       <Reveal variant="scale" delay={150} className="grid gap-3">
         <ChipRow items={ROW_A} />
@@ -71,7 +71,7 @@ export function Faq() {
       <div className="max-w-[88rem] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <Reveal variant="left" className="lg:pr-12">
           <Eyebrow>FAQ</Eyebrow>
-          <h2 className="text-4xl md:text-5xl font-medium leading-tight mb-4" style={{ letterSpacing: '-0.03em' }}>Questions,<br />answered.</h2>
+          <h2 className="text-4xl md:text-5xl/none font-medium leading-tight mb-4" style={{ letterSpacing: '-0.03em' }}>Questions,<br />answered.</h2>
           <p className="text-white/60 text-base max-w-sm">More in the <a className="underline underline-offset-4 hover:text-white" href={readme('troubleshooting')} target="_blank" rel="noopener noreferrer">guide on GitHub</a>.</p>
         </Reveal>
         <Reveal variant="right" delay={100} className="divide-y divide-white/10 rounded-3xl bg-surface px-5 sm:px-6 md:px-8 ring-1 ring-white/[.07]">
