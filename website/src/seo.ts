@@ -12,7 +12,7 @@ export const PAGES: PageMeta[] = [
   {
     path: '/', file: 'index.html', name: 'Mergio',
     title: 'Mergio · Free multistream chat overlay for OBS',
-    description: 'Merge YouTube, Twitch, Kick, TikTok and Facebook live chat into one OBS overlay, with gift alerts, a viewer count and follower goals. Free and open source.',
+    description: 'Merge YouTube, Twitch, Kick, TikTok and Facebook live chat into one OBS overlay, with game-style gift alerts, OBS docks and viewer counts. Free and open source.',
   },
   {
     path: '/privacy', file: 'privacy.html', name: 'Privacy policy',
@@ -58,8 +58,11 @@ export function jsonLd(page: PageMeta) {
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     featureList: [
       'YouTube, Twitch, Kick, TikTok and Facebook chat in one OBS browser source',
-      'Gift, sub, Super Chat, raid and follow alerts on their own overlay',
-      'Live viewer count and follower goals for every platform',
+      'Ten game-style alert themes for gifts, subs, Super Chats, raids and follows, with gift rarity and viewer levels',
+      'OBS docks for the chat, gifts received and live viewers',
+      'Three saved looks for every overlay',
+      'Live viewer count and follower goals for every platform, showing only the numbers you pick',
+      'Hide any message from the chat overlay',
       'Real gift pictures and profile pictures',
       '7TV, BTTV and FFZ emotes',
       'Runs on your own PC with no account and no cloud',
