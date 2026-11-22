@@ -5,7 +5,7 @@ import { Eyebrow } from '../components/ui';
 import { readme } from '../lib/links';
 
 const ROW_A: [LucideIcon, string][] = [
-  [Sparkles, 'Ten alert themes'], [Trophy, 'Gift rarity & levels'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'],
+  [Sparkles, 'Fifteen alert themes'], [Trophy, 'Gift rarity & levels'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'],
   [Palette, 'Any Google Font'], [Eye, 'Viewer count'], [Target, 'Follower goals'], [Languages, 'Any language'], [Bookmark, 'Three saved looks'], [Pause, 'Pause & skip alerts'],
 ];
 const ROW_B: [LucideIcon, string][] = [

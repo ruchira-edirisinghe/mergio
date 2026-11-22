@@ -58,7 +58,7 @@ export function jsonLd(page: PageMeta) {
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     featureList: [
       'YouTube, Twitch, Kick, TikTok and Facebook chat in one OBS browser source',
-      'Ten game-style alert themes for gifts, subs, Super Chats, raids and follows, with gift rarity and viewer levels',
+      'Fifteen game-style alert themes for gifts, subs, Super Chats, raids and follows, with gift rarity and viewer levels',
       'OBS docks for the chat, gifts received and live viewers',
       'Three saved looks for every overlay',
       'Live viewer count and follower goals for every platform, showing only the numbers you pick',
