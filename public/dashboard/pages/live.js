@@ -44,10 +44,13 @@
     const av = h('img', { class: 'av', src: /^(https:\/\/|\/avatar\/)/.test(m.user.avatar) ? m.user.avatar : `/avatar/default/${encodeURIComponent(m.user.name)}`, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' });
     const hidden = MG.hidden.has(m.id);
     if (hidden) head.insertBefore(h('span', { class: 'hid-tag', text: 'Hidden' }), head.querySelector('time'));
+    const isPinned = MG.live.pinned?.id === m.id;
+    if (isPinned) head.insertBefore(h('span', { class: 'pin-tag' }, icon('pin'), 'Pinned'), head.querySelector('time'));
     const el = h('div', { class: `fi ${hidden ? 'hid' : ''} ${picked.has(m.id) ? 'picked' : ''}`, style: `--pc: var(--${m.platform})`, title: MG.pname(m.platform), 'data-id': m.id },
       h('span', { class: 'pick', 'aria-hidden': 'true' }, icon('check')), av, h('div', { class: 'fb' }, head, t));
     // a quick button on each message (shows on hover, always reachable with the keyboard)
     if (!hidden) el.append(h('div', { class: 'fi-act' },
+      ['join', 'like'].includes(m.type) ? null : h('button', { type: 'button', class: `icon-btn sm ${isPinned ? 'on' : ''}`, title: isPinned ? 'Unpin from the overlay' : 'Pin on the overlay: it stays at the top until you unpin it', 'aria-label': `${isPinned ? 'Unpin' : 'Pin'} the message from ${m.user.name}`, 'aria-pressed': String(isPinned), onclick: e => { e.stopPropagation(); MG.pin(isPinned ? null : m.id); } }, icon('pin')),
       h('button', { type: 'button', class: 'icon-btn sm', title: 'Hide this message from the overlay', 'aria-label': `Hide the message from ${m.user.name} from the overlay`, onclick: e => { e.stopPropagation(); hide([m.id]); } }, icon('eyeoff'))));
     el.addEventListener('click', e => { if (selecting && !e.target.closest('button')) togglePick(m.id, e.shiftKey); });
     return el;
@@ -192,6 +195,25 @@
     return bar;
   }
 
+  /** Above the list: the pinned message, and pause / skip for the alerts on stream. */
+  function liveBar() {
+    const p = MG.live.pinned, paused = MG.live.alertsPaused;
+    const text = p ? (p.parts || []).map(x => x.text || x.name || '').join('').trim() || p.event?.title || '' : '';
+    return h('div', { class: 'live-bar', id: 'liveBar' },
+      p ? h('div', { class: 'pin-now', style: `--pc: var(--${p.platform})` }, icon('pin'), h('span', { class: 'pin-t' }, h('b', { text: p.user.name }), ` ${text}`),
+        h('button', { type: 'button', class: 'btn sm ghost', onclick: () => MG.pin(null) }, 'Unpin'))
+        : h('div', { class: 'pin-now empty-pin' }, icon('pin'), h('span', { text: 'Hover a message and press the pin to keep it at the top of your overlay.' })),
+      h('div', { class: 'alert-ctl', role: 'group', 'aria-label': 'Alerts on stream' },
+        h('span', { class: `al-state ${paused ? 'paused' : ''}` }, h('i'), paused ? 'Alerts paused' : 'Alerts on'),
+        h('button', { type: 'button', class: `btn sm ${paused ? 'primary' : 'ghost'}`, title: paused ? 'Show alerts again, starting with the ones that waited' : 'Hold new alerts until you resume. None are lost', onclick: () => MG.alertControl(paused ? 'resume' : 'pause') }, icon(paused ? 'play' : 'pause'), paused ? 'Resume' : 'Pause'),
+        h('button', { type: 'button', class: 'btn sm ghost', title: 'End the alert on screen now', onclick: () => MG.alertControl('skip') }, icon('skip'), 'Skip')));
+  }
+  MG.on('live', () => {
+    if (MG.current() !== 'live') return;
+    const bar = document.getElementById('liveBar'); if (bar) bar.replaceWith(liveBar());
+    fill(); requestAnimationFrame(fitFeed);
+  });
+
   function render(c) {
     const search = h('input', { type: 'search', placeholder: 'Search chat', value: query, 'aria-label': 'Search messages', oninput: e => { query = e.target.value.trim().toLowerCase(); fill(); } });
     const kinds = MG.segmented({ id: 'feedKind', value: kind, label: 'Kind of messages', options: [['all', 'Everything'], ['chat', 'Chat'], ['alerts', 'Alerts']], onchange: v => { kind = v; save(); fill(); } });
@@ -204,7 +226,7 @@
           if (!await MG.confirm({ title: 'Clear the chat?', text: 'Removes all messages from your overlay and from this list. New messages keep coming in.', ok: 'Clear' })) return;
           await MG.api('POST', '/api/clear', {}); MG.feed = []; fill(); MG.toast('Chat cleared');
         } }, icon('trash'), 'Clear')));
-    c.append(h('section', { class: 'card feed-card' }, tools, h('div', { class: `feed ${selecting ? 'selecting' : ''}`, id: 'feed' }), h('div', { class: 'sel-bar', id: 'selBar', hidden: true })));
+    c.append(h('section', { class: 'card feed-card' }, liveBar(), tools, h('div', { class: `feed ${selecting ? 'selecting' : ''}`, id: 'feed' }), h('div', { class: 'sel-bar', id: 'selBar', hidden: true })));
     fill(); selBar();
     // the filters wrap onto more lines in narrow windows, so fit again whenever they change size
     if (toolsWatch) { toolsWatch.disconnect(); toolsWatch.observe(tools); }

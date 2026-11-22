@@ -1199,3 +1199,23 @@ a.btn { text-decoration: none; }
 .fold-in .big-steps { margin-top: 10px; }
 @container (max-width: 560px) { .dock-it { grid-template-columns: 36px minmax(0, 1fr); } .dock-b { grid-column: 1 / -1; justify-content: flex-start; } }
 @media (max-width: 640px) { .dock-it { grid-template-columns: 36px minmax(0, 1fr); } .dock-b { grid-column: 1 / -1; justify-content: flex-start; } }
+
+/* ---------- Live chat: pinned message + alert controls ---------- */
+.live-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.pin-now { flex: 1 1 260px; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--pc, var(--accent)) 12%, var(--panel-2)); box-shadow: inset 3px 0 0 var(--pc, var(--accent)); }
+.pin-now > svg { width: 15px; height: 15px; flex: none; color: var(--pc, var(--accent)); }
+.pin-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.pin-now.empty-pin { background: none; box-shadow: none; padding-left: 0; color: var(--muted); font-size: 12.5px; }
+.pin-now.empty-pin > svg { color: var(--faint); }
+.alert-ctl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.al-state { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.al-state i { width: 8px; height: 8px; border-radius: 50%; background: #3ddc84; box-shadow: 0 0 0 3px rgba(61, 220, 132, .18); }
+.al-state.paused i { background: #f5a524; box-shadow: 0 0 0 3px rgba(245, 165, 36, .2); }
+.fi .pin-tag { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 99px; font-size: 10.5px; font-weight: 800; color: var(--pc); background: color-mix(in srgb, var(--pc) 15%, transparent); }
+.fi .pin-tag svg { width: 11px; height: 11px; }
+.fi-act { display: flex; gap: 4px; }
+.icon-btn.on { color: #fff; background: var(--accent); border-color: var(--accent); }
+.alert-live { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; padding: 12px 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.alert-live.paused { border-color: rgba(245, 165, 36, .45); background: color-mix(in srgb, #f5a524 8%, var(--panel)); }
+.alert-live .al-state { flex: 1 1 240px; flex-wrap: wrap; color: var(--text); }
+.alert-live .al-state > span { flex-basis: 100%; padding-left: 14px; font-weight: 500; color: var(--muted); }

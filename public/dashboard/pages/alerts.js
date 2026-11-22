@@ -171,7 +171,17 @@
   }
   MG.on('overlays', () => { for (const el of document.querySelectorAll('.alerts-status')) { el.textContent = ''; el.append(alertsStatus()); } });
 
+  function controls() {
+    const paused = MG.live.alertsPaused;
+    return h('div', { class: `alert-live ${paused ? 'paused' : ''}`, id: 'alertLive' },
+      h('span', { class: 'al-state' + (paused ? ' paused' : '') }, h('i'), h('b', { text: paused ? 'Alerts are paused' : 'Alerts are on' }), h('span', { text: paused ? 'New alerts wait in line and play when you resume.' : 'Pause during a quiet moment; nothing gets lost.' })),
+      h('button', { type: 'button', class: `btn sm ${paused ? 'primary' : 'ghost'}`, onclick: () => MG.alertControl(paused ? 'resume' : 'pause') }, icon(paused ? 'play' : 'pause'), paused ? 'Resume' : 'Pause'),
+      h('button', { type: 'button', class: 'btn sm ghost', onclick: () => MG.alertControl('skip') }, icon('skip'), 'Skip current'));
+  }
+  MG.on('live', () => { const el = document.getElementById('alertLive'); if (el) el.replaceWith(controls()); });
+
   function render(c) {
+    c.append(controls());
     const used = new Set(MG.st.sources.map(s => s.platform));
     const order = [...ORDER].sort((a, b) => used.has(b) - used.has(a));
     placement(c);
