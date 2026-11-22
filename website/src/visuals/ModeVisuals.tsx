@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { AppWindow, Bell, Eye, Home, Link2, Lock, MessageSquare, Mic, Monitor, Palette, Settings, Volume2 } from 'lucide-react';
+import { AppWindow, Bell, Eye, EyeOff, Home, Link2, Lock, MessageSquare, Mic, Monitor, Palette, Settings, Volume2 } from 'lucide-react';
 import { PlatformIcon, PLATFORMS, Wordmark } from '../components/brand';
 import { Face } from '../components/Face';
+import { GiftArt } from '../components/GiftArt';
 import { ALERT_LOOKS, AlertShow, ChatFeed, THEMES, type ThemeId } from '../components/Overlay';
-import { ALERTS, CHATS, SCRIPT, type ChatItem } from '../lib/chat';
+import { ALERTS, CHATS, GIFTS, SCRIPT, type ChatItem } from '../lib/chat';
 import { useCycle, useFeed, useInterval } from '../lib/hooks';
 import { VideoBackdrop } from './Backdrop';
 
@@ -173,15 +174,19 @@ export function PanelMock({ active }: { active: boolean }) {
   );
 }
 
-/* ---------- OBS with the Mergio live chat dock ---------- */
+/* ---------- OBS with Mergio's three docks: chat, gifts and viewers ---------- */
+// one message the streamer took off the overlay, to show the Hide button at work
+const HIDDEN_TEXT = 'pls pls pls';
 function DockRow({ item }: { item: Extract<ChatItem, { kind: 'chat' }> }) {
+  const hidden = item.text === HIDDEN_TEXT;
   return (
-    <div className="flex gap-2.5 border-b border-white/5 px-3 py-2 anim-rise">
-      <Face name={item.user.name} className="mt-0.5 h-7 w-7 shrink-0 rounded-full" />
-      <div className="min-w-0 text-[12.5px] leading-snug">
+    <div className={`flex gap-2.5 border-b border-white/5 px-3 py-1.5 anim-rise ${hidden ? 'opacity-45' : ''}`}>
+      <Face name={item.user.name} className="mt-0.5 h-6 w-6 shrink-0 rounded-full" />
+      <div className="min-w-0 flex-1 text-[12px] leading-snug">
         <div className="flex items-center gap-1.5">
           <PlatformIcon id={item.user.platform} colored className="h-3 w-3" />
           <b style={{ color: item.user.color }}>{item.user.name}</b>
+          {hidden && <span className="ml-auto inline-flex items-center gap-1 rounded bg-white/10 px-1.5 text-[10px] font-semibold text-white/70"><EyeOff className="h-2.5 w-2.5" />Hidden</span>}
         </div>
         <div className="text-white/80">{item.text}</div>
       </div>
@@ -189,12 +194,33 @@ function DockRow({ item }: { item: Extract<ChatItem, { kind: 'chat' }> }) {
   );
 }
 
+const ON_STREAM = SCRIPT.filter(i => !(i.kind === 'chat' && i.text === HIDDEN_TEXT));
+const DOCK_GIFTS = SCRIPT.filter((i): i is Extract<ChatItem, { kind: 'gift' | 'kicks' | 'superchat' }> => i.kind === 'gift' || i.kind === 'kicks' || i.kind === 'superchat');
+function GiftRow({ item }: { item: (typeof DOCK_GIFTS)[number] }) {
+  const what = item.kind === 'gift' ? `${GIFTS[item.gift].name} ×${item.count}` : item.kind === 'kicks' ? `${item.amount} Kicks` : `Super Chat ${item.amount}`;
+  return (
+    <div className="flex items-center gap-2 px-3 py-1 text-[11.5px] anim-rise">
+      <span className="grid h-6 w-6 shrink-0 place-items-center">
+        {item.kind === 'gift' ? <GiftArt gift={item.gift} className="h-6 w-6" /> : <PlatformIcon id={item.user.platform} colored className="h-4 w-4" />}
+      </span>
+      <b className="truncate" style={{ color: item.user.color }}>{item.user.name}</b>
+      <span className="ml-auto shrink-0 text-white/70">{what}</span>
+    </div>
+  );
+}
+
+function DockHead({ title }: { title: string }) {
+  return <div className="flex items-center justify-between border-b border-white/5 bg-[#17181d] px-3 py-1.5 text-[12px] font-semibold">{title}<span className="text-[10px] font-normal text-white/40">Dock</span></div>;
+}
+
 export function ObsDock({ active }: { active: boolean }) {
   const feed = useFeed(CHATS as Extract<ChatItem, { kind: 'chat' }>[], 1500, active, 9, 6);
-  const overlay = useFeed(SCRIPT, 1500, active, 7, 5);
+  const overlay = useFeed(ON_STREAM, 1500, active, 7, 5);
   const [levels, setLevels] = useState([.6, .4]);
   useInterval(() => setLevels([.35 + Math.random() * .5, .2 + Math.random() * .5]), active ? 180 : null);
-  const counts = [214, 160, 88, 192, 41];
+  const gifts = useFeed(DOCK_GIFTS, 2600, active, 4, 3);
+  const [t] = useCycle(40, 1300, active);
+  const counts = [214, 160, 88, 192, 41].map((n, i) => n + Math.round(Math.sin((t + i * 3) / 2.4) * (3 + i * 2)));
   return (
     <Scaled width={980}>
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#1d1f26] text-white shadow-[0_40px_80px_-20px_rgba(0,0,0,.6)]">
@@ -242,15 +268,29 @@ export function ObsDock({ active }: { active: boolean }) {
               </div>
             </div>
           </div>
-          <div className="flex flex-col border-l border-black/40 bg-[#0e0e15]">
-            <div className="flex items-center justify-between border-b border-white/5 px-3 py-2.5 text-[13px] font-semibold">Mergio · Live chat<span className="text-[11px] font-normal text-white/40">Dock</span></div>
-            <div className="flex flex-wrap gap-1.5 border-b border-white/5 px-3 py-2">
-              {PLATFORMS.map((p, i) => (
-                <span key={p.id} className="inline-flex items-center gap-1 rounded-full bg-white/[.06] px-2 py-0.5 text-[11px] text-white/70"><PlatformIcon id={p.id} colored className="h-3 w-3" />{counts[i]}</span>
-              ))}
+          <div className="flex flex-col gap-px border-l border-black/40 bg-black/40">
+            <div className="flex min-h-0 flex-1 flex-col bg-[#0e0e15]">
+              <DockHead title="Mergio · Chat" />
+              <div className="flex min-h-0 flex-1 flex-col justify-end overflow-hidden" style={{ height: 250 }}>
+                {feed.map(e => <DockRow key={e.key} item={e.item} />)}
+              </div>
             </div>
-            <div className="flex min-h-0 flex-1 flex-col justify-end overflow-hidden" style={{ height: 420 }}>
-              {feed.map(e => <DockRow key={e.key} item={e.item} />)}
+            <div className="flex flex-col bg-[#0e0e15]">
+              <DockHead title="Mergio · Gifts" />
+              <div className="flex flex-col-reverse justify-end overflow-hidden py-1" style={{ height: 138 }}>
+                {gifts.map(e => <GiftRow key={e.key} item={e.item} />)}
+              </div>
+            </div>
+            <div className="flex flex-col bg-[#0e0e15]">
+              <DockHead title="Mergio · Viewers" />
+              <div className="px-3 py-2">
+                <div className="mb-1.5 flex items-baseline gap-1.5"><span className="h-2 w-2 rounded-full bg-[#ff2d55] anim-pulse" /><b className="text-[20px] tabular-nums">{counts.reduce((s, n) => s + n, 0).toLocaleString('en')}</b><span className="text-[11px] text-white/50">watching now</span><span className="ml-auto text-[11px] text-white/45">Peak <b className="tabular-nums text-white/80">742</b></span></div>
+                <div className="flex flex-wrap gap-1.5">
+                  {PLATFORMS.map((p, i) => (
+                    <span key={p.id} className="inline-flex items-center gap-1 rounded-full bg-white/[.06] px-2 py-0.5 text-[11px] tabular-nums text-white/75"><PlatformIcon id={p.id} colored className="h-3 w-3" />{counts[i]}</span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

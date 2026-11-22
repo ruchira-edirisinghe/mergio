@@ -5,7 +5,7 @@ import { Face } from '../components/Face';
 import { GiftArt } from '../components/GiftArt';
 import { ChatFeed } from '../components/Overlay';
 import { VideoBackdrop } from './Backdrop';
-import { CHATS, GIFTS, USERS, avatarGradient, initial, type GiftId } from '../lib/chat';
+import { CHATS, GIFTS, USERS, type GiftId } from '../lib/chat';
 import { useCycle, useFeed, useInterval } from '../lib/hooks';
 
 /* ---------- 1. Five chats flow into Mergio and out as one overlay ---------- */
@@ -81,25 +81,42 @@ export function GiftShow({ active }: { active: boolean }) {
   );
 }
 
-/* ---------- 3. Letter avatars turn into real profile pictures ---------- */
-const WALL = [...USERS, ...USERS.slice(0, 6).map(u => ({ ...u, name: `${u.name}_` }))].slice(0, 16);
-export function AvatarWall({ active }: { active: boolean }) {
-  const [step, setStep] = useState(0);
-  useInterval(() => setStep(v => (v + 1) % (WALL.length + 8)), active ? 260 : null);
+/* ---------- 3. Gifts level up: rarer gifts, more XP, and the viewer goes up a level ---------- */
+const DROPS: { gift: GiftId; count: number; tier: string; color: string; xp: number; who: number }[] = [
+  { gift: 'rose', count: 12, tier: 'Common', color: '#a7b1c2', xp: 50, who: 0 },
+  { gift: 'doughnut', count: 10, tier: 'Rare', color: '#3fa1ff', xp: 250, who: 1 },
+  { gift: 'galaxy', count: 1, tier: 'Epic', color: '#b866ff', xp: 1000, who: 2 },
+  { gift: 'galaxy', count: 12, tier: 'Legendary', color: '#ffb627', xp: 5000, who: 3 },
+];
+const FILL = 12; // ticks while the XP bar fills
+const HOLD = 12; // ticks it stays after the level goes up
+export function LevelUp({ active }: { active: boolean }) {
+  const [s, setS] = useState({ i: 0, t: 0 });
+  useInterval(() => setS(({ i, t }) => (t < FILL + HOLD ? { i, t: t + 1 } : { i: (i + 1) % DROPS.length, t: 0 })), active ? 110 : null);
+  const d = DROPS[s.i];
+  const u = USERS[d.who];
+  const level = 3 + s.i * 2;
+  const up = s.t >= FILL;
+  const fill = Math.min(1, s.t / FILL);
   return (
-    <div className="grid w-full max-w-[232px] grid-cols-4 gap-3" aria-hidden="true">
-      {WALL.map((u, i) => {
-        const loaded = i < step;
-        return (
-          <div key={i} className="relative aspect-square">
-            <span className={`absolute inset-0 grid place-items-center rounded-full text-sm font-bold text-white transition-opacity duration-300 ${loaded ? 'opacity-0' : 'opacity-100'}`} style={{ background: avatarGradient(u.name) }}>{initial(u.name)}</span>
-            {loaded && <Face name={u.name} index={i} className="absolute inset-0 h-full w-full rounded-full anim-pop" />}
-            <span className="absolute -bottom-0.5 -right-0.5 grid h-[38%] w-[38%] place-items-center rounded-full bg-[#2B2644]">
-              <PlatformIcon id={u.platform} colored className="h-[62%] w-[62%]" />
-            </span>
-          </div>
-        );
-      })}
+    <div className="relative flex w-full max-w-[250px] flex-col items-center text-center" aria-hidden="true">
+      <div className="absolute top-0 h-36 w-36 rounded-full blur-2xl transition-colors duration-500" style={{ background: `${d.color}55` }} />
+      <div key={`g-${s.i}`} className="relative h-24 w-24 anim-pop"><GiftArt gift={d.gift} className="h-full w-full drop-shadow-[0_8px_18px_rgba(0,0,0,.4)]" /></div>
+      <span key={`t-${s.i}`} className="relative mt-2 rounded-full px-3 py-0.5 text-[11px] font-extrabold uppercase tracking-[.16em] anim-pop"
+        style={{ color: d.color, background: `${d.color}22`, boxShadow: `inset 0 0 0 1px ${d.color}66` }}>{d.tier} drop</span>
+      <p className="relative mt-2 text-sm text-white/70"><b className="font-semibold text-white">{u.name}</b> sent {GIFTS[d.gift].name} ×{d.count}</p>
+      <div className="relative mt-3 flex w-full items-center gap-2.5 rounded-xl bg-black/25 px-2.5 py-2 ring-1 ring-white/10">
+        <span className="relative h-8 w-8 shrink-0">
+          <Face name={u.name} className="h-full w-full rounded-full" />
+          <span key={`lv-${s.i}-${up}`} className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 rounded px-1 text-[9px] font-black leading-[14px] text-black ${up ? 'anim-bump' : ''}`} style={{ background: up ? d.color : '#e8e6f0' }}>LV{level + (up ? 1 : 0)}</span>
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="flex justify-between text-[11px] font-semibold"><span className="text-white/55">{up ? 'Level up!' : 'XP'}</span><span className="tabular-nums" style={{ color: d.color }}>+{d.xp.toLocaleString('en-US')} XP</span></span>
+          <span className="relative h-1.5 overflow-hidden rounded-full bg-white/10">
+            <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${fill * 100}%`, background: d.color, boxShadow: `0 0 10px ${d.color}` }} />
+          </span>
+        </span>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { PillLink } from '../components/ui';
 import { Reveal } from '../components/Reveal';
 import { useInView } from '../lib/hooks';
-import { AutoDetect, AvatarWall, Counters, GiftShow, MergeFlow, Placement } from '../visuals/FeatureVisuals';
+import { AutoDetect, Counters, GiftShow, LevelUp, MergeFlow, Placement } from '../visuals/FeatureVisuals';
 
 function Card({ tone, title, body, wide, delay = 0, children }: { tone: 'light' | 'plum'; title: ReactNode; body: ReactNode; wide?: boolean; delay?: number; children: (active: boolean) => ReactNode }) {
   const [ref, inView] = useInView<HTMLDivElement>();
@@ -41,16 +41,16 @@ export function Info() {
           <Card tone="plum" delay={100} title={'The real gift,\nevery time.'} body="Gifts show up as the real thing, combos count live.">
             {a => <GiftShow active={a} />}
           </Card>
-          <Card tone="plum" title={'Faces, not\njust names.'} body="Everyone's real profile picture.">
-            {a => <AvatarWall active={a} />}
+          <Card tone="plum" title={'Gifts that\nlevel up.'} body="Bigger gifts drop rarer alerts, from common to legendary.">
+            {a => <LevelUp active={a} />}
           </Card>
           <Card tone="plum" delay={100} title={'Connects when\nyou go live.'} body="Add your channels once. That's it.">
             {a => <AutoDetect active={a} />}
           </Card>
-          <Card tone="light" wide delay={200} title="Alerts where you want them" body="In the chat, on their own overlay, or both.">
+          <Card tone="light" wide delay={200} title="Alerts where you want them" body="In the chat, on their own overlay, or both. Pause or skip them while you're live.">
             {a => <Placement active={a} />}
           </Card>
-          <Card tone="plum" title={'Viewers and\nfollower goals.'} body="Live counts from every platform, even in one line.">
+          <Card tone="plum" title={'Viewers and\nfollower goals.'} body="Live counts from every platform. You pick which ones show.">
             {a => <Counters active={a} />}
           </Card>
         </div>
