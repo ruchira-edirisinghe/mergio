@@ -6,6 +6,9 @@ import { GIFTS, type AlertItem, type ChatItem, type ChatUser, type GiftId } from
 import { Face } from './Face';
 import type { FeedEntry } from '../lib/hooks';
 
+// measures before paint in the browser; the HTML built ahead of time (entry-server.tsx) skips it
+const useLayout = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
 export type ThemeId = 'glass' | 'neon' | 'minimal' | 'soft' | 'retro';
 export const THEMES: { id: ThemeId; name: string }[] = [
   { id: 'glass', name: 'Glass' },
@@ -155,7 +158,7 @@ export function AlertShow({ item, look = 'spotlight', life = 5, size = 1, fit = 
   const [out, setOut] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
-  useLayoutEffect(() => {
+  useLayout(() => {
     const el = box.current, parent = el?.parentElement;
     if (!fit || !el || !parent) return;
     const measure = () => { const h = el.scrollHeight, room = parent.clientHeight; setScale(h && room ? Math.min(1, room / h) : 1); };
