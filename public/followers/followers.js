@@ -16,7 +16,7 @@
   const shown = {};        // what each item shows now, to spot new followers
 
   function applySettings(all) {
-    S = C.withOverrides(all.followers || {});
+    S = C.withOverrides(all.followers || {}, all.templates?.followers);
     const r = document.documentElement.style;
     r.setProperty('--font', C.font(S.font));
     r.setProperty('--fs', `${S.fontSize}px`);

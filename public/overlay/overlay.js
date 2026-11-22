@@ -94,6 +94,9 @@
   function withOverrides(s) {
     // Any appearance/general key can be overridden per browser source: /overlay?fontSize=28&theme=neon
     const out = JSON.parse(JSON.stringify(s));
+    // ?slot=2: this browser source uses saved look 2 (Chat style → Saved looks)
+    const look = s.templates?.chat?.[Number(params.get('slot')) - 1];
+    if (look) for (const sec of ['appearance', 'general']) Object.assign(out[sec], look.values?.[sec] || {});
     for (const [k, v] of params) {
       for (const sec of ['appearance', 'general']) {
         if (k in out[sec]) {
