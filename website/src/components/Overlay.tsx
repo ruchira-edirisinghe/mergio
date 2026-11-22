@@ -282,6 +282,7 @@ export function AlertShow({ item, look = 'levelup', life = 5, size = 1, fit = fa
             </div></div>
             <i className="flash" />
           </>}
+          {look === 'bounty' && <i className="badge" />}
         </div>
         <div className="info">
           {look === 'gacha' && <div className="stars">{Array.from({ length: STARS[tier] }, (_, i) => <i key={i} style={{ '--i': i } as CSSProperties} />)}</div>}
@@ -302,7 +303,6 @@ export function AlertShow({ item, look = 'levelup', life = 5, size = 1, fit = fa
         {look !== 'achievement' && pts}
         {look === 'crt' && <div className="osd"><span className="ch">CH {CHANNELS[tier]}</span><span className="stamp">{stamp}</span></div>}
         {look === 'transmission' && <div className="sig">{[0, 1, 2, 3].map(i => <i key={i} style={{ '--i': i } as CSSProperties} />)}</div>}
-        {look === 'bounty' && <i className="badge" />}
         <div className="timer"><i /></div>
       </div>
     </div>
