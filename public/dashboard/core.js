@@ -33,6 +33,19 @@
 
   /* ---------------- API & state ---------------- */
   MG.st = null;
+  MG.live = { pinned: null, alertsPaused: false }; // the pinned message and whether alerts are paused (not settings)
+  /** Pause, resume or skip alerts on the alerts overlay. */
+  MG.alertControl = async action => {
+    try {
+      const r = await MG.api('POST', '/api/alerts/control', { action });
+      MG.live.alertsPaused = r.paused; MG.emit('live');
+      MG.toast(action === 'skip' ? 'Skipped the alert on screen' : r.paused ? 'Alerts paused. New ones wait their turn' : 'Alerts are back on');
+    } catch (e) { MG.toast(e.message, true); }
+  };
+  /** Pin a message on the chat overlay (null unpins). */
+  MG.pin = async id => {
+    try { await MG.api('POST', '/api/pin', { id }); MG.toast(id ? 'Pinned on the overlay' : 'Unpinned'); } catch (e) { MG.toast(e.message, true); }
+  };
   MG.feed = [];
   MG.hidden = new Set(); // messages taken off the overlay (hidden from here, or deleted by a moderator)
   MG.overlays = { count: 0, obs: false, alerts: { count: 0, obs: false }, viewers: { count: 0, obs: false }, followers: { count: 0, obs: false } };
@@ -435,6 +448,9 @@
     ws.onopen = () => document.body.classList.remove('offline');
     ws.onmessage = e => {
       const d = JSON.parse(e.data);
+      if (d.op === 'hello') { MG.live = d.live || MG.live; emit('live'); }
+      if (d.op === 'pin') { MG.live.pinned = d.msg || null; emit('live'); }
+      if (d.op === 'alerts') { MG.live.alertsPaused = !!d.paused; emit('live'); }
       if (d.op === 'hello') { MG.feed = d.recent || []; if (d.stats) MG.st.stats = d.stats; emit('feed'); emit('stats', MG.st.stats); }
       if (d.op === 'sources') { MG.st.sources = d.sources; emit('sources'); renderNav(); updateSummary(); }
       if (d.op === 'msg') {

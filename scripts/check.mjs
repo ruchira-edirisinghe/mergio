@@ -237,6 +237,19 @@ console.log('Local server security');
   const atest = async (name, fn) => { try { await fn(); console.log(`  ok  ${name}`); } catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); } };
 
   await atest('accepts the control panel (same origin, JSON)', async () => assert.equal((await call('/api/clear', { method: 'POST', headers: { ...json, Origin: self, 'Sec-Fetch-Site': 'same-origin' }, body: '{}' })).status, 200));
+  await atest('pinning needs a message from the chat list; alert controls only take known actions', async () => {
+    manager.recent.push({ id: 'pin-1', platform: 'twitch', type: 'chat', user: { name: 'a' }, parts: [] });
+    const post = (path, b) => call(path, { method: 'POST', headers: json, body: JSON.stringify(b) });
+    assert.equal((await post('/api/pin', { id: 'pin-1' })).status, 200);
+    assert.equal((await post('/api/pin', { id: 'gone' })).status, 404);
+    assert.equal((await post('/api/pin', { id: {} })).status, 404);
+    assert.equal((await post('/api/pin', { id: null })).status, 200);
+    assert.equal((await post('/api/alerts/control', { action: 'explode' })).status, 400);
+    const r = await post('/api/alerts/control', { action: 'pause' });
+    assert.equal(r.status, 200); assert.equal(JSON.parse(r.body).paused, true);
+    assert.equal(JSON.parse((await post('/api/alerts/control', { action: 'resume' })).body).paused, false);
+    manager.recent.length = 0;
+  });
   await atest('hiding messages needs real message ids', async () => {
     assert.equal((await call('/api/hide', { method: 'POST', headers: json, body: JSON.stringify({ ids: [1, {}, 'a b'] }) })).status, 400);
     assert.equal((await call('/api/hide', { method: 'POST', headers: json, body: JSON.stringify({ ids: ['test-1', 'yt.Cg0KC=='] }) })).status, 200);

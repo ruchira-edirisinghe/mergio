@@ -57,7 +57,7 @@
     return `${ev.title || ''}${amount && (!num || /^[×x]/i.test(amount) || !(ev.title || '').includes(num)) ? ` · ${amount}` : ''}`;
   };
 
-  let settings = null, stats = null;
+  let settings = null, stats = null, live = { pinned: null, alertsPaused: false };
   const hidden = new Set();
 
   /* ======================= Chat ======================= */
@@ -70,8 +70,15 @@
     if (isEv) { const e = h('span', { class: 'ev', text: evText(m.event) }); if (m.event.color) e.style.setProperty('--evc', m.event.color); body.append(e); }
     if ((m.parts || []).length) body.append(parts(m));
     const row = h('div', { class: `row ${isEv ? 'is-ev' : ''} ${hidden.has(m.id) ? 'hid' : ''}`, 'data-id': m.id, style: `--pc: var(--${m.platform})` }, avatar(m), body);
-    if (!hidden.has(m.id) && !['join', 'like'].includes(m.type)) row.append(h('button', { class: 'act', title: 'Hide from the overlay', 'aria-label': `Hide the message from ${m.user.name} from the overlay`,
-      onclick: async () => { try { await api('/api/hide', { ids: [m.id] }); } catch (e) { toast(e.message, true); } } }, icon('eyeoff')));
+    if (!hidden.has(m.id) && !['join', 'like'].includes(m.type)) {
+      const isPinned = live.pinned?.id === m.id;
+      if (isPinned) row.classList.add('pinned');
+      row.append(h('div', { class: 'acts' },
+        h('button', { class: `act ${isPinned ? 'on' : ''}`, title: isPinned ? 'Unpin from the overlay' : 'Pin on the overlay', 'aria-label': `${isPinned ? 'Unpin' : 'Pin'} the message from ${m.user.name}`, 'aria-pressed': String(isPinned),
+          onclick: async () => { try { await api('/api/pin', { id: isPinned ? null : m.id }); } catch (e) { toast(e.message, true); } } }, icon('pin')),
+        h('button', { class: 'act', title: 'Hide from the overlay', 'aria-label': `Hide the message from ${m.user.name} from the overlay`,
+          onclick: async () => { try { await api('/api/hide', { ids: [m.id] }); } catch (e) { toast(e.message, true); } } }, icon('eyeoff'))));
+    }
     return row;
   }
   const chatShown = m => !chat.off.has(m.platform) && m.type !== 'join';
@@ -141,8 +148,13 @@
       h('div', { class: 'tot' }, ...[['gifts', 'gift', 'Gifts'], ['subs', 'star', 'Subs'], ['money', 'money', 'Bits & Super Chats'], ['follows', 'follow', 'Follows & raids']].map(([k, ic, t]) => h('span', { class: 'tc', title: t }, icon(ic), h('b', { text: String(n(k)) })))),
       top.length ? h('div', { class: 'top3' }, h('small', { text: 'Top supporters' }), ...top.map((e, i) => h('span', { class: 'sup' }, h('i', { text: String(i + 1) }), avatar(e.m), h('b', {}, plat(e.m.platform), ' ', e.m.user.name), h('small', { text: e.diamonds ? `${fmt(e.diamonds)} 💎` : `${e.n}×` })))) : null);
   }
+  const control = async action => { try { await api('/api/alerts/control', { action }); if (action === 'skip') toast('Skipped the alert on screen'); } catch (e) { toast(e.message, true); } };
   function giftTools() {
     const tools = $('tools'); tools.textContent = '';
+    tools.append(
+      h('button', { class: `seg ctl ${live.alertsPaused ? 'warn' : ''}`, title: live.alertsPaused ? 'Alerts are paused: resume them' : 'Pause alerts. New ones wait in line', 'aria-pressed': String(live.alertsPaused), onclick: () => control(live.alertsPaused ? 'resume' : 'pause') }, icon(live.alertsPaused ? 'play' : 'pause')),
+      h('button', { class: 'seg ctl', title: 'Skip the alert on screen', onclick: () => control('skip') }, icon('skip')),
+      h('span', { class: 'sep' }));
     for (const [k, t] of [['all', 'All'], ['gifts', 'Gifts'], ['subs', 'Subs'], ['money', '$'], ['follows', 'Follows']]) {
       tools.append(h('button', { class: `seg ${gifts.kind === k ? 'on' : ''}`, 'aria-pressed': String(gifts.kind === k), onclick: () => { gifts.kind = k; store.set('mg-dock-kind', k); giftTools(); giftFill(); } }, t));
     }
@@ -213,9 +225,11 @@
       const d = JSON.parse(e.data);
       if (d.op === 'hello') {
         settings = d.settings; settings.__sources = d.sources; stats = d.stats;
-        chat.list = d.recent || []; gifts.list = d.events || [];
+        chat.list = d.recent || []; gifts.list = d.events || []; live = d.live || live;
         fill();
       } else if (d.op === 'msg') { if (VIEW === 'chat') chatMsg(d.msg); else if (VIEW === 'gifts') giftMsg(d.msg); }
+      else if (d.op === 'pin') { live.pinned = d.msg || null; if (VIEW === 'chat') chatFill(); }
+      else if (d.op === 'alerts') { live.alertsPaused = !!d.paused; if (VIEW === 'gifts') giftTools(); }
       else if (d.op === 'stats') { stats = d.stats; if (VIEW === 'viewers') viewersFill(); }
       else if (d.op === 'sources' && settings) settings.__sources = d.sources;
       else if (d.op === 'delete' && Array.isArray(d.ids)) {

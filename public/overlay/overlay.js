@@ -540,6 +540,31 @@
       ...list(S?.general.mentionNames)])];
   }
 
+  /* ---------------- pinned message: stays at the top (bottom when newest is on top) until unpinned ---------------- */
+  let pinned = null, pinBox = null;
+  function renderPin(animate) {
+    if (!pinned || !S) { if (pinBox) { const old = pinBox; pinBox = null; old.classList.add('leaving'); setTimeout(() => old.remove(), 420); } fitPin(); return; }
+    const el = build(pinned);
+    el.classList.add('pinned');
+    const tag = h('span', 'pin-tag'); tag.append(mergioIcon('pin', { stroke: 2.4 }), document.createTextNode('Pinned'));
+    (el.querySelector('.bubble') || el).prepend(tag);
+    const box = h('div', 'pin-box'); box.append(el);
+    if (animate && S.appearance.animation !== 'none') box.classList.add('pin-in');
+    if (pinBox) pinBox.replaceWith(box); else document.body.append(box);
+    pinBox = box;
+    fitPin();
+  }
+  /** keeps the chat from running under the pinned message */
+  function fitPin() {
+    const rev = S?.general.scrollDirection === 'reversed';
+    // the chat box itself ends where the pin starts, so older messages are cut off there instead of sliding under it
+    chat.style.top = ''; chat.style.bottom = '';
+    chat.classList.toggle('under-pin', !!pinBox && !rev); chat.classList.toggle('over-pin', !!pinBox && rev);
+    if (pinBox) { pinBox.classList.toggle('at-bottom', rev); chat.style[rev ? 'bottom' : 'top'] = `${pinBox.offsetHeight + 12}px`; }
+  }
+  if (window.ResizeObserver) new ResizeObserver(() => fitPin()).observe(document.body);
+  function setPin(m, animate = true) { pinned = m && m.id ? m : null; renderPin(animate); }
+
   /* ---------------- connection ---------------- */
   let retry = 0, lastSources = [];
   function connect() {
@@ -551,8 +576,10 @@
         case 'hello':
           lastSources = d.sources; history = d.recent || [];
           applySettings(d.settings); setSources(lastSources); rerender();
+          setPin(d.live?.pinned, false);
           break;
-        case 'settings': applySettings(d.settings); setSources(lastSources); break;
+        case 'settings': applySettings(d.settings); setSources(lastSources); renderPin(false); break;
+        case 'pin': setPin(d.msg); break;
         case 'sources': lastSources = d.sources; setSources(d.sources); break;
         case 'msg': remember(d.msg); show(d.msg); break;
         case 'delete': onDelete(d); break;
