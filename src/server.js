@@ -91,6 +91,9 @@ function fromOwnPage(req) {
   } catch { return false; }
 }
 
+/** Message ids from a request: short strings only, at most 500 of them. */
+const messageIds = list => (Array.isArray(list) ? list : []).filter(x => typeof x === 'string' && /^[\x21-\x7e]{1,200}$/.test(x)).slice(0, 500);
+
 /** "application/json; charset=utf-8" -> "application/json" */
 const mediaType = req => String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
 const hasBody = req => Number(req.headers['content-length']) > 0 || req.headers['transfer-encoding'] !== undefined;
@@ -224,7 +227,19 @@ function createServer(manager, { onQuit }) {
           return send(res, 200, state());
         }
         if (p === '/api/followers/refresh' && req.method === 'POST') { followers.refresh(body.force !== false); return send(res, 200, { ok: true }); }
-        if (p === '/api/clear' && req.method === 'POST') { manager.recent = []; broadcast({ op: 'clear' }); return send(res, 200, { ok: true }); }
+        if (p === '/api/clear' && req.method === 'POST') {
+          // keep: messages that stay on the overlay while everything else is cleared
+          const keep = messageIds(body.keep);
+          manager.clear(keep);
+          broadcast(keep.length ? { op: 'clear', keep } : { op: 'clear' });
+          return send(res, 200, { ok: true });
+        }
+        if (p === '/api/hide' && req.method === 'POST') {
+          const ids = messageIds(body.ids);
+          if (!ids.length) return send(res, 400, { error: 'Pick at least one message.' });
+          manager.hide(ids);
+          return send(res, 200, { ok: true, hidden: ids.length });
+        }
         if (p === '/api/open-data' && req.method === 'POST') {
           const [cmd, args] = process.platform === 'win32' ? ['explorer.exe', [DATA_DIR]] : process.platform === 'darwin' ? ['open', [DATA_DIR]] : ['xdg-open', [DATA_DIR]];
           require('node:child_process').execFile(cmd, args, () => {});

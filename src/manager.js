@@ -121,6 +121,19 @@ class Manager extends EventEmitter {
     this.emit('delete', payload);
   }
 
+  /** Takes chosen messages off the overlays (the control panel's "Hide from overlay"). */
+  hide(ids) {
+    const set = new Set(ids);
+    this.recent = this.recent.filter(m => !set.has(m.id));
+    this.emit('delete', { ids, hidden: true });
+  }
+
+  /** Clears the overlays, except the messages in keep. */
+  clear(keep = []) {
+    const set = new Set(keep);
+    this.recent = this.recent.filter(m => set.has(m.id));
+  }
+
   /** Injects a message that did not come from a connector (test messages). */
   inject(m) { this.onMessage(m); }
 }
