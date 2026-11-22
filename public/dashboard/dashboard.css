@@ -525,6 +525,24 @@ dialog.ask::backdrop { background: rgba(5,5,10,.6); }
 dialog.ask h2 { margin: 0 0 6px; font-size: 18px; }
 dialog.ask p { margin: 0; color: var(--muted); }
 .ask-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+dialog.ask .ask-l { display: block; margin: 14px 0 6px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+dialog.ask input[type=text] { width: 100%; }
+
+/* ---------- saved looks ---------- */
+.looks { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; padding: 4px 0 2px; }
+.look { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 12px; border-radius: 14px; background: var(--panel-2); border: 1px solid var(--line); }
+.look.empty { border-style: dashed; background: transparent; }
+.look-h { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.look-h b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.look.empty .look-h b { color: var(--muted); font-weight: 600; }
+.look-n { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; font-size: 12px; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+.look.empty .look-n { background: var(--line-2); color: var(--muted); }
+.look-d { margin: 0; font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.look-t { margin: 0; font-size: 11.5px; color: var(--faint); }
+.look-b { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.look-b .grow { flex: 1; }
+.look-b .icon-btn { width: 30px; height: 30px; }
+.looks-card > .hint { margin-top: 10px; }
 
 /* preview toggle + offline */
 .preview-head .x { margin-left: 4px; }

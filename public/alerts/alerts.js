@@ -72,6 +72,8 @@
   function withOverrides(s) {
     // Per browser source: /alerts?duration=8&position=top&size=1.2
     const out = JSON.parse(JSON.stringify(s));
+    const look = s.templates?.alerts?.[Number(params.get('slot')) - 1]; // ?slot=2: saved look 2
+    if (look) Object.assign(out.alerts, look.values?.alerts || {}, { placement: out.alerts.placement });
     for (const [k, v] of params) {
       if (k in out.alerts) { const cur = out.alerts[k]; out.alerts[k] = typeof cur === 'number' ? Number(v) : typeof cur === 'boolean' ? v === 'true' || v === '1' : v; }
     }

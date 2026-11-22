@@ -86,6 +86,7 @@
     // the counts are looked up while this page is open
     MG.api('POST', '/api/followers/refresh', { force: false }).catch(() => {});
     c.append(nowCard());
+    c.append(MG.savedLooks('followers', MG.st.followersUrl));
     c.append(MG.card('Pick a style', 'Click one to use it. Fine-tune it below.', MG.counterStyles({ section: F, path: '/followers', styles: STYLES, extra: '&align=center&fontSize=21&layout=row&kick=false&facebook=false' })));
     c.append(...GROUPS.map(g => MG.counterFold(g, open)));
     c.append(MG.counterObs({ title: 'Add it to OBS', url: MG.st.followersUrl, name: 'Mergio Followers', w: 1000, ht: 300, o: MG.overlays.followers,

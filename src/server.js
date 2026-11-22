@@ -197,12 +197,19 @@ function createServer(manager, { onQuit }) {
         if (p === '/api/state' && req.method === 'GET') return send(res, 200, state());
         if (p === '/api/settings' && req.method === 'PUT') {
           delete body.sources; // chats are only added and removed through /api/sources, which checks them
+          delete body.templates; // saved looks only change through /api/templates
           const before = settings.get();
           const next = settings.update(body);
           broadcast({ op: 'settings', settings: settings.publicView(next) });
           if (next.advanced.tiktokSignApiKey !== before.advanced.tiktokSignApiKey) manager.reconnectPlatform('tiktok');
           if (next.advanced.facebookAccessToken !== before.advanced.facebookAccessToken) manager.reconnectPlatform('facebook');
           if (next.advanced.youtubeApiKey !== before.advanced.youtubeApiKey || (next.followers.enabled && !before.followers.enabled)) followers.refresh();
+          return send(res, 200, state());
+        }
+        if (p === '/api/templates' && req.method === 'POST') {
+          let next;
+          try { next = settings.template(String(body.action), String(body.type), body.slot, body.name); } catch (e) { return send(res, 400, { error: e.message }); }
+          broadcast({ op: 'settings', settings: settings.publicView(next) });
           return send(res, 200, state());
         }
         if (p === '/api/settings/reset' && req.method === 'POST') {

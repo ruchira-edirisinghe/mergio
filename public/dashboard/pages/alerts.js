@@ -138,6 +138,7 @@
         ])));
     }
     if (cur === 'chat') return;
+    c.append(MG.savedLooks('alerts', MG.st.alertsUrl));
     c.append(stylePicker());
     const A = 'alerts';
     c.append(MG.card('Alerts overlay settings', 'The preview shows alerts at the top.',

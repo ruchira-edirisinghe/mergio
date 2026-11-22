@@ -21,8 +21,10 @@
   };
 
   /** Settings of one section, with any of its keys overridden from the link (?style=neon&fontSize=40). */
-  C.withOverrides = section => {
-    const out = { ...section };
+  C.withOverrides = (section, looks) => {
+    // ?slot=2: this browser source uses saved look 2
+    const look = Array.isArray(looks) ? looks[Number(params.get('slot')) - 1] : null;
+    const out = { ...section, ...(look?.values ? Object.values(look.values)[0] : {}) };
     for (const [k, v] of params) {
       if (!(k in out)) continue;
       const cur = out[k];

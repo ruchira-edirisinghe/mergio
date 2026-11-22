@@ -141,7 +141,40 @@ const DEFAULTS = {
   facebook: { messages: true },
   advanced: { configVersion: 3, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', youtubeApiKey: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
   sources: [],
+  templates: { chat: [null, null, null], alerts: [null, null, null], viewers: [null, null, null], followers: [null, null, null] },
 };
+
+/* ---------- saved looks: three slots for each overlay type ---------- */
+// Which settings a saved look keeps. Lists that are about you rather than the look (bots, blocked words,
+// your nicknames) and where alerts show stay as they are when a look is used.
+const TEMPLATE_TYPES = { chat: ['appearance', 'general'], alerts: ['alerts'], viewers: ['viewers'], followers: ['followers'] };
+const TEMPLATE_SKIP = { general: ['ignoreChatters', 'blockedWords', 'mentionNames'], alerts: ['placement'], followers: ['enabled'] };
+const SLOTS = 3;
+
+/** The parts of the current settings a look of this type keeps. */
+function snapshot(type, s) {
+  const values = {};
+  for (const sec of TEMPLATE_TYPES[type]) {
+    values[sec] = { ...s[sec] };
+    for (const k of TEMPLATE_SKIP[sec] || []) delete values[sec][k];
+  }
+  return values;
+}
+
+/** Keeps saved looks well formed, whatever config.json holds: known keys, valid values, short names. */
+function cleanTemplates(raw) {
+  const out = structuredClone(DEFAULTS.templates);
+  for (const type of Object.keys(TEMPLATE_TYPES)) {
+    const list = Array.isArray(raw?.[type]) ? raw[type] : [];
+    for (let i = 0; i < SLOTS; i++) {
+      const t = list[i];
+      if (!t || typeof t !== 'object' || !t.values || typeof t.values !== 'object') continue;
+      const full = validate(merge(DEFAULTS, t.values));
+      out[type][i] = { name: String(t.name || `Look ${i + 1}`).replace(/[\u0000-\u001f]/g, '').trim().slice(0, 40) || `Look ${i + 1}`, at: Number(t.at) || 0, values: snapshot(type, full) };
+    }
+  }
+  return out;
+}
 
 const MAX_TEXT = 20000; // longest text setting (blocked words, ignored chatters, tokens)
 
@@ -237,7 +270,11 @@ let current = load();
 if (migrated) save();
 
 function load() {
-  try { return clamp(merge(DEFAULTS, migrate(JSON.parse(fs.readFileSync(FILE, 'utf8'))))); }
+  try {
+    const s = clamp(merge(DEFAULTS, migrate(JSON.parse(fs.readFileSync(FILE, 'utf8')))));
+    s.templates = cleanTemplates(s.templates);
+    return s;
+  }
   catch (e) { if (e.code !== 'ENOENT') log('settings', 'could not read config, using defaults:', e.message); return structuredClone(DEFAULTS); }
 }
 
@@ -277,14 +314,42 @@ function update(patch) {
       else adv[k] = typed;
     }
   }
+  const templates = current.templates; // saved looks only change through template()
+  if (patch && typeof patch === 'object') delete patch.templates;
   current = clamp(merge(DEFAULTS, merge(current, patch || {})), current);
+  current.templates = templates;
+  save();
+  return current;
+}
+
+/**
+ * Saved looks. action: save (the current look into the slot) | load (use it) | rename | delete.
+ * Returns the settings, or throws with a message for the control panel.
+ */
+function template(action, type, slot, name) {
+  if (!Object.hasOwn(TEMPLATE_TYPES, type)) throw new Error('Unknown overlay type.');
+  const i = Math.trunc(Number(slot));
+  if (!(i >= 0 && i < SLOTS)) throw new Error('Unknown slot.');
+  const list = current.templates[type];
+  const clean = n => String(n || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 40);
+  if (action === 'save') {
+    list[i] = { name: clean(name) || list[i]?.name || `Look ${i + 1}`, at: Date.now(), values: snapshot(type, current) };
+  } else if (action === 'load') {
+    if (!list[i]) throw new Error('This slot is empty.');
+    return update(structuredClone(list[i].values));
+  } else if (action === 'rename') {
+    if (!list[i]) throw new Error('This slot is empty.');
+    list[i].name = clean(name) || list[i].name;
+  } else if (action === 'delete') {
+    list[i] = null;
+  } else throw new Error('Unknown action.');
   save();
   return current;
 }
 
 function reset(section) {
-  if (section && Object.hasOwn(DEFAULTS, section) && section !== 'sources') current[section] = structuredClone(DEFAULTS[section]);
-  else current = { ...structuredClone(DEFAULTS), sources: current.sources, advanced: current.advanced };
+  if (section && Object.hasOwn(DEFAULTS, section) && section !== 'sources' && section !== 'templates') current[section] = structuredClone(DEFAULTS[section]);
+  else current = { ...structuredClone(DEFAULTS), sources: current.sources, advanced: current.advanced, templates: current.templates };
   save();
   return current;
 }
@@ -302,4 +367,4 @@ function panelView(s = current) {
   return { ...s, advanced };
 }
 
-module.exports = { DEFAULTS, FILE, MASK, get, update, reset, save, publicView, panelView };
+module.exports = { DEFAULTS, FILE, MASK, get, update, reset, save, template, publicView, panelView };

@@ -12,7 +12,7 @@
   const els = {};
 
   function applySettings(all) {
-    S = C.withOverrides(all.viewers || {});
+    S = C.withOverrides(all.viewers || {}, all.templates?.viewers);
     const r = document.documentElement.style;
     r.setProperty('--font', C.font(S.font));
     r.setProperty('--fs', `${S.fontSize}px`);

@@ -70,6 +70,7 @@
 
   function render(c) {
     c.append(nowCard());
+    c.append(MG.savedLooks('viewers', MG.st.viewersUrl));
     c.append(MG.card('Pick a style', 'Click one to use it. Fine-tune it below.', MG.counterStyles({ section: V, path: '/viewers', styles: STYLES, extra: '&align=center&fontSize=24' })));
     c.append(...GROUPS.map(g => MG.counterFold(g, open)));
     c.append(MG.counterObs({ title: 'Add it to OBS', url: MG.st.viewersUrl, name: 'Mergio Viewers', w: 800, ht: 200, o: MG.overlays.viewers,

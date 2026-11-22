@@ -150,6 +150,28 @@ test('the viewer count can hide single platforms and shorten big numbers', () =>
   settings.reset();
 });
 
+test('saved looks: save, use, rename, delete, and nothing else can change them', () => {
+  settings.update({ appearance: { theme: 'neon', fontSize: 30 }, general: { blockedWords: 'spoiler' } });
+  settings.template('save', 'chat', 0, 'Neon  big');
+  assert.equal(settings.get().templates.chat[0].name, 'Neon big');
+  assert.equal('blockedWords' in settings.get().templates.chat[0].values.general, false);
+  settings.update({ appearance: { theme: 'soft', fontSize: 18 }, general: { blockedWords: 'other' } });
+  const s = settings.template('load', 'chat', 0);
+  assert.equal(s.appearance.theme, 'neon');
+  assert.equal(s.appearance.fontSize, 30);
+  assert.equal(s.general.blockedWords, 'other');
+  settings.update({ templates: { chat: [{ name: 'evil', values: {} }] } });
+  assert.equal(settings.get().templates.chat[0].name, 'Neon big');
+  assert.throws(() => settings.template('load', 'chat', 2));
+  assert.throws(() => settings.template('save', 'constructor', 0));
+  assert.throws(() => settings.template('save', 'chat', 5));
+  settings.template('rename', 'chat', 0, 'Night');
+  assert.equal(settings.get().templates.chat[0].name, 'Night');
+  settings.template('delete', 'chat', 0);
+  assert.equal(settings.get().templates.chat[0], null);
+  settings.reset();
+});
+
 console.log('Connections');
 test('Twitch is live again after a reconnect to the same channel', () => {
   const { TwitchConnector } = require(join(root, 'src/connectors/twitch.js'));
