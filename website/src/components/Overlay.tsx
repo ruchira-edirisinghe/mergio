@@ -221,6 +221,8 @@ export function AlertShow({ item, look = 'levelup', life = 5, size = 1, fit = fa
   const level = (Array.from(user.name).reduce((s, ch) => s + ch.charCodeAt(0), 0) % 9) + 1;
   const score = useCountUp(POINTS[tier], look === 'arcade');
   const font = THEME_FONT[look];
+  // the points sit in the text for Achievement and on the alert itself for the others, as in the app
+  const pts = <div className="pts">{look === 'arcade' ? `SCORE +${String(score).padStart(6, '0')}` : `+${POINTS[tier].toLocaleString('en-US')}`}</div>;
   return (
     <div ref={box} className={`mga st-${look}`} style={{ fontSize: `${22 * size}px`, ...(font ? { fontFamily: `${font}, 'Segoe UI', system-ui, sans-serif` } : null), ...(fit ? { transform: `scale(${scale})`, transformOrigin: 'center' } : null) }} aria-hidden="true">
       <div className={`alert ev-${item.kind} p-${user.platform} t-${TIERS[tier]}${ev.gift ? ' has-gift' : ''}${out ? ' out' : ''}`}
@@ -252,8 +254,9 @@ export function AlertShow({ item, look = 'levelup', life = 5, size = 1, fit = fa
           {amount && <div className="amount">{amount}</div>}
           {ev.message && <div className="msg">{ev.message}</div>}
           <div className="xp"><i /><span className="xp-t">+{POINTS[tier].toLocaleString('en-US')} XP</span></div>
+          {look === 'achievement' && pts}
         </div>
-        <div className="pts">{look === 'arcade' ? `SCORE +${String(score).padStart(6, '0')}` : `+${POINTS[tier].toLocaleString('en-US')}`}</div>
+        {look !== 'achievement' && pts}
         <div className="timer"><i /></div>
       </div>
     </div>
