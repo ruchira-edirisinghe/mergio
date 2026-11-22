@@ -6,7 +6,7 @@ import { REPO } from '../lib/links';
 
 export type LegalDoc = 'privacy' | 'terms';
 
-const UPDATED = '21 November 2026';
+const UPDATED = '22 November 2026';
 const CREATOR = { name: 'Ruchira Edirisinghe', url: 'https://ruchiraedirisinghe.vercel.app' };
 const ISSUES = `${REPO}/issues/new/choose`;
 const LICENSE = `${REPO}/blob/main/LICENSE`;
@@ -67,12 +67,13 @@ const PRIVACY: Doc = {
       body: <>
         <P>Mergio saves a few files in its data folder on your own computer. That's a <Code>data</Code> folder next to the app, or, if that folder can't be written to, a <Code>Mergio</Code> folder in your user settings folder (<Code>%APPDATA%</Code> on Windows, <Code>~/Library/Application Support</Code> on macOS, <Code>~/.config</Code> on Linux).</P>
         <UL>
-          <LI><B>Your settings</B> (<Code>config.json</Code>): the channels and pages you add, how the overlay looks, and any keys you choose to enter, such as a Facebook Page token, a TikTok signing key or a YouTube Data API key. Keys are kept in this file on your computer only, and on macOS and Linux only your user account can read it.</LI>
+          <LI><B>Your settings</B> (<Code>config.json</Code>): the channels and pages you add, how the overlay looks, your saved looks, and any keys you choose to enter, such as a Facebook Page token, a TikTok signing key or a YouTube Data API key. Keys are kept in this file on your computer only, and on macOS and Linux only your user account can read it.</LI>
           <LI><B>A log</B> (<Code>mergio.log</Code>): connection messages like "connected" or "reconnecting", to help you fix problems. It isn't sent anywhere.</LI>
           <LI><B>A picture cache</B>: links to viewers' public profile pictures, so they load faster next time.</LI>
           <LI><B>A browser profile</B> (<Code>browser-profile</Code>): used only by the hidden Edge or Chrome window that reads TikTok and Facebook follower counts. It holds that window's cookies and cache, never your own browser's.</LI>
         </UL>
         <P>Chat messages, gifts, alerts, viewer counts and follower counts are kept in memory while Mergio runs and shown on your overlays. They are not saved to disk. Delete the data folder and everything Mergio stored is gone.</P>
+        <P>If you press <B>Install the docks in OBS</B>, Mergio adds its three docks (Mergio Chat, Mergio Gifts and Mergio Viewers) to OBS Studio's own settings file (<Code>user.ini</Code>, or <Code>global.ini</Code> in older versions) while OBS is closed. It keeps a copy of that file the first time, named <Code>.mergio-backup</Code>, and leaves any docks you added yourself alone. Nothing else in OBS is changed, and you can remove the docks in OBS at any time.</P>
       </>,
     },
     {
