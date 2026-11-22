@@ -68,7 +68,7 @@ const DEFAULTS = {
     duration: 6,                // seconds each alert stays on the alerts overlay
     position: 'center',         // top | center | bottom of the alerts browser source
     size: 1,
-    style: 'levelup',           // levelup | achievement | loot | arcade | combo | quest | cyber | spotlight | neon | bubble
+    style: 'levelup',           // levelup | achievement | loot | arcade | combo | quest | cyber | gacha | roulette | crt | transmission | bounty | spotlight | neon | bubble
     animation: 'pop',           // (only the old Card style used it)
     showMessage: true,
     showAvatar: true,
@@ -195,7 +195,7 @@ const CHOICES = {
   appearance: { theme: ['glass', 'neon', 'minimal', 'soft', 'retro'], timeFormat: ['12', '24'], nameColorMode: ['user', 'platform', 'custom'],
     animation: ['slide', 'fade', 'pop', 'none'], align: ['left', 'right'], eventStyle: ['compact', 'card'], followStyle: ['card', 'pill'] },
   general: { scrollDirection: ['normal', 'reversed'], groupStyle: ['tuck', 'merge'], imageEmbedPermissionLevel: ['broadcaster', 'mods', 'vips', 'subs', 'everyone', 'nobody'] },
-  alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['levelup', 'achievement', 'loot', 'arcade', 'combo', 'quest', 'cyber', 'spotlight', 'neon', 'bubble'],
+  alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['levelup', 'achievement', 'loot', 'arcade', 'combo', 'quest', 'cyber', 'gacha', 'roulette', 'crt', 'transmission', 'bounty', 'spotlight', 'neon', 'bubble'],
     animation: ['pop', 'slide', 'fade'], colorMode: ['platform', 'tier', 'custom'], soundType: ['chime', 'coin', 'levelup', 'arcade', 'soft'] },
   viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'], numberFormat: ['full', 'short'] },
   followers: { style: ['panel', 'line', 'cards', 'neon', 'bars'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },

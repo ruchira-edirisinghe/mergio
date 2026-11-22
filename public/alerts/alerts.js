@@ -24,9 +24,10 @@
   };
   const ART = { gift: 'gift', kicks: 'coin', sub: 'star', giftsub: 'gift', giftmember: 'gift', raid: 'raid', host: 'raid', cheer: 'cheer', superchat: 'money', hypechat: 'money', supersticker: 'sparkle', member: 'crown', milestone: 'crown', giftreceived: 'crown', redemption: 'sparkle', powerup: 'bolt', streak: 'flame', follow: 'follow', notice: 'star' };
 
-  const STYLES = ['levelup', 'achievement', 'loot', 'arcade', 'combo', 'quest', 'cyber', 'spotlight', 'neon', 'bubble'];
+  const STYLES = ['levelup', 'achievement', 'loot', 'arcade', 'combo', 'quest', 'cyber', 'gacha', 'roulette', 'crt', 'transmission', 'bounty', 'spotlight', 'neon', 'bubble'];
   // Each theme's own font (used unless you pick one in Alerts settings) and its big word on top.
-  const THEME_FONT = { levelup: 'Lilita One', loot: 'Lilita One', arcade: 'Press Start 2P', combo: 'Bangers', quest: 'Cinzel', cyber: 'Orbitron', achievement: 'Rubik' };
+  const THEME_FONT = { levelup: 'Lilita One', loot: 'Lilita One', arcade: 'Press Start 2P', combo: 'Bangers', quest: 'Cinzel', cyber: 'Orbitron', achievement: 'Rubik',
+    gacha: 'Baloo 2', roulette: 'Russo One', crt: 'VT323', transmission: 'Chakra Petch', bounty: 'Rye' };
   const TIERS = ['common', 'rare', 'epic', 'legendary'];
   const TIER_NAMES = ['Common', 'Rare', 'Epic', 'Legendary'];
   const TIER_COLORS = ['#a7b1c2', '#3fa1ff', '#b866ff', '#ffb627'];
@@ -39,6 +40,11 @@
     combo: () => 'COMBO!',
     quest: () => 'Quest complete',
     cyber: (kind, t, label) => `// incoming: ${label || 'alert'}`,
+    gacha: (kind, t) => `${TIER_NAMES[t]} pull!`,
+    roulette: (kind, t) => (t === 3 ? 'JACKPOT!' : 'ITEM GET!'),
+    crt: () => 'PLAY ▶',
+    transmission: () => 'Incoming transmission',
+    bounty: () => 'WANTED',
   };
   // How big an alert is: common, rare, epic or legendary (the value at which each step starts)
   const TIER_STEPS = { gift: [100, 1000, 10000], kicks: [100, 1000, 10000], cheer: [100, 1000, 10000], superchat: [5, 20, 100], hypechat: [5, 20, 100], supersticker: [5, 20, 100],
@@ -135,6 +141,7 @@
     const el = h('div', `alert ev-${ev.kind || m.type} p-${m.platform} t-${TIERS[tier]}`);
     el.style.setProperty('--pc', `var(--${m.platform})`);
     el.style.setProperty('--tier', TIER_COLORS[tier]);
+    el.style.setProperty('--t', String(tier));
     // the accent colour: the platform's (or the event's own, like a Super Chat's), the size of the alert, or your own
     if (a.colorMode === 'tier') el.style.setProperty('--ev', TIER_COLORS[tier]);
     else if (a.colorMode === 'custom' && /^#[\da-f]{6}$/i.test(a.accent)) el.style.setProperty('--ev', a.accent);
@@ -186,10 +193,67 @@
     art.append(lvl, h('div', 'rar', TIER_NAMES[tier]));
     if (style === 'achievement') info.appendChild(pts); else el.appendChild(pts);
     el.prepend(decor(), art, info);
+    extras(style, el, art, info, tier);
     el.append(h('div', 'timer'));
     el.lastChild.appendChild(h('i'));
     if (style === 'arcade') countUp(pts, POINTS[tier]);
     return el;
+  }
+
+  /** Pieces some themes add around the shared parts: the capsule, the reel, the TV's on-screen display… */
+  const STARS = [2, 3, 4, 5];
+  const CHANNELS = ['03', '12', '42', '99'];
+  const REEL = ['gift', 'coin', 'star', 'sparkle', 'crown', 'bolt', 'flame', 'cheer', 'money', 'gem', 'heart'];
+  const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  function extras(style, el, art, info, tier) {
+    if (style === 'gacha') {
+      // the capsule sits over the picture and cracks open; the stars count the rarity
+      art.append(h('i', 'burst'), h('i', 'cap top'), h('i', 'cap bot'));
+      const stars = h('div', 'stars');
+      for (let i = 0; i < STARS[tier]; i++) { const s = h('i'); s.style.setProperty('--i', i); stars.appendChild(s); }
+      info.prepend(stars);
+    } else if (style === 'roulette') {
+      // a reel of items spins past and stops on a copy of the real picture; rarer alerts spin longer
+      el.style.setProperty('--spin', `${(1.1 + tier * 0.45).toFixed(2)}s`);
+      const reel = h('div', 'reel'), strip = h('div', 'strip');
+      for (let i = 0; i < 11; i++) { const c = h('span', 'cell'); c.appendChild(mergioIcon(REEL[(i * 4 + tier) % REEL.length])); strip.appendChild(c); }
+      const last = h('span', 'cell last');
+      if (art.firstChild) last.appendChild(art.firstChild.cloneNode(true));
+      strip.appendChild(last);
+      reel.appendChild(strip);
+      art.appendChild(reel);
+      art.appendChild(h('i', 'flash'));
+    } else if (style === 'crt') {
+      // on-screen display: the channel (higher for bigger alerts) and a VHS date and time
+      const d = new Date(), hr = d.getHours();
+      const osd = h('div', 'osd');
+      osd.append(h('span', 'ch', `CH ${CHANNELS[tier]}`),
+        h('span', 'stamp', `${hr < 12 ? 'AM' : 'PM'} ${hr % 12 || 12}:${String(d.getMinutes()).padStart(2, '0')}\n${MONTHS[d.getMonth()]}. ${String(d.getDate()).padStart(2, '0')} ${d.getFullYear()}`));
+      el.appendChild(osd);
+    } else if (style === 'transmission') {
+      // signal bars (more for bigger alerts) and the message read out a word at a time
+      const sig = h('div', 'sig');
+      for (let i = 0; i < 4; i++) { const b = h('i'); b.style.setProperty('--i', i); sig.appendChild(b); }
+      el.appendChild(sig);
+      readOut(info.querySelector('.msg'));
+    } else if (style === 'bounty') el.appendChild(h('i', 'badge'));
+  }
+
+  /** Transmission: the message comes in one word at a time (words keep their letters together in every script). */
+  function readOut(msg) {
+    if (!msg) return;
+    let i = 0;
+    for (const n of [...msg.childNodes]) {
+      if (n.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        for (const part of n.textContent.split(/(\s+)/)) {
+          if (!part) continue;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); continue; }
+          const w = h('span', 'w', part); w.style.setProperty('--i', Math.min(i++, 40)); frag.appendChild(w);
+        }
+        n.replaceWith(frag);
+      } else if (n.nodeType === 1) { n.classList.add('w'); n.style.setProperty('--i', Math.min(i++, 40)); }
+    }
   }
 
   /** Arcade score: counts up like an old high-score table. */
@@ -218,6 +282,17 @@
     return el;
   }
 
+  /** TV static for the CRT theme: SVG noise that jumps around while the channel tunes in. */
+  let noiseId = 0;
+  function staticNoise() {
+    const id = `mg-noise-${++noiseId}`, make = (tag, attrs) => { const e = document.createElementNS(SVG, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+    const svg = make('svg', { class: 'static', 'aria-hidden': 'true' });
+    const f = make('filter', { id, x: '0', y: '0', width: '100%', height: '100%' });
+    f.append(make('feTurbulence', { type: 'fractalNoise', baseFrequency: '.9', numOctaves: '2', stitchTiles: 'stitch' }), make('feColorMatrix', { type: 'saturate', values: '0' }));
+    svg.append(f, make('rect', { width: '100%', height: '100%', filter: `url(#${id})` }));
+    return svg;
+  }
+
   /** Decoration behind the alert: the neon tube, the sticker's glint, the glass card's glow. */
   function decor() {
     const fx = h('div', 'fx'), st = S.alerts.style;
@@ -235,6 +310,10 @@
     if (st === 'combo') fx.appendChild(h('i', 'streaks'));
     if (st === 'cyber') fx.append(h('i', 'scan'), h('i', 'corners'));
     if (st === 'quest') fx.append(h('i', 'roll l'), h('i', 'roll r'));
+    if (st === 'roulette') fx.appendChild(h('i', 'bulbs'));
+    if (st === 'crt') fx.append(staticNoise(), h('i', 'roll'));
+    if (st === 'transmission') fx.appendChild(h('i', 'warp'));
+    if (st === 'bounty') fx.append(h('i', 'poster'), h('i', 'nail l'), h('i', 'nail r'));
     return fx;
   }
 
