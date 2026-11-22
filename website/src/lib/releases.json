@@ -41,6 +41,33 @@
  },
  "releases": [
   {
+   "tag": "v1.7.0",
+   "date": "2026-11-22T08:51:01Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.7.0",
+   "notes": [
+    {
+     "title": "Five new alert styles",
+     "text": "*Gacha pull* cracks a capsule open and counts the rarity in stars. *Item roulette* spins a slot that lands on the gift, longer for rarer ones. *CRT broadcast* tunes an old TV in through static to a channel that goes up with the alert. *Transmission* settles hyperspace streaks into a hologram that reads the message out. *Bounty poster* nails a wanted poster to a board and stamps it with a sheriff badge. That makes fifteen styles in all."
+    },
+    {
+     "title": "Read messages aloud",
+     "text": "A voice can read Super Chats, Bits and other messages from the alerts overlay, so OBS records it with the alert. It uses your computer's own voices, works offline and never reads a message with a blocked word. Choose which alerts get read, the voice and the speed."
+    },
+    {
+     "title": "A sound for each tier",
+     "text": "Give Common, Rare, Epic and Legendary alerts their own sound, with two new ones: Fanfare and Sparkle. Press *Hear it* to listen before you pick."
+    },
+    {
+     "title": "Space between alerts",
+     "text": "When several alerts come in at once, add a pause between them so each one gets its moment."
+    },
+    {
+     "title": "Matching packs",
+     "text": "One click on *Chat style* gives your chat, alerts, viewer count and follower goals the same look. Ten packs, from Arcade and Cyber to Wild West and Bubbly, and *Undo* puts back what you had."
+    }
+   ]
+  },
+  {
    "tag": "v1.6.0",
    "date": "2026-11-22T07:55:20Z",
    "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.6.0",

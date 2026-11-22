@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { Bookmark, Eye, EyeOff, Filter, Pause, Pin, Gift, Info, Languages, Layers, Lock, Palette, PanelRight, Radar, RefreshCw, Rows3, ShieldCheck, Smile, Sparkles, Target, Trophy, Zap, Plus, type LucideIcon } from 'lucide-react';
+import { Bookmark, Eye, EyeOff, Filter, Package, Pause, Pin, Speech, Timer, Volume2, Gift, Info, Languages, Layers, Lock, Palette, PanelRight, Radar, RefreshCw, Rows3, ShieldCheck, Smile, Sparkles, Target, Trophy, Zap, Plus, type LucideIcon } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { Eyebrow } from '../components/ui';
 import { readme } from '../lib/links';
 
 const ROW_A: [LucideIcon, string][] = [
-  [Sparkles, 'Ten alert themes'], [Trophy, 'Gift rarity & levels'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'],
-  [Palette, 'Any Google Font'], [Eye, 'Viewer count'], [Target, 'Follower goals'], [Languages, 'Any language'], [Bookmark, 'Three saved looks'], [Pause, 'Pause & skip alerts'],
+  [Sparkles, 'Fifteen alert themes'], [Trophy, 'Gift rarity & levels'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'],
+  [Palette, 'Any Google Font'], [Eye, 'Viewer count'], [Target, 'Follower goals'], [Languages, 'Any language'], [Bookmark, 'Three saved looks'], [Package, 'Ten matching packs'], [Pause, 'Pause & skip alerts'],
 ];
 const ROW_B: [LucideIcon, string][] = [
-  [PanelRight, 'OBS docks'], [Pin, 'Pin a message'], [EyeOff, 'Hide any message'], [Rows3, 'Counters in one line'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
+  [PanelRight, 'OBS docks'], [Speech, 'Read aloud, offline'], [Volume2, 'A sound for each tier'], [Timer, 'Space between alerts'], [Pin, 'Pin a message'], [EyeOff, 'Hide any message'], [Rows3, 'Counters in one line'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
   [Info, 'Plain-words tips'], [RefreshCw, 'Updates itself'], [Layers, 'A look per scene'], [Lock, 'Private, no cloud'],
 ];
 
@@ -59,6 +59,7 @@ export const FAQ: [string, string][] = [
   ['Is Mergio hosted online?', 'No. Mergio is an app on your own PC, not a website or a service. Your settings, saved looks and keys stay in one file on your computer, and there are no Mergio servers or accounts.'],
   ['Where does my chat go?', 'Nowhere. Mergio reads it straight from each platform and shows it live on your overlay. Chat is never saved, and there is no telemetry and no cloud.'],
   ['Will it slow down my stream?', 'No. Mergio uses under 100 MB of memory and almost no CPU while it waits, so your game and your stream keep the power.'],
+  ['Does read aloud send my chat anywhere?', 'No. It uses the voices already on your computer and works offline. The audio is made on your PC and never saved or sent, and messages with a blocked word are never read.'],
   ['Is it safe?', "Mergio only listens on your own PC, and websites you visit can't talk to it. Your keys never reach the overlays, chat is always shown as plain text, and updates are checked before they install. The security policy, linked at the bottom of this page, has the details."],
   ['How do I update?', 'Mergio tells you when a new version is out. On Windows, one click downloads it, installs it and opens Mergio again.'],
 ];
