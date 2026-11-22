@@ -225,8 +225,8 @@ function migrate(raw) {
     g.fadeMessages = Number(g.hideAfter) > 0;
     if (!g.fadeMessages) delete g.hideAfter;
   }
-  // 1.6 retired the Banner, Card and Minimal alert styles: they become Achievement, the closest of the new ones.
-  if (version < 3 && raw.alerts && ['banner', 'card', 'toast'].includes(raw.alerts.style)) raw.alerts.style = 'achievement';
+  // 1.6 retired the Banner, Card and Minimal alert styles: they become Level up, the new default.
+  if (version < 3 && raw.alerts && ['banner', 'card', 'toast'].includes(raw.alerts.style)) raw.alerts.style = 'levelup';
   if (version < 3) { (raw.advanced ||= {}).configVersion = 3; migrated = true; }
   return raw;
 }
