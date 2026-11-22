@@ -64,6 +64,12 @@ test('alert sounds by size accept known sounds only', () => {
   assert.equal(s.alerts.soundRare, 'same');
   settings.update({ alerts: { tierSounds: false, soundEpic: 'same', soundLegendary: 'same' } });
 });
+test('space between alerts stays between 0 and 30 seconds', () => {
+  assert.equal(settings.update({ alerts: { gap: '5' } }).alerts.gap, 5);
+  assert.equal(settings.update({ alerts: { gap: 99 } }).alerts.gap, 30);
+  assert.equal(settings.update({ alerts: { gap: -3 } }).alerts.gap, 0);
+  settings.update({ alerts: { gap: 0 } });
+});
 test('public view hides tokens', () => {
   settings.update({ advanced: { facebookAccessToken: 'secret' } });
   assert.equal(JSON.stringify(settings.publicView()).includes('secret'), false);

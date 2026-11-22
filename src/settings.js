@@ -66,6 +66,7 @@ const DEFAULTS = {
   alerts: {
     placement: 'chat',          // chat | overlay (own browser source) | both
     duration: 6,                // seconds each alert stays on the alerts overlay
+    gap: 0,                     // seconds of rest after an alert before the next one shows
     position: 'center',         // top | center | bottom of the alerts browser source
     size: 1,
     style: 'levelup',           // levelup | achievement | loot | arcade | combo | quest | cyber | gacha | roulette | crt | transmission | bounty | spotlight | neon | bubble
@@ -187,7 +188,7 @@ const RANGES = {
   appearance: { avatarSize: [1.2, 3.5], fontSize: [12, 48], fontWeight: [100, 900, true], lineSpacing: [0, 1.5], bubbleOpacity: [0, 1], bubbleRadius: [0, 28, true],
     opacity: [0, 1], emoteScale: [0.8, 3], maxMessages: [5, 80, true] },
   general: { hideAfter: [5, 300, true], joinLifetime: [2, 20, true] },
-  alerts: { duration: [2, 20], size: [0.6, 2], volume: [0, 1] },
+  alerts: { duration: [2, 20], gap: [0, 30], size: [0.6, 2], volume: [0, 1] },
   viewers: { fontSize: [14, 80], bgOpacity: [0, 1] },
   followers: { fontSize: [16, 90], goalStep: [1, 1e6, true], goalYoutube: [0, 1e9, true], goalTwitch: [0, 1e9, true], goalKick: [0, 1e9, true],
     goalTiktok: [0, 1e9, true], goalFacebook: [0, 1e9, true], goalTotal: [0, 1e9, true] },
