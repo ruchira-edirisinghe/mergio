@@ -323,6 +323,56 @@
     window.mergioSound.play(window.mergioSound.forTier(S.alerts, tier), kind, S.alerts.volume);
   }
 
+  /* ---------------- read aloud: the voice is made by Mergio on this computer (src/tts.js) ---------------- */
+  const READ_FROM = { all: 0, rare: 1, epic: 2, legendary: 3 };
+  const VOICE_DELAY = 0.9; // seconds after the alert appears, once the sound has played
+  const readable = m => !!S && S.alerts.readAloud && !isPreview && !demo && tierOf(m) >= (READ_FROM[S.alerts.readMin] || 0);
+  const speeches = new Map(); // alert id -> Promise<{ blob } | { text } | null>
+  function speech(m) {
+    const id = String(m.id).replace(/~r\d+$/, '');
+    if (!speeches.has(id)) {
+      speeches.set(id, fetch(`/api/tts?id=${encodeURIComponent(id)}`).then(async r => (r.status === 200 ? { blob: await r.blob() } : r.status === 503 ? { text: (await r.json()).text } : null)).catch(() => null));
+      if (speeches.size > 40) speeches.delete(speeches.keys().next().value);
+    }
+    return speeches.get(id);
+  }
+  let voice = null; // { audio, url } or { utter }
+  function hush() {
+    if (!voice) return;
+    if (voice.audio) { voice.audio.pause(); URL.revokeObjectURL(voice.url); }
+    if (voice.utter) try { speechSynthesis.cancel(); } catch { /* none */ }
+    voice = null;
+  }
+  /** Keeps the alert up until the voice has finished (plus a moment). */
+  function stayFor(el, seconds) {
+    if (!current || current.el !== el || !isFinite(seconds)) return;
+    const shownFor = (Date.now() - current.shown) / 1000;
+    const want = Math.min(40, VOICE_DELAY + seconds + 1) - shownFor;
+    if (want > S.alerts.duration - shownFor) hold(want);
+  }
+  function readAloud(m, el) {
+    if (!readable(m)) return;
+    speech(m).then(got => {
+      if (!got || !current || current.el !== el || el.classList.contains('out')) return;
+      const wait = Math.max(0, VOICE_DELAY * 1000 - (Date.now() - current.shown));
+      const vol = Math.min(1, Math.max(0, Number(S.alerts.ttsVolume) || 0));
+      if (got.blob) {
+        const url = URL.createObjectURL(got.blob), audio = new Audio(url);
+        audio.volume = vol;
+        voice = { audio, url };
+        audio.onloadedmetadata = () => stayFor(el, audio.duration);
+        setTimeout(() => { if (voice?.audio === audio) audio.play().catch(() => {}); }, wait);
+      } else if (got.text && window.speechSynthesis) {
+        // no voice on this computer for Mergio to use: the browser's own voice, if it has one
+        const u = new SpeechSynthesisUtterance(got.text);
+        u.volume = vol; u.rate = Number(S.alerts.ttsRate) || 1;
+        voice = { utter: u };
+        stayFor(el, got.text.length / 14);
+        setTimeout(() => { if (voice?.utter === u) speechSynthesis.speak(u); }, wait);
+      }
+    });
+  }
+
   function message(m) {
     const parts = (m.parts || []).filter(p => p.type !== 'cheer' && !(p.type === 'text' && !p.text.trim()));
     if (!parts.length) return null;
@@ -343,6 +393,7 @@
     if (shown.has(m.id)) return;
     queue.push(m);
     if (queue.length > 40) queue.shift();
+    if (readable(m)) speech(m); // start making the voice now, so it's ready when the alert shows
     kick();
   }
 
@@ -365,9 +416,10 @@
     if (shown.size > 500) shown.delete(shown.values().next().value);
     const el = build(m);
     stage.appendChild(el);
-    current = { m, el, timer: 0 };
+    current = { m, el, timer: 0, shown: Date.now() };
     hold(S.alerts.duration);
     chime(m.event.kind || m.type, tierOf(m));
+    readAloud(m, el);
   }
 
   function hold(seconds) {
@@ -391,6 +443,7 @@
     if (!current || current.el.classList.contains('out')) return;
     const { el, timer } = current;
     clearTimeout(timer);
+    hush();
     el.classList.add('out');
     current = { m: { id: null }, el, timer: 0 }; // keep the slot busy until it has faded out
     const rest = demo || isPreview ? 0 : Math.min(60, Math.max(0, Number(S.alerts.gap) || 0)) * 1000;
