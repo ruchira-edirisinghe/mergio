@@ -140,6 +140,9 @@ function pageHeaders(file, host) {
 }
 
 function createServer(manager, { onQuit }) {
+  // what is on stream right now and isn't a setting: the pinned message, and whether alerts are paused
+  const live = { pinned: null, alertsPaused: false };
+  const pin = m => { live.pinned = m; broadcast({ op: 'pin', msg: m }); };
   const send = (res, code, body, type = 'application/json; charset=utf-8', extra = {}) => {
     res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', ...BASE_HEADERS, 'Content-Security-Policy': LOCKED_CSP, ...extra });
     res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
@@ -242,7 +245,24 @@ function createServer(manager, { onQuit }) {
           const keep = messageIds(body.keep);
           manager.clear(keep);
           broadcast(keep.length ? { op: 'clear', keep } : { op: 'clear' });
+          if (live.pinned && !keep.includes(live.pinned.id)) pin(null);
           return send(res, 200, { ok: true });
+        }
+        if (p === '/api/pin' && req.method === 'POST') {
+          // one message stays at the top of the chat overlay until it is unpinned (id: null)
+          if (body.id == null) { pin(null); return send(res, 200, { ok: true, pinned: null }); }
+          const [id] = messageIds([body.id]);
+          const m = id && manager.recent.find(x => x.id === id);
+          if (!m) return send(res, 404, { error: 'That message is no longer in the chat list.' });
+          pin(m);
+          return send(res, 200, { ok: true, pinned: m.id });
+        }
+        if (p === '/api/alerts/control' && req.method === 'POST') {
+          // pause holds new alerts in the queue (nothing is lost); skip ends the one on screen now
+          if (!['pause', 'resume', 'skip'].includes(body.action)) return send(res, 400, { error: 'Unknown action.' });
+          if (body.action !== 'skip') live.alertsPaused = body.action === 'pause';
+          broadcast({ op: 'alerts', paused: live.alertsPaused, ...(body.action === 'skip' ? { skip: true } : {}) });
+          return send(res, 200, { ok: true, paused: live.alertsPaused });
         }
         if (p === '/api/replay' && req.method === 'POST') {
           // plays an alert again on the alerts overlay (from the Gifts dock); the chat is left alone
@@ -259,6 +279,7 @@ function createServer(manager, { onQuit }) {
           const ids = messageIds(body.ids);
           if (!ids.length) return send(res, 400, { error: 'Pick at least one message.' });
           manager.hide(ids);
+          if (live.pinned && ids.includes(live.pinned.id)) pin(null);
           return send(res, 200, { ok: true, hidden: ids.length });
         }
         if (p === '/api/open-data' && req.method === 'POST') {
@@ -348,7 +369,7 @@ function createServer(manager, { onQuit }) {
       if (client === 'followers') followers.refresh(false);
     }
     const dock = client === 'dock';
-    ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(dock ? -150 : -60), stats: stats.view(), ...(dock ? { events: manager.events.slice(-200) } : {}) }));
+    ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(dock ? -150 : -60), stats: stats.view(), live, ...(dock ? { events: manager.events.slice(-200) } : {}) }));
   });
   manager.on('message', m => broadcast({ op: 'msg', msg: m }));
   manager.on('delete', d => broadcast({ op: 'delete', ...d }));
