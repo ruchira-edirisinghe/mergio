@@ -68,11 +68,21 @@ const DEFAULTS = {
     duration: 6,                // seconds each alert stays on the alerts overlay
     position: 'center',         // top | center | bottom of the alerts browser source
     size: 1,
-    style: 'spotlight',         // spotlight | banner | neon | bubble | card | toast
-    animation: 'pop',           // pop | slide | fade (Card style)
+    style: 'levelup',           // levelup | achievement | loot | arcade | combo | quest | cyber | spotlight | neon | bubble
+    animation: 'pop',           // (only the old Card style used it)
     showMessage: true,
     showAvatar: true,
-    sound: false,               // a short chime with each alert
+    showLabel: true,            // "NEW SUBSCRIBER"
+    showPlatform: true,         // "on Twitch"
+    showHeadline: true,         // the theme's big word: "LEVEL UP!", "Epic drop"…
+    headline: '',               // your own big word ('' = the theme's)
+    showTimer: true,            // the bar that shows how long the alert stays
+    colorMode: 'platform',      // platform | tier (by how big the alert is) | custom
+    accent: '#8b5cf6',
+    textColor: '#ffffff',
+    font: '',                   // '' = the theme's own font
+    sound: false,               // a short sound with each alert
+    soundType: 'chime',         // chime | coin | levelup | arcade | soft
     volume: 0.6,
   },
   viewers: {
@@ -129,7 +139,7 @@ const DEFAULTS = {
   kick: { messages: true, subs: true, giftSubs: true, hosts: true, rewards: true, kicksGifts: true, follows: true },
   tiktok: { messages: true, joins: true, gifts: true, likes: true, follows: true, shares: false, subs: true, minGiftDiamonds: 0 },
   facebook: { messages: true },
-  advanced: { configVersion: 2, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', youtubeApiKey: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
+  advanced: { configVersion: 3, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', youtubeApiKey: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
   sources: [],
 };
 
@@ -152,7 +162,8 @@ const CHOICES = {
   appearance: { theme: ['glass', 'neon', 'minimal', 'soft', 'retro'], timeFormat: ['12', '24'], nameColorMode: ['user', 'platform', 'custom'],
     animation: ['slide', 'fade', 'pop', 'none'], align: ['left', 'right'], eventStyle: ['compact', 'card'], followStyle: ['card', 'pill'] },
   general: { scrollDirection: ['normal', 'reversed'], groupStyle: ['tuck', 'merge'], imageEmbedPermissionLevel: ['broadcaster', 'mods', 'vips', 'subs', 'everyone', 'nobody'] },
-  alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['spotlight', 'banner', 'neon', 'bubble', 'card', 'toast'], animation: ['pop', 'slide', 'fade'] },
+  alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['levelup', 'achievement', 'loot', 'arcade', 'combo', 'quest', 'cyber', 'spotlight', 'neon', 'bubble'],
+    animation: ['pop', 'slide', 'fade'], colorMode: ['platform', 'tier', 'custom'], soundType: ['chime', 'coin', 'levelup', 'arcade', 'soft'] },
   viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'], numberFormat: ['full', 'short'] },
   followers: { style: ['panel', 'line', 'cards', 'neon', 'bars'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
   twitch: { sharedChat: ['show', 'highlight', 'hide'] },
@@ -172,7 +183,7 @@ function validate(s, prev = DEFAULTS) {
   for (const [sec, keys] of Object.entries(CHOICES)) {
     for (const [k, list] of Object.entries(keys)) if (!list.includes(s[sec][k])) s[sec][k] = list.includes(prev[sec][k]) ? prev[sec][k] : DEFAULTS[sec][k];
   }
-  for (const sec of ['appearance', 'viewers', 'followers']) {
+  for (const sec of ['appearance', 'alerts', 'viewers', 'followers']) {
     for (const [k, def] of Object.entries(DEFAULTS[sec])) {
       if (typeof def === 'string' && COLOR.test(def) && !COLOR.test(s[sec][k])) s[sec][k] = COLOR.test(prev[sec][k]) ? prev[sec][k] : def;
     }
@@ -214,7 +225,9 @@ function migrate(raw) {
     g.fadeMessages = Number(g.hideAfter) > 0;
     if (!g.fadeMessages) delete g.hideAfter;
   }
-  if (version < 2) { (raw.advanced ||= {}).configVersion = 2; migrated = true; }
+  // 1.6 retired the Banner, Card and Minimal alert styles: they become Achievement, the closest of the new ones.
+  if (version < 3 && raw.alerts && ['banner', 'card', 'toast'].includes(raw.alerts.style)) raw.alerts.style = 'achievement';
+  if (version < 3) { (raw.advanced ||= {}).configVersion = 3; migrated = true; }
   return raw;
 }
 
