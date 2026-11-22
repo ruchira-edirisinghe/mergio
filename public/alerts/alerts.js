@@ -287,7 +287,9 @@
     if (!current) next();
   }
 
+  let paused = false;            // the streamer paused alerts: new ones wait in the queue
   function next() {
+    if (paused && !isPreview && !demo) { current = null; return; }
     const m = queue.shift();
     if (!m) { current = null; return; }
     shown.add(m.id);
@@ -350,11 +352,17 @@
     ws.onmessage = e => {
       const d = JSON.parse(e.data);
       if (d.op === 'hello' || d.op === 'settings') applySettings(d.settings); // old alerts are never replayed
+      if (d.op === 'hello') paused = !!d.live?.alertsPaused;
       else if (d.op === 'msg') { if (!demo) onMsg(d.msg); }
       else if (d.op === 'replay' && !demo && d.msg?.event) {
         // played again from the Gifts dock: a fresh copy, so it isn't skipped as already shown
         const m = { ...d.msg, id: `${d.msg.id}~r${Date.now()}`, event: { ...d.msg.event, live: false } };
         queue.push(m); if (!current) next();
+      }
+      else if (d.op === 'alerts') {
+        paused = !!d.paused;
+        if (d.skip && current && !isPreview && !demo) leave();
+        else if (!paused && !current) next();
       }
       else if (d.op === 'clear') { queue.length = 0; if (current && !(d.keep || []).includes(current.m.id)) leave(); }
       else if (d.op === 'delete' && Array.isArray(d.ids)) {
