@@ -284,7 +284,7 @@ export function ObsDock({ active }: { active: boolean }) {
             <div className="flex flex-col bg-[#0e0e15]">
               <DockHead title="Mergio · Viewers" />
               <div className="px-3 py-2">
-                <div className="mb-1.5 flex items-baseline gap-1.5"><span className="h-2 w-2 rounded-full bg-[#ff2d55] anim-pulse" /><b className="text-[20px] tabular-nums">{counts.reduce((s, n) => s + n, 0).toLocaleString('en')}</b><span className="text-[11px] text-white/50">watching now</span></div>
+                <div className="mb-1.5 flex items-baseline gap-1.5"><span className="h-2 w-2 rounded-full bg-[#ff2d55] anim-pulse" /><b className="text-[20px] tabular-nums">{counts.reduce((s, n) => s + n, 0).toLocaleString('en')}</b><span className="text-[11px] text-white/50">watching now</span><span className="ml-auto text-[11px] text-white/45">Peak <b className="tabular-nums text-white/80">742</b></span></div>
                 <div className="flex flex-wrap gap-1.5">
                   {PLATFORMS.map((p, i) => (
                     <span key={p.id} className="inline-flex items-center gap-1 rounded-full bg-white/[.06] px-2 py-0.5 text-[11px] tabular-nums text-white/75"><PlatformIcon id={p.id} colored className="h-3 w-3" />{counts[i]}</span>

@@ -47,7 +47,7 @@ export function Info() {
           <Card tone="plum" delay={100} title={'Connects when\nyou go live.'} body="Add your channels once. That's it.">
             {a => <AutoDetect active={a} />}
           </Card>
-          <Card tone="light" wide delay={200} title="Alerts where you want them" body="In the chat, on their own overlay, or both.">
+          <Card tone="light" wide delay={200} title="Alerts where you want them" body="In the chat, on their own overlay, or both. Pause or skip them while you're live.">
             {a => <Placement active={a} />}
           </Card>
           <Card tone="plum" title={'Viewers and\nfollower goals.'} body="Live counts from every platform. You pick which ones show.">

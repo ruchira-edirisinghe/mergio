@@ -1,15 +1,15 @@
 import { useState } from 'react';
-import { Bookmark, Eye, EyeOff, Filter, Gift, Info, Languages, Layers, Lock, Palette, PanelRight, Radar, RefreshCw, Rows3, ShieldCheck, Smile, Sparkles, Target, Trophy, Zap, Plus, type LucideIcon } from 'lucide-react';
+import { Bookmark, Eye, EyeOff, Filter, Pause, Pin, Gift, Info, Languages, Layers, Lock, Palette, PanelRight, Radar, RefreshCw, Rows3, ShieldCheck, Smile, Sparkles, Target, Trophy, Zap, Plus, type LucideIcon } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { Eyebrow } from '../components/ui';
 import { readme } from '../lib/links';
 
 const ROW_A: [LucideIcon, string][] = [
   [Sparkles, 'Ten alert themes'], [Trophy, 'Gift rarity & levels'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'],
-  [Palette, 'Any Google Font'], [Eye, 'Viewer count'], [Target, 'Follower goals'], [Languages, 'Any language'], [Bookmark, 'Three saved looks'],
+  [Palette, 'Any Google Font'], [Eye, 'Viewer count'], [Target, 'Follower goals'], [Languages, 'Any language'], [Bookmark, 'Three saved looks'], [Pause, 'Pause & skip alerts'],
 ];
 const ROW_B: [LucideIcon, string][] = [
-  [PanelRight, 'OBS docks'], [EyeOff, 'Hide any message'], [Rows3, 'Counters in one line'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
+  [PanelRight, 'OBS docks'], [Pin, 'Pin a message'], [EyeOff, 'Hide any message'], [Rows3, 'Counters in one line'], [Zap, 'Instant updates'], [ShieldCheck, 'Moderation sync'], [Filter, 'Bot & word filters'],
   [Info, 'Plain-words tips'], [RefreshCw, 'Updates itself'], [Layers, 'A look per scene'], [Lock, 'Private, no cloud'],
 ];
 
