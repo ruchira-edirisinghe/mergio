@@ -1010,6 +1010,13 @@ body[data-preview="counter"] .counter-foot { display: flex; }
 .now-it small { color: var(--faint); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .now-it.off b { color: var(--faint); font-weight: 600; font-size: 13.5px; }
 .now-it.err small { color: #fca5a5; }
+button.now-it { font: inherit; color: inherit; text-align: left; cursor: pointer; grid-template-columns: 30px minmax(0, 1fr) auto; transition: border-color .15s, background .15s, opacity .15s; }
+button.now-it:hover { border-color: color-mix(in srgb, var(--pc) 45%, var(--line)); }
+button.now-it:focus-visible { outline: 2px solid var(--accent, #7c4dff); outline-offset: 2px; }
+button.now-it .vis { grid-row: 1 / span 2; grid-column: 3; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--muted); padding: 3px 7px; border-radius: 99px; background: rgba(255, 255, 255, .05); }
+button.now-it .vis svg { width: 12px; height: 12px; }
+button.now-it.hid { opacity: .55; border-style: dashed; }
+button.now-it.hid .vis { color: var(--faint); }
 @media (max-width: 640px) { .now { grid-template-columns: 1fr; } }
 /* style picker for counters */
 .cstyles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }

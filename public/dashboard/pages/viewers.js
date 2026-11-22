@@ -17,6 +17,12 @@
       [V, { key: 'showLiveDot', icon: 'live', label: 'Live dot', hint: 'Pulses while you are live, grey when not', type: 'toggle' }],
       { sub: 'Each platform' },
       [V, { key: 'showPlatforms', icon: 'layers', label: 'A number for each platform', hint: 'With the platform logo', type: 'toggle' }],
+      [V, { key: 'youtube', icon: 'youtube', label: 'YouTube', hint: 'Its own number on the overlay', type: 'toggle', when: s => s.viewers.showPlatforms }],
+      [V, { key: 'twitch', icon: 'twitch', label: 'Twitch', hint: 'Its own number on the overlay', type: 'toggle', when: s => s.viewers.showPlatforms }],
+      [V, { key: 'kick', icon: 'kick', label: 'Kick', hint: 'Its own number on the overlay', type: 'toggle', when: s => s.viewers.showPlatforms }],
+      [V, { key: 'tiktok', icon: 'tiktok', label: 'TikTok', hint: 'Its own number on the overlay', type: 'toggle', when: s => s.viewers.showPlatforms }],
+      [V, { key: 'facebook', icon: 'facebook', label: 'Facebook', hint: 'Its own number on the overlay', type: 'toggle', when: s => s.viewers.showPlatforms }],
+      [V, { key: 'totalAll', icon: 'raid', help: 'On: the total is everyone watching, even on platforms whose own number you hid. Off: the total only adds up the platforms you show.', label: 'Total counts hidden platforms too', hint: 'Off = only the platforms shown above', type: 'toggle', when: s => s.viewers.showTotal && hiddenAny(s) }],
       [V, { key: 'showNames', icon: 'tag', label: 'Platform names', hint: '"Twitch 120" instead of just the logo', type: 'toggle', when: s => s.viewers.showPlatforms }],
       [V, { key: 'hideOffline', icon: 'eye', label: 'Only platforms that are live', hint: 'Hides platforms you are not streaming on right now', type: 'toggle', when: s => s.viewers.showPlatforms }],
       [V, { key: 'showShare', icon: 'bar', help: 'A thin bar split into the platform colours, sized by how many people watch on each. Shows in the Glass, Neon and Broadcast styles.', label: 'Share bar', hint: 'Glass, Neon and Broadcast styles', type: 'toggle', when: s => s.viewers.showPlatforms }],
@@ -25,6 +31,7 @@
       [V, { key: 'layout', icon: 'rows', label: 'Arrange the numbers', hint: 'One line keeps everything on a single row and shrinks it to fit', type: 'select', dropdown: true, options: [['line', 'All in one line'], ['row', 'Side by side, wraps when long'], ['column', 'Under each other']] }],
       [V, { key: 'align', icon: 'align', label: 'Line up on the', hint: 'Inside the browser source', type: 'select', options: [['left', 'Left'], ['center', 'Middle'], ['right', 'Right']] }],
       [V, { key: 'animate', icon: 'sparkle', label: 'Numbers roll to the new value', hint: 'Off = they change straight away', type: 'toggle' }],
+      [V, { key: 'numberFormat', icon: 'hash', label: 'Big numbers', hint: '1,234 or 1.2K', type: 'select', options: [['full', '1,234'], ['short', '1.2K']], keywords: 'format short thousand k' }],
     ] },
     { id: 'text', icon: 'type', title: 'Text & colours', sub: 'Font, size and colours', items: [
       [V, { key: 'font', icon: 'type', label: 'Font', hint: 'Any Google Font or a font on your PC', type: 'font', suggestions: MG.FONTS || [] }],
@@ -36,6 +43,7 @@
       [V, { key: 'bgOpacity', icon: 'contrast', label: 'How solid the background is', hint: '0% = invisible', type: 'range', min: 0, max: 1, step: 0.01, unit: '%' }],
     ] },
   ];
+  const hiddenAny = s => ['youtube', 'twitch', 'kick', 'tiktok', 'facebook'].some(p => s.viewers[p] === false);
   const open = new Set(GROUPS.filter(g => g.open).map(g => g.id));
 
   /** Right now: the total and each chat's number. */
@@ -47,8 +55,16 @@
     if (!s.viewers.length) { card.append(h('div', { class: 'empty' }, icon('chat'), h('b', { text: 'No chats added yet' }), h('span', { text: 'Add your channels on the Chats page. Their viewer counts show up here.' }))); return card; }
     card.append(h('div', { class: 'now' },
       h('div', { class: 'now-big' }, h('span', {}, h('span', { class: `dot ${live ? 'live' : ''}` }), live ? 'Watching now' : 'Not live'), h('b', { text: MG.num(s.totalViewers) })),
-      h('div', { class: 'now-list' }, ...s.viewers.map(v => h('div', { class: `now-it ${v.count == null ? 'off' : ''}`, style: `--pc: var(--${v.platform})` },
-        h('span', { class: 'logo' }, icon(v.platform)), h('b', { text: v.count == null ? 'Not live' : MG.num(v.count) }), h('small', { text: v.label }))))));
+      h('div', { class: 'now-list' }, ...s.viewers.map(v => {
+        // click a platform to show or hide its own number on the overlay
+        const shown = MG.st.settings.viewers[v.platform] !== false;
+        return h('button', { type: 'button', class: `now-it ${v.count == null ? 'off' : ''} ${shown ? '' : 'hid'}`, style: `--pc: var(--${v.platform})`, 'aria-pressed': String(shown),
+          title: shown ? `Shown on the overlay. Click to hide the ${MG.pname(v.platform)} number` : `Hidden on the overlay. Click to show the ${MG.pname(v.platform)} number`,
+          onclick: () => { MG.save(V, v.platform, !shown); MG.render(); MG.toast(`${MG.pname(v.platform)} number ${shown ? 'hidden on' : 'shown on'} the overlay`); } },
+          h('span', { class: 'logo' }, icon(v.platform)), h('b', { text: v.count == null ? 'Not live' : MG.num(v.count) }), h('small', { text: v.label }),
+          h('span', { class: 'vis' }, icon(shown ? 'eye' : 'eyeoff'), shown ? 'On overlay' : 'Hidden'));
+      }))),
+      h('p', { class: 'hint', text: 'Click a platform to show or hide its own number on the overlay.' }));
     return card;
   }
 
