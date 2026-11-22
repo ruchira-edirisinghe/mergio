@@ -12,7 +12,7 @@
 
 - One small Node.js process runs everything: the platform connectors, a tiny HTTP + WebSocket server and your settings.
 - The overlays and the control panel are plain HTML, CSS and JavaScript served by that process. The UI has no framework and no build step.
-- `npm run build` bundles the code with esbuild and packs it with the web files into one executable using Node's [Single Executable Applications](https://nodejs.org/api/single-executable-applications.html). `npm run package` makes the installers for the system you run it on (the Windows installer needs [Inno Setup 6](https://jrsoftware.org/isinfo.php)). Pushing a tag like `v1.6.0` builds and publishes every system's files with GitHub Actions.
+- `npm run build` bundles the code with esbuild and packs it with the web files into one executable using Node's [Single Executable Applications](https://nodejs.org/api/single-executable-applications.html). `npm run package` makes the installers for the system you run it on (the Windows installer needs [Inno Setup 6](https://jrsoftware.org/isinfo.php)). Pushing a tag like `v1.7.0` builds and publishes every system's files with GitHub Actions.
 
 **Resource use:** about 45 MB of memory with nothing connected and 70 to 80 MB with very busy chats, at close to 0% CPU. Message lists are capped, picture lookups are cached and rate-limited, and the overlays only animate `transform` and `opacity`.
 
