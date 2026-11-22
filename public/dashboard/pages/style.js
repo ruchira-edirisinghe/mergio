@@ -107,6 +107,7 @@
     }
 
     c.append(MG.savedLooks('chat', MG.st.overlayUrl));
+    if (MG.packsCard) c.append(MG.packsCard());
     c.append(MG.card('Pick a style', 'One click changes the whole look. You can fine-tune it below.',
       h('div', { class: 'presets' }, ...PRESETS.map(p => h('button', { class: `preset ${a.theme === p.set.theme && a.font === p.set.font ? 'on' : ''}`, onclick: () => applyPreset(p) },
         h('div', { class: 'sw' }, ...[0, 1].map(i => h('i', { style: `width:${i ? 90 : 70}%;background:${p.sw[i]};${p.border ? `box-shadow:0 0 0 1px ${i ? '#53fc18' : '#9146ff'},0 0 8px ${i ? '#53fc18' : '#9146ff'};` : ''}${p.sw[i] === 'transparent' ? 'border-bottom:2px solid #fff;border-radius:0' : ''}` }))),
