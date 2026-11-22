@@ -12,7 +12,7 @@ export const PAGES: PageMeta[] = [
   {
     path: '/', file: 'index.html', name: 'Mergio',
     title: 'Mergio · Free multistream chat overlay for OBS',
-    description: 'Merge YouTube, Twitch, Kick, TikTok and Facebook live chat into one OBS overlay, with game-style gift alerts, OBS docks and viewer counts. Free and open source.',
+    description: 'Merge YouTube, Twitch, Kick, TikTok and Facebook live chat into one OBS overlay with game-style alerts and OBS docks. Free, open source, runs on your own PC.',
   },
   {
     path: '/privacy', file: 'privacy.html', name: 'Privacy policy',
