@@ -24,7 +24,7 @@ Multistreaming means your viewers chat in five places. Mergio reads all of them 
 <table>
 <tr>
 <td align="center" width="33%"><img src="docs/overlay.png" alt="The chat overlay" height="300"><br><b>Chat overlay</b><br><sub>Every chat in one list, with real profile pictures</sub></td>
-<td align="center" width="33%"><img src="docs/guide/08-alert-gift.png" alt="A TikTok gift alert" height="300"><br><b>Alerts overlay</b><br><sub>Gifts, subs, Super Chats and raids in six styles</sub></td>
+<td align="center" width="33%"><img src="docs/guide/08-alert-gift.png" alt="A TikTok gift alert" height="300"><br><b>Alerts overlay</b><br><sub>Gifts, subs, Super Chats and raids in fifteen styles, twelve of them game themes</sub></td>
 <td align="center" width="33%"><img src="docs/counters.png" alt="Viewer count and follower goal overlays" height="300"><br><b>Counters</b><br><sub>Live viewers and follower goals, even in one line</sub></td>
 </tr>
 </table>
@@ -33,13 +33,18 @@ Multistreaming means your viewers chat in five places. Mergio reads all of them 
 
 - 🔗 **Connects by itself.** Add your channels once. Mergio connects when you go live and reconnects if the connection drops.
 - 🎁 **The real thing, every time.** Real profile pictures, real TikTok and Kick gift pictures, combos that count up live, cheermotes and 7TV, BTTV and FFZ emotes.
-- 🔔 **Alerts where you want them:** in the chat as calm lines, on their own overlay in six animated styles (Spotlight, Banner, Neon, Bubbly, Card, Minimal) with an optional chime, or both.
-- 👀 **Viewer count:** everyone watching on every platform, added up live, in five styles.
+- 🔔 **Alerts where you want them:** in the chat as calm lines, on their own overlay, or both. Fifteen styles: twelve game themes (Level up, Achievement, Loot drop, Arcade, Combo, Quest, Cyber HUD, Gacha pull, Item roulette, CRT broadcast, Transmission, Bounty poster) where bigger gifts get a rarer tier, plus Spotlight, Neon and Bubbly. Pick the colours, font, headline, what shows and one of seven sounds (a different one for each tier if you like), and add a pause between alerts. **Pause** or **Skip** alerts while you're live.
+- 🗣️ **Read aloud:** a voice reads Super Chats, Bits and other messages from the alerts overlay, so OBS records it with the alert. It uses your computer's own voices, works offline and never reads a message with a blocked word.
+- 👀 **Viewer count:** everyone watching on every platform, added up live, in five styles. Pick which platforms show, whether the total counts the hidden ones, and full or short numbers (1.2K).
 - 🎯 **Follower goals:** each platform's followers with a goal and a progress bar that celebrates when you reach it, in five styles.
 - ➖ **All in one line:** the counters can sit in a single row and shrink to fit any browser source.
 - 🎨 **Your look:** six one-click chat styles, any Google Font, colours, boxes, layout and animation. Every setting has an icon and a plain-words tip, and the preview updates as you go.
+- 🎁 **Matching packs:** one click gives the chat, alerts, viewer count and follower goals the same look. Ten packs: Level up, Arcade, Cyber, Gacha, Deep space, Late-night TV, Fantasy quest, Wild West, Bubbly and Clean.
+- 💾 **Saved looks:** keep three looks for each overlay (chat, alerts, viewer count, follower goals), switch with one click, or give a scene its own look with `?slot=2`.
 - 🌍 **Any language:** names and messages in Sinhala, Tamil, Hindi, Arabic, Hebrew, Japanese, Chinese, Korean, Thai and more show correctly, right-to-left included.
-- 💬 **Live chat page:** read every chat in one list, filter it by platform or by chat and alerts, and dock it inside OBS.
+- 💬 **Live chat page:** read every chat in one list and filter it by platform or by chat and alerts. **Pin** a message to the top of your overlay, **hide** single messages, or pick several and keep only those when you clear the chat.
+- 🧩 **OBS docks:** three small panels inside OBS (the full chat, the gifts and alerts you received with your top supporters, and your live viewer count with the peak and the last hour), added with one button.
+- 👋 **Joins and likes your way:** switch "joined the chat" and TikTok likes on or off for the chat overlay.
 - 🛡️ **Clean chat:** moderation sync, filters for bots, `!commands` and words, and a minimum TikTok gift value.
 - ⚡ **Instant and lightweight:** changes reach OBS straight away, it uses about 50 to 80 MB of memory, and it works on any screen size, from a phone to a big monitor.
 - 🚀 **Easy to keep up to date:** a guided installer that explains every choice, and one-click updates with release notes.
@@ -106,13 +111,19 @@ Open **Chat style** and click a style. Open a section below it to fine-tune: eac
 
 ### Step 4 · Choose your alerts
 
-Open **Alerts** and choose where alerts show: **in the chat**, on **their own overlay**, or **both**. Pick one of the six styles (each tile plays a preview), then switch off anything you don't want on stream. Press **Try** to see any alert.
+Open **Alerts** and choose where alerts show: **in the chat**, on **their own overlay**, or **both**. Pick one of the fifteen styles (each tile plays a preview). The game themes give bigger gifts a rarer tier (Common, Rare, Epic, Legendary), and you can change their colours, font, headline, sound and what shows. Then switch off anything you don't want on stream, and press **Try** to see any alert.
+
+Under **Sound** you can give each tier its own sound (press **Hear it** to listen). Under **Timing and size**, **Space between alerts** adds a pause when several come in at once. Switch on **Read messages aloud** to have a voice read them: pick which alerts (every alert, or only Rare and bigger, and so on), the voice and the speed. On Windows and macOS the voices are already there. On Linux, install `espeak-ng`.
 
 <div align="center"><img src="docs/guide/04-alerts.png" alt="The Alerts page with the alert styles" width="820"></div>
 
 ### Step 5 · Add counters (optional)
 
-**Viewer count** shows how many people watch on each platform and in total. **Follower goals** shows each platform's followers with a goal: with a step of 100, 436 followers aims for 500, and the next goal appears by itself. You can also set your own goal for each platform. Choose **All in one line** under *Layout* to keep everything in a single row.
+**Viewer count** shows how many people watch on each platform and in total. **Follower goals** shows each platform's followers with a goal: with a step of 100, 436 followers aims for 500, and the next goal appears by itself. You can also set your own goal for each platform. Choose **All in one line** under *Layout* to keep everything in a single row. On **Viewer count**, click a platform under *Right now* to show or hide its own number.
+
+To make everything match in one go, open **Style → Matching packs** and pick a pack. It sets the chat style, alert style, viewer count and follower goals together, and keeps your chats, switches, goals, sizes and positions. **Undo** puts back what you had.
+
+Every overlay page has **Saved looks** at the bottom: three slots to save the look you have, switch back to it later, or copy a `?slot=N` link so one scene always uses that look.
 
 <div align="center">
 <img src="docs/guide/11-viewers.png" alt="The Viewer count page" width="405"> <img src="docs/guide/12-followers.png" alt="The Follower goals page" width="405">
@@ -139,7 +150,13 @@ The card turns green when OBS shows it. You never copy the link again: every cha
 
 ### Step 7 · Read every chat while you're live
 
-Open **Live chat** to read every chat in one list. Click a platform to see only that one, or switch between **Chat** and **Alerts**. To keep it inside OBS, open **Docks → Custom Browser Docks…**, name it `Mergio` and use `http://localhost:8787/dashboard`.
+Open **Live chat** to read every chat in one list. Click a platform to see only that one, or switch between **Chat** and **Alerts**.
+
+- **Pin** a message (the pin on each message) to keep it at the top of your chat overlay until you unpin it.
+- **Hide** one message (the eye) or press **Select**, pick messages (Shift+click picks a range) and choose **Hide from overlay** or **Keep only these**.
+- **Pause** holds new alerts until you resume, so none are lost. **Skip** ends the one on screen.
+
+To keep all of this inside OBS, open **Add to OBS → OBS docks** and press **Install the docks in OBS** while OBS is closed. You get three docks: **Mergio Chat** (`/dock/chat`), **Mergio Gifts** (`/dock/gifts`, with a ▶ to replay any alert) and **Mergio Viewers** (`/dock/viewers`). Mergio keeps any docks you added yourself. To add them by hand, use **Docks → Custom Browser Docks…** in OBS with those links.
 
 <div align="center"><img src="docs/guide/06-live-chat.png" alt="The Live chat page with platform filters" width="820"></div>
 
@@ -158,10 +175,13 @@ Add settings to an overlay link to change them for that browser source only:
 
 ```
 http://localhost:8787/overlay?theme=neon&fontSize=28&align=right
-http://localhost:8787/alerts?style=banner&size=1.3&position=top
+http://localhost:8787/alerts?style=levelup&size=1.3&position=top
 http://localhost:8787/viewers?style=broadcast&layout=line
 http://localhost:8787/followers?style=bars&layout=column
+http://localhost:8787/overlay?slot=2
 ```
+
+`?slot=1`, `2` or `3` uses one of your saved looks for that browser source.
 </details>
 
 <details><summary><b>Update or uninstall</b></summary>

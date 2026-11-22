@@ -62,17 +62,52 @@
     h('div', { class: 'chatcol' }, h('i'), id === 'overlay' ? h('i') : h('i', { class: 'al' }), h('i')),
     id === 'chat' ? null : h('div', { class: 'box' }));
 
+  /* ---------- sounds (made in shared/sounds.js) ---------- */
+  const SOUND_TYPES = window.mergioSound?.TYPES || [['chime', 'Chime (changes with the alert)']];
+  const TIER_SOUNDS = [['soundCommon', 'Common', 'Follows and small gifts'], ['soundRare', 'Rare', 'Subs and medium gifts'], ['soundEpic', 'Epic', 'Big gifts and Super Chats'], ['soundLegendary', 'Legendary', 'The biggest ones']];
+  /** Plays the sound an alert of this size gets, with the current settings (even while sounds are off, so you can choose). */
+  const hear = tier => { const a = MG.st.settings.alerts; window.mergioSound?.play(window.mergioSound.forTier(a, tier), 'gift', a.sound ? a.volume : Math.max(0.4, a.volume)); };
+
+  /** The read-aloud voices on this computer (asked once; the Voice box suggests them). */
+  const VOICES = [];
+  MG.api('GET', '/api/tts/voices').then(r => VOICES.push(...(r.voices || []))).catch(() => {});
+  let sample = null;
+  async function hearVoice() {
+    try {
+      const r = await fetch('/api/tts/sample');
+      if (r.status !== 200) { const e = await r.json().catch(() => ({})); throw new Error(e.error || 'No voice found on this computer.'); }
+      if (sample) { sample.pause(); URL.revokeObjectURL(sample.src); }
+      sample = new Audio(URL.createObjectURL(await r.blob()));
+      sample.volume = Math.max(0.3, MG.st.settings.alerts.ttsVolume);
+      sample.play();
+    } catch (e) { MG.toast(e.message, true); }
+  }
+
   /* ---------- alert styles, each with a little looping preview ---------- */
   const STYLES = [
+    ['levelup', 'Level up', 'An RPG panel: the XP bar fills and the viewer levels up', 'Game'],
+    ['achievement', 'Achievement', 'A medal spins down onto a trophy plaque. Bronze to gold by size', 'Game'],
+    ['loot', 'Loot drop', 'A card flips over in its rarity colour: Common to Legendary', 'Game'],
+    ['arcade', 'Arcade', '8-bit box, blinking 1UP and a score that counts up', 'Game'],
+    ['combo', 'Combo', 'A fighting-game hit: COMBO! slams in over speed lines', 'Game'],
+    ['quest', 'Quest', 'A parchment scroll unrolls with a wax seal', 'Game'],
+    ['cyber', 'Cyber HUD', 'Brackets lock on, a scan line sweeps, the name decodes', 'Game'],
+    ['gacha', 'Gacha pull', 'A capsule cracks open; its light shows the rarity, then 2 to 5 stars', 'Game'],
+    ['roulette', 'Item roulette', 'A slot spins through items and lands on the gift. Rarer spins longer', 'Game'],
+    ['crt', 'CRT broadcast', 'The TV tunes in through static: channel number and VHS time stamp', 'Game'],
+    ['transmission', 'Transmission', 'Hyperspace streaks settle into a hologram that reads the message out', 'Game'],
+    ['bounty', 'Bounty poster', 'A wanted poster drops onto a board and a sheriff badge stamps it', 'Game'],
     ['spotlight', 'Spotlight', 'The picture big, with the name rising in'],
-    ['banner', 'Banner', 'A TV-style lower third that wipes in'],
     ['neon', 'Neon', 'A glowing sign that lights up'],
     ['bubble', 'Bubbly', 'A bright sticker that slaps on'],
-    ['card', 'Card', 'Frosted glass that tilts into place'],
-    ['toast', 'Minimal', 'A small black pill that grows open'],
   ];
-  const mini = id => h('div', { class: `ast ast-${id}`, 'aria-hidden': 'true' },
-    h('i', { class: 'a1' }), h('i', { class: 'a2' }), h('i', { class: 'a3' }));
+  MG.ALERT_STYLES = STYLES;
+  /** A small live preview: the real alerts overlay playing sample alerts in that style. */
+  const mini = id => {
+    const f = h('iframe', { src: `/alerts?preview=1&demo=1&style=${id}&position=center&duration=3`, title: `${id} preview`, tabindex: '-1', loading: 'lazy', 'aria-hidden': 'true' });
+    return h('div', { class: 'ast', 'aria-hidden': 'true' }, f);
+  };
+  const fitMinis = grid => { for (const f of grid.querySelectorAll('.ast iframe')) { const w = f.parentElement.clientWidth; if (!w) continue; const k = Math.min(w / 800, f.parentElement.clientHeight / 340); f.style.transform = `translate(${(w - 800 * k) / 2}px, ${(f.parentElement.clientHeight - 500 * k) / 2}px) scale(${k})`; } };
   function stylePicker() {
     const cur = MG.st.settings.alerts.style;
     const grid = h('div', { class: 'astyles', role: 'radiogroup', 'aria-label': 'Alert style' });
@@ -82,10 +117,12 @@
       MG.refreshDeps();
       setTimeout(() => MG.test('gift'), 250); // show it in the preview (and in OBS)
     };
-    for (const [id, name, desc] of STYLES)
+    for (const [id, name, desc, tag] of STYLES)
       grid.append(h('button', { class: `astyle ${cur === id ? 'on' : ''}`, 'data-id': id, role: 'radio', 'aria-checked': String(cur === id), onclick: () => pick(id) },
-        mini(id), h('b', { text: name }), h('span', { text: desc })));
-    return MG.card('Alert style', 'Pick a look. Each one plays a test alert in the preview so you can see it move.', grid);
+        mini(id), tag ? h('span', { class: 'tag', text: tag }) : null, h('b', { text: name }), h('span', { text: desc })));
+    requestAnimationFrame(() => fitMinis(grid));
+    new ResizeObserver(() => fitMinis(grid)).observe(grid);
+    return MG.card('Alert style', 'Pick a look. Each card plays sample alerts; picking one also plays a test alert in the preview.', grid);
   }
 
   function alertsStatus() {
@@ -127,29 +164,64 @@
         ])));
     }
     if (cur === 'chat') return;
+    c.append(MG.savedLooks('alerts', MG.st.alertsUrl));
     c.append(stylePicker());
     const A = 'alerts';
     c.append(MG.card('Alerts overlay settings', 'The preview shows alerts at the top.',
       MG.fieldList([
         { sub: 'Timing and size' },
         [A, { key: 'duration', icon: 'timer', label: 'Each alert stays for', hint: 'Seconds on screen', type: 'range', min: 2, max: 20, unit: 's', keywords: 'time seconds' }],
+        [A, { key: 'gap', icon: 'timer', label: 'Space between alerts', hint: 'Seconds of rest before the next one', help: 'When several alerts come in at once, they play one after another. This adds a pause between them so each one gets its moment. 0 = the next one follows right away.', type: 'range', min: 0, max: 30, unit: 's', keywords: 'gap pause wait delay between queue' }],
         [A, { key: 'size', icon: 'size', label: 'Size', hint: 'Bigger or smaller than normal', type: 'range', min: 0.6, max: 2, step: 0.1, unit: '×', keywords: 'scale bigger smaller' }],
         [A, { key: 'position', icon: 'move', label: 'Where in its box', hint: 'Within the browser source', type: 'select', options: [['top', 'Top'], ['center', 'Middle'], ['bottom', 'Bottom']] }],
-        [A, { key: 'animation', icon: 'sparkle', label: 'How alerts appear', hint: 'The other styles have their own entrance', type: 'select', options: [['pop', 'Tilt up'], ['slide', 'Slide up'], ['fade', 'Fade in']], when: s => s.alerts.style === 'card' }],
+        { sub: 'Colours and font' },
+        [A, { key: 'colorMode', icon: 'palette', help: 'Platform: Twitch alerts are purple, TikTok pink and so on (Super Chats keep their own colour). By size: grey for small alerts, blue, purple, then gold for the biggest, like loot in a game. One colour: your own colour for everything.', label: 'Accent colour', type: 'select', dropdown: true, options: [['platform', 'Colour of the platform'], ['tier', 'By size: Common, Rare, Epic, Legendary'], ['custom', 'One colour for everything']], keywords: 'color colour tier rarity legendary' }],
+        [A, { key: 'accent', icon: 'droplet', label: 'Your colour', type: 'color', when: s => s.alerts.colorMode === 'custom' }],
+        [A, { key: 'textColor', icon: 'droplet', label: 'Text colour', hint: 'Quest and Bubbly keep their dark ink', type: 'color' }],
+        [A, { key: 'font', icon: 'type', help: 'Each style has a font that suits it (Arcade uses a pixel font, Quest an old serif). Type any Google Font or a font on your PC to use it instead. Leave empty for the style’s own font.', label: 'Font', hint: 'Empty = the style’s own font', type: 'font', placeholder: 'Style’s own font', suggestions: ['Lilita One', 'Press Start 2P', 'Bangers', 'Cinzel', 'Orbitron', 'Rubik', ...(MG.FONTS || [])], keywords: 'font typeface' }],
         { sub: 'What each alert shows' },
+        [A, { key: 'showHeadline', icon: 'sparkle', label: 'The big word on top', hint: '"LEVEL UP!", "Epic drop", "Quest complete"…', type: 'toggle', when: s => !['spotlight', 'neon', 'bubble'].includes(s.alerts.style) }],
+        [A, { key: 'headline', icon: 'type', label: 'Your own big word', hint: 'Empty = the style’s own words', type: 'text', placeholder: 'e.g. THANK YOU!', when: s => s.alerts.showHeadline && !['spotlight', 'neon', 'bubble'].includes(s.alerts.style) }],
+        [A, { key: 'showLabel', icon: 'tag', label: 'What happened', hint: '"NEW SUBSCRIBER", "GIFT"…', type: 'toggle' }],
+        [A, { key: 'showPlatform', icon: 'host', label: 'Which platform', hint: '"on Twitch"', type: 'toggle' }],
         [A, { key: 'showAvatar', icon: 'image', label: 'Profile picture', type: 'toggle' }],
         [A, { key: 'showMessage', icon: 'chat', label: 'Their message', hint: 'Super Chats, resubs and more', type: 'toggle' }],
+        [A, { key: 'showTimer', icon: 'timer', label: 'Time-left bar', hint: 'A thin bar that runs out', type: 'toggle' }],
         { sub: 'Sound' },
-        [A, { key: 'sound', icon: 'volume', label: 'Play a chime', hint: 'A short sound with each alert, made by Mergio', type: 'toggle', keywords: 'sound audio chime volume' }],
-        [A, { key: 'volume', icon: 'volume', label: 'Chime volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'sound audio', when: s => s.alerts.sound }],
+        [A, { key: 'sound', icon: 'volume', label: 'Play a sound', hint: 'A short sound with each alert, made by Mergio', type: 'toggle', keywords: 'sound audio chime volume' }],
+        [A, { key: 'soundType', icon: 'volume', label: 'Sound', type: 'select', dropdown: true, options: SOUND_TYPES, keywords: 'sound audio', when: s => s.alerts.sound }],
+        [A, { key: 'tierSounds', icon: 'sparkle', label: 'Other sounds for bigger alerts', hint: 'Pick a sound for each size: Common to Legendary', type: 'toggle', keywords: 'sound tier rarity legendary epic', when: s => s.alerts.sound }],
+        ...TIER_SOUNDS.map(([key, label, hint]) => [A, { key, icon: 'volume', label, hint, type: 'select', dropdown: true, options: [['same', 'Same as above'], ...SOUND_TYPES], keywords: 'sound tier rarity', when: s => s.alerts.sound && s.alerts.tierSounds }]),
+        [A, { key: 'volume', icon: 'volume', label: 'Volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'sound audio', when: s => s.alerts.sound }],
+        { sub: 'Read aloud' },
+        [A, { key: 'readAloud', icon: 'chat', label: 'Read messages aloud', hint: 'A voice reads Super Chats, Bits and other messages', help: 'The voice is made on this computer with its own voices (no internet, nothing is sent anywhere) and plays from the alerts overlay, so OBS records it with the alert. Messages with a blocked word are never read.', type: 'toggle', keywords: 'tts text to speech voice read aloud speak' }],
+        [A, { key: 'readWhat', icon: 'type', label: 'What it reads', type: 'select', dropdown: true, options: [['message', 'Only their message'], ['full', 'Who, what they sent, then their message']], keywords: 'tts voice', when: s => s.alerts.readAloud }],
+        [A, { key: 'readMin', icon: 'sparkle', label: 'Which alerts', hint: 'Bigger alerts have a rarer tier', type: 'select', dropdown: true, options: [['all', 'Every alert'], ['rare', 'Rare and bigger'], ['epic', 'Epic and bigger'], ['legendary', 'Legendary only']], keywords: 'tts voice tier minimum', when: s => s.alerts.readAloud }],
+        [A, { key: 'ttsVoice', icon: 'volume', label: 'Voice', hint: 'Empty = your computer’s default voice', type: 'font', placeholder: 'Default voice', suggestions: VOICES, keywords: 'tts voice', when: s => s.alerts.readAloud }],
+        [A, { key: 'ttsRate', icon: 'timer', label: 'Speed', type: 'range', min: 0.6, max: 1.8, step: 0.1, unit: '×', keywords: 'tts voice rate', when: s => s.alerts.readAloud }],
+        [A, { key: 'ttsVolume', icon: 'volume', label: 'Voice volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'tts voice', when: s => s.alerts.readAloud }],
+        [A, { key: 'ttsMaxLength', icon: 'size', label: 'Longest message read', hint: 'Letters; longer ones are cut', type: 'range', min: 20, max: 300, step: 10, keywords: 'tts voice length', when: s => s.alerts.readAloud }],
       ]),
+      h('div', { class: 'btn-row hear-row' }, h('span', { class: 'lbl', text: 'Hear it:' }),
+        ...['Common', 'Rare', 'Epic', 'Legendary'].map((t, i) => h('button', { class: 'btn ghost sm', title: `The sound a ${t} alert plays`, onclick: () => hear(i) }, icon('volume'), t)),
+        h('button', { class: 'btn ghost sm', title: 'The read-aloud voice, with your voice and speed', onclick: hearVoice }, icon('chat'), 'Voice')),
       h('div', { class: 'btn-row try-row' }, h('span', { class: 'lbl', text: 'Try:' }),
         ...[['gift', 'Gift'], ['sub', 'Sub'], ['superchat', 'Super Chat'], ['follow', 'Follow'], ['raid', 'Raid']].map(([k, t]) => h('button', { class: 'btn ghost sm', onclick: () => MG.test(k) }, icon('play'), t)))));
     c.append(MG.alertsSetup());
   }
   MG.on('overlays', () => { for (const el of document.querySelectorAll('.alerts-status')) { el.textContent = ''; el.append(alertsStatus()); } });
 
+  function controls() {
+    const paused = MG.live.alertsPaused;
+    return h('div', { class: `alert-live ${paused ? 'paused' : ''}`, id: 'alertLive' },
+      h('span', { class: 'al-state' + (paused ? ' paused' : '') }, h('i'), h('b', { text: paused ? 'Alerts are paused' : 'Alerts are on' }), h('span', { text: paused ? 'New alerts wait in line and play when you resume.' : 'Pause during a quiet moment; nothing gets lost.' })),
+      h('button', { type: 'button', class: `btn sm ${paused ? 'primary' : 'ghost'}`, onclick: () => MG.alertControl(paused ? 'resume' : 'pause') }, icon(paused ? 'play' : 'pause'), paused ? 'Resume' : 'Pause'),
+      h('button', { type: 'button', class: 'btn sm ghost', onclick: () => MG.alertControl('skip') }, icon('skip'), 'Skip current'));
+  }
+  MG.on('live', () => { const el = document.getElementById('alertLive'); if (el) el.replaceWith(controls()); });
+
   function render(c) {
+    c.append(controls());
     const used = new Set(MG.st.sources.map(s => s.platform));
     const order = [...ORDER].sort((a, b) => used.has(b) - used.has(a));
     placement(c);

@@ -6,7 +6,7 @@ import { REPO } from '../lib/links';
 
 export type LegalDoc = 'privacy' | 'terms';
 
-const UPDATED = '21 November 2026';
+const UPDATED = '22 November 2026';
 const CREATOR = { name: 'Ruchira Edirisinghe', url: 'https://ruchiraedirisinghe.vercel.app' };
 const ISSUES = `${REPO}/issues/new/choose`;
 const LICENSE = `${REPO}/blob/main/LICENSE`;
@@ -50,7 +50,7 @@ const PRIVACY: Doc = {
   tagline: 'Mergio runs on your own computer. There is no Mergio account, no Mergio server and nothing to sign up for, so there is very little to say. Here is all of it.',
   summary: [
     { icon: UserX, title: 'No account, no tracking', text: 'Mergio has no sign-up, no analytics and no ads. The developer never sees who uses it.' },
-    { icon: HardDrive, title: 'Your data stays with you', text: 'Settings and keys are saved in a file on your computer. Chat is shown live and not saved.' },
+    { icon: HardDrive, title: 'Your data stays with you', text: 'Settings and keys are saved in a file on your computer. Chat and counts are shown live and not saved.' },
     { icon: Unplug, title: 'Direct connections', text: 'Mergio talks straight to YouTube, Twitch, Kick, TikTok and Facebook from your PC. Nothing goes through us.' },
     { icon: Ban, title: 'Nothing sold or shared', text: 'There is no data to sell. Mergio never sends your information to the developer.' },
   ],
@@ -67,11 +67,14 @@ const PRIVACY: Doc = {
       body: <>
         <P>Mergio saves a few files in its data folder on your own computer. That's a <Code>data</Code> folder next to the app, or, if that folder can't be written to, a <Code>Mergio</Code> folder in your user settings folder (<Code>%APPDATA%</Code> on Windows, <Code>~/Library/Application Support</Code> on macOS, <Code>~/.config</Code> on Linux).</P>
         <UL>
-          <LI><B>Your settings</B> (<Code>config.json</Code>): the channels and pages you add, how the overlay looks, and any keys you choose to enter, such as a Facebook Page token or a TikTok signing key. Keys are kept in this file on your computer only.</LI>
+          <LI><B>Your settings</B> (<Code>config.json</Code>): the channels and pages you add, how the overlay looks, your saved looks, and any keys you choose to enter, such as a Facebook Page token, a TikTok signing key or a YouTube Data API key. Keys are kept in this file on your computer only, and on macOS and Linux only your user account can read it.</LI>
           <LI><B>A log</B> (<Code>mergio.log</Code>): connection messages like "connected" or "reconnecting", to help you fix problems. It isn't sent anywhere.</LI>
           <LI><B>A picture cache</B>: links to viewers' public profile pictures, so they load faster next time.</LI>
+          <LI><B>A browser profile</B> (<Code>browser-profile</Code>): used only by the hidden Edge or Chrome window that reads TikTok and Facebook follower counts. It holds that window's cookies and cache, never your own browser's.</LI>
         </UL>
-        <P>Chat messages, gifts and alerts are kept in memory while Mergio runs and shown on your overlay. They are not saved to disk. Delete the data folder and everything Mergio stored is gone.</P>
+        <P>Chat messages, gifts, alerts, viewer counts and follower counts are kept in memory while Mergio runs and shown on your overlays. They are not saved to disk. Delete the data folder and everything Mergio stored is gone.</P>
+        <P>If you press <B>Install the docks in OBS</B>, Mergio adds its three docks (Mergio Chat, Mergio Gifts and Mergio Viewers) to OBS Studio's own settings file (<Code>user.ini</Code>, or <Code>global.ini</Code> in older versions) while OBS is closed. It keeps a copy of that file the first time, named <Code>.mergio-backup</Code>, and leaves any docks you added yourself alone. Nothing else in OBS is changed, and you can remove the docks in OBS at any time.</P>
+        <P>If you switch on <B>Read messages aloud</B>, the voice comes from your own computer (Windows speech, <Code>say</Code> on macOS, <Code>espeak-ng</Code> on Linux). It works offline: the audio is made on your PC, kept in memory only while it plays and never sent anywhere.</P>
       </>,
     },
     {
@@ -79,18 +82,19 @@ const PRIVACY: Doc = {
       body: <>
         <P>To show your chats, Mergio connects directly from your computer to the services below. Nothing passes through a Mergio server, because there isn't one. Like any internet connection, each service sees your IP address and the request, and handles it under its own privacy policy. Mergio never adds anything that identifies you.</P>
         <ServiceTable rows={[
-          ['YouTube', 'https://policies.google.com/privacy', 'Reading the public live chat of the streams you add.', 'The channel or video you watch.'],
-          ['Twitch', 'https://www.twitch.tv/p/legal/privacy-notice/', 'Reading public chat as a guest, plus badges and profile pictures.', 'The channel you watch and chatters\' usernames.'],
-          ['Kick', 'https://kick.com/privacy-policy', 'Reading public chat, gifts and follows.', 'The channel you watch.'],
-          ['TikTok', 'https://www.tiktok.com/legal/privacy-policy', 'Reading the LIVE chat, gifts and likes.', 'The TikTok username you watch.'],
+          ['YouTube', 'https://policies.google.com/privacy', 'Reading the public live chat and viewer count of the streams you add, and the subscriber count from the channel page. If you add your own YouTube Data API key, the subscriber count comes from that API instead.', 'The channel or video you watch, and your API key if you add one.'],
+          ['Twitch', 'https://www.twitch.tv/p/legal/privacy-notice/', 'Reading public chat as a guest, plus badges, profile pictures and the public follower and viewer counts.', 'The channel you watch and chatters\' usernames.'],
+          ['Kick', 'https://kick.com/privacy-policy', 'Reading public chat, gifts, follows and the follower and viewer counts.', 'The channel you watch.'],
+          ['TikTok', 'https://www.tiktok.com/legal/privacy-policy', 'Reading the LIVE chat, gifts, likes and viewer count. The follower count is read from the public profile page in a hidden Edge or Chrome window.', 'The TikTok username you watch.'],
           ['Euler Stream', 'https://www.eulerstream.com', 'Signing the TikTok LIVE connection (the community library Mergio uses for TikTok needs this).', 'The TikTok username you watch, and your signing key if you add one.'],
-          ['Facebook (Meta)', 'https://www.facebook.com/privacy/policy/', 'Reading comments on your Page\'s live videos with the Page token you provide.', 'Your Page token and Page ID.'],
+          ['Facebook (Meta)', 'https://www.facebook.com/privacy/policy/', 'Reading comments on your Page\'s live videos and the Page\'s follower count with the Page token you provide. Without a token, the follower count is read from the public Page in a hidden Edge or Chrome window.', 'Your Page token and Page ID.'],
           ['7TV, BetterTTV, FrankerFaceZ', 'https://7tv.app', 'Showing community emotes in Twitch chat (can be turned off).', 'The Twitch channel you watch.'],
           ['decapi.me', 'https://decapi.me', 'A backup way to find a Twitch chatter\'s profile picture.', 'That chatter\'s username.'],
           ['pronouns.alejo.io', 'https://pronouns.alejo.io', 'Showing chatters\' pronouns, only if you turn that on.', 'Twitch chatters\' usernames.'],
           ['Google Fonts', 'https://policies.google.com/privacy', 'Loading the font you pick for the overlay.', 'The font name.'],
           ['GitHub', 'https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement', 'Checking for new versions and downloading updates.', 'The version you have.'],
         ]} />
+        <P>Follower counts are only looked up for the chats you add, and only while the follower goals overlay or its page is open. Refreshing by hand is rate limited, so Mergio can't flood a platform with requests.</P>
         <P>The overlay and control panel run on a small web server that only listens on your own computer (<Code>127.0.0.1</Code>). Other devices and websites can't reach it, and it refuses requests from other sites.</P>
       </>,
     },
@@ -113,7 +117,7 @@ const PRIVACY: Doc = {
         <UL>
           <LI><B>No cookies, analytics or ads.</B> The site doesn't track you.</LI>
           <LI><B>Hosting:</B> the site is hosted by <A href="https://vercel.com/legal/privacy-policy">Vercel</A>, which may keep standard server logs (such as IP address and browser) for security and reliability.</LI>
-          <LI><B>Release info:</B> your browser asks GitHub's public API for the latest version and the release notes shown in Dev notes. That list is kept in your browser's session storage until you close the tab.</LI>
+          <LI><B>Release info:</B> your browser asks GitHub's public API for the latest version and the release notes shown in Dev notes. A copy is kept in your browser's session storage for up to 10 minutes, so it isn't asked again on every visit, and is gone when you close the tab.</LI>
           <LI><B>Fonts:</B> the fonts in the overlay demos come from Google Fonts.</LI>
           <LI><B>Downloads</B> come straight from Mergio's GitHub releases.</LI>
         </UL>

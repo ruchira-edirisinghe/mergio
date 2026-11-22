@@ -1,10 +1,13 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { Banknote, Coins, Gift, Heart, Shield, Sparkles, Star, UserPlus, Users } from 'lucide-react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Banknote, Coins, Crown, Flame, Gem, Gift, Heart, PartyPopper, Shield, Sparkles, Star, UserPlus, Users, Zap, type LucideIcon } from 'lucide-react';
 import { PlatformIcon, platformColor, platformName } from './brand';
 import { GiftArt } from './GiftArt';
 import { GIFTS, type AlertItem, type ChatItem, type ChatUser, type GiftId } from '../lib/chat';
 import { Face } from './Face';
 import type { FeedEntry } from '../lib/hooks';
+
+// measures before paint in the browser; the HTML built ahead of time (entry-server.tsx) skips it
+const useLayout = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 export type ThemeId = 'glass' | 'neon' | 'minimal' | 'soft' | 'retro';
 export const THEMES: { id: ThemeId; name: string }[] = [
@@ -136,26 +139,95 @@ export function ChatFeed({ items, theme = 'glass', box = true, showAvatar = true
   );
 }
 
-/** The six looks of Mergio's alerts overlay (Alerts > Style in the app). */
-export type AlertLook = 'spotlight' | 'banner' | 'neon' | 'bubble' | 'card' | 'toast';
+/** The fifteen themes of Mergio's alerts overlay (Alerts > Style in the app). */
+export type AlertLook = 'levelup' | 'achievement' | 'loot' | 'arcade' | 'combo' | 'quest' | 'cyber' | 'gacha' | 'roulette' | 'crt' | 'transmission' | 'bounty' | 'spotlight' | 'neon' | 'bubble';
 export const ALERT_LOOKS: { id: AlertLook; name: string }[] = [
+  { id: 'levelup', name: 'Level up' },
+  { id: 'achievement', name: 'Achievement' },
+  { id: 'loot', name: 'Loot drop' },
+  { id: 'arcade', name: 'Arcade' },
+  { id: 'combo', name: 'Combo' },
+  { id: 'quest', name: 'Quest' },
+  { id: 'cyber', name: 'Cyber' },
+  { id: 'gacha', name: 'Gacha pull' },
+  { id: 'roulette', name: 'Item roulette' },
+  { id: 'crt', name: 'CRT broadcast' },
+  { id: 'transmission', name: 'Transmission' },
+  { id: 'bounty', name: 'Bounty poster' },
   { id: 'spotlight', name: 'Spotlight' },
-  { id: 'banner', name: 'Banner' },
   { id: 'neon', name: 'Neon' },
   { id: 'bubble', name: 'Bubbly' },
-  { id: 'card', name: 'Card' },
-  { id: 'toast', name: 'Minimal' },
 ];
 
-/** One alert from Mergio's alerts overlay, built from the same parts as the app (see alerts.css). It leaves by itself after `life` seconds.
-    With `fit`, it shrinks to fit the height of its parent (tall looks with a message would spill over what is below). */
-export function AlertShow({ item, look = 'spotlight', life = 5, size = 1, fit = false }: { item: AlertItem; look?: AlertLook; life?: number; size?: number; fit?: boolean }) {
+/* The game bits, as in the app's alerts.js: each theme's font and big word, and how rare an alert is. */
+const THEME_FONT: Partial<Record<AlertLook, string>> = { levelup: 'Lilita One', loot: 'Lilita One', arcade: "'Press Start 2P'", combo: 'Bangers', quest: 'Cinzel', cyber: 'Orbitron', achievement: 'Rubik',
+  gacha: "'Baloo 2'", roulette: 'Russo One', crt: 'VT323', transmission: 'Chakra Petch', bounty: 'Rye' };
+// extra parts some themes use, with the same values as the app
+const STARS = [2, 3, 4, 5];
+const CHANNELS = ['03', '12', '42', '99'];
+const REEL: LucideIcon[] = [Gift, Coins, Star, Sparkles, Crown, Zap, Flame, PartyPopper, Banknote, Gem, Heart];
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+/** The VHS time stamp of the CRT theme, filled in once the page runs (the built HTML can't know the time). */
+function useStamp(on: boolean) {
+  const [stamp, setStamp] = useState('');
+  useEffect(() => {
+    if (!on) return;
+    const d = new Date(), hr = d.getHours();
+    setStamp(`${hr < 12 ? 'AM' : 'PM'} ${hr % 12 || 12}:${String(d.getMinutes()).padStart(2, '0')}\n${MONTHS[d.getMonth()]}. ${String(d.getDate()).padStart(2, '0')} ${d.getFullYear()}`);
+  }, [on]);
+  return stamp;
+}
+const TIERS = ['common', 'rare', 'epic', 'legendary'] as const;
+const TIER_NAMES = ['Common', 'Rare', 'Epic', 'Legendary'];
+const TIER_COLORS = ['#a7b1c2', '#3fa1ff', '#b866ff', '#ffb627'];
+const POINTS = [50, 250, 1000, 5000];
+const TIER_STEPS: Partial<Record<AlertItem['kind'], number[]>> = { gift: [100, 1000, 10000], kicks: [100, 1000, 10000], superchat: [5, 20, 100], raid: [10, 50, 250], sub: [6, 12, 24] };
+function tierOf(item: AlertItem) {
+  const v = item.kind === 'gift' ? GIFTS[item.gift].diamonds * item.count : item.kind === 'kicks' ? item.amount : item.kind === 'superchat' ? parseFloat(item.amount.replace(/[^\d.]/g, '')) || 0
+    : item.kind === 'raid' ? item.viewers : item.kind === 'sub' ? item.months : 0;
+  const steps = TIER_STEPS[item.kind];
+  if (!steps) return 0;
+  const t = v >= steps[2] ? 3 : v >= steps[1] ? 2 : v >= steps[0] ? 1 : 0;
+  return item.kind === 'sub' ? Math.max(1, t) : t;
+}
+function headline(look: AlertLook, item: AlertItem, tier: number, label: string) {
+  switch (look) {
+    case 'levelup': return 'LEVEL UP!';
+    case 'achievement': return 'Achievement unlocked';
+    case 'loot': return `${TIER_NAMES[tier]} drop`;
+    case 'arcade': return item.kind === 'follow' ? 'NEW PLAYER!' : item.kind === 'raid' ? 'PARTY JOINED!' : '1UP!';
+    case 'combo': return 'COMBO!';
+    case 'quest': return 'Quest complete';
+    case 'cyber': return `// incoming: ${label}`;
+    case 'gacha': return `${TIER_NAMES[tier]} pull!`;
+    case 'roulette': return tier === 3 ? 'JACKPOT!' : 'ITEM GET!';
+    case 'crt': return 'PLAY ▶';
+    case 'transmission': return 'Incoming transmission';
+    case 'bounty': return 'WANTED';
+    default: return '';
+  }
+}
+/** The arcade score, counting up like an old high-score table. */
+function useCountUp(to: number, on: boolean) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (!on) return;
+    let raf = 0;
+    const t0 = performance.now() + 700, d = 900;
+    const step = (now: number) => { const k = Math.max(0, Math.min(1, (now - t0) / d)); setN(Math.round(to * k)); if (k < 1) raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [to, on]);
+  return n;
+}
+
+export function AlertShow({ item, look = 'levelup', life = 5, size = 1, fit = false }: { item: AlertItem; look?: AlertLook; life?: number; size?: number; fit?: boolean }) {
   const ev = eventInfo(item);
   const { user } = item;
   const [out, setOut] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
-  useLayoutEffect(() => {
+  useLayout(() => {
     const el = box.current, parent = el?.parentElement;
     if (!fit || !el || !parent) return;
     const measure = () => { const h = el.scrollHeight, room = parent.clientHeight; setScale(h && room ? Math.min(1, room / h) : 1); };
@@ -170,22 +242,50 @@ export function AlertShow({ item, look = 'spotlight', life = 5, size = 1, fit = 
     return () => clearTimeout(t);
   }, [life]);
   const amount = shownAmount(ev.title, ev.amount);
+  const tier = tierOf(item);
+  const head = headline(look, item, tier, ev.label);
+  const level = (Array.from(user.name).reduce((s, ch) => s + ch.charCodeAt(0), 0) % 9) + 1;
+  const score = useCountUp(POINTS[tier], look === 'arcade');
+  const font = THEME_FONT[look];
+  const stamp = useStamp(look === 'crt');
+  const noise = `mga-noise-${useId().replace(/:/g, '')}`;
+  const picture = ev.gift ? <GiftArt gift={ev.gift} className="gift-img" /> : <Face name={user.name} className="av" />;
+  // the points sit in the text for Achievement and on the alert itself for the others, as in the app
+  const pts = <div className="pts">{look === 'arcade' ? `SCORE +${String(score).padStart(6, '0')}` : `+${POINTS[tier].toLocaleString('en-US')}`}</div>;
   return (
-    <div ref={box} className={`mga st-${look}`} style={{ fontSize: `${22 * size}px`, ...(fit ? { transform: `scale(${scale})`, transformOrigin: 'center' } : null) }} aria-hidden="true">
-      <div className={`alert ev-${item.kind} p-${user.platform}${out ? ' out' : ''}`}
-        style={{ '--pc': platformColor(user.platform), '--ev': ev.color, '--hold': `${life}s` } as CSSProperties}>
+    <div ref={box} className={`mga st-${look}`} style={{ fontSize: `${22 * size}px`, ...(font ? { fontFamily: `${font}, 'Segoe UI', system-ui, sans-serif` } : null), ...(fit ? { transform: `scale(${scale})`, transformOrigin: 'center' } : null) }} aria-hidden="true">
+      <div className={`alert ev-${item.kind} p-${user.platform} t-${TIERS[tier]}${ev.gift ? ' has-gift' : ''}${out ? ' out' : ''}`}
+        style={{ '--pc': platformColor(user.platform), '--ev': ev.color, '--tier': TIER_COLORS[tier], '--t': tier, '--hold': `${life}s`, ...(look === 'roulette' ? { '--spin': `${(1.1 + tier * 0.45).toFixed(2)}s` } : null) } as CSSProperties}>
         <div className="fx">
           {look === 'neon' && <svg className="tube"><rect className="glow" pathLength={1} /><rect className="core" pathLength={1} /></svg>}
-          {look === 'bubble' && <i className="shine" />}
-          {look === 'card' && <><i className="blob" /><i className="blob" /></>}
+          {(look === 'bubble' || look === 'loot' || look === 'achievement' || look === 'levelup') && <i className="shine" />}
+          {look === 'loot' && <i className="beam" />}
+          {look === 'combo' && <i className="streaks" />}
+          {look === 'cyber' && <><i className="scan" /><i className="corners" /></>}
+          {look === 'quest' && <><i className="roll l" /><i className="roll r" /></>}
+          {look === 'roulette' && <i className="bulbs" />}
+          {look === 'crt' && <><svg className="static" aria-hidden="true"><filter id={noise} x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves={2} stitchTiles="stitch" /><feColorMatrix type="saturate" values="0" /></filter><rect width="100%" height="100%" filter={`url(#${noise})`} /></svg><i className="roll" /></>}
+          {look === 'transmission' && <i className="warp" />}
+          {look === 'bounty' && <><i className="poster" /><i className="nail l" /><i className="nail r" /></>}
         </div>
         <div className={`art${ev.gift ? ' gift' : ''}`}>
-          {ev.gift
-            ? <><GiftArt gift={ev.gift} className="gift-img" /><Face name={user.name} className="av-mini" /></>
-            : <><Face name={user.name} className="av" /><span className="glyph corner">{ev.glyph}</span></>}
+          {picture}
+          {ev.gift ? <Face name={user.name} className="av-mini" /> : <span className="glyph corner">{ev.glyph}</span>}
           <i className="ring" />
+          <div className="lvl"><span className="lv-t">LV</span><span className="lv-n"><b className="old">{level}</b><b className="new">{level + 1}</b></span></div>
+          <div className="rar">{TIER_NAMES[tier]}</div>
+          {look === 'gacha' && <><i className="burst" /><i className="cap top" /><i className="cap bot" /></>}
+          {look === 'roulette' && <>
+            <div className="reel"><div className="strip">
+              {Array.from({ length: 11 }, (_, i) => { const Icon = REEL[(i * 4 + tier) % REEL.length]; return <span key={i} className="cell"><Icon /></span>; })}
+              <span className="cell last">{picture}</span>
+            </div></div>
+            <i className="flash" />
+          </>}
         </div>
         <div className="info">
+          {look === 'gacha' && <div className="stars">{Array.from({ length: STARS[tier] }, (_, i) => <i key={i} style={{ '--i': i } as CSSProperties} />)}</div>}
+          {head && <div className="hw">{head}</div>}
           <div className="label">
             <span className="what-kind">{ev.label}</span>
             <span className="pchip"><PlatformIcon id={user.platform} />on {platformName(user.platform)}</span>
@@ -193,8 +293,16 @@ export function AlertShow({ item, look = 'spotlight', life = 5, size = 1, fit = 
           <div className="name">{Array.from(user.name).map((ch, i) => <span key={i} className="l" style={{ '--i': i } as CSSProperties}>{ch}</span>)}</div>
           <div className="title">{ev.title}</div>
           {amount && <div className="amount">{amount}</div>}
-          {ev.message && <div className="msg">{ev.message}</div>}
+          {ev.message && <div className="msg">{look === 'transmission'
+            ? ev.message.split(/(\s+)/).filter(Boolean).map((w, i, all) => /^\s+$/.test(w) ? w : <span key={i} className="w" style={{ '--i': Math.min(all.slice(0, i).filter(x => !/^\s+$/.test(x)).length, 40) } as CSSProperties}>{w}</span>)
+            : ev.message}</div>}
+          <div className="xp"><i /><span className="xp-t">+{POINTS[tier].toLocaleString('en-US')} XP</span></div>
+          {look === 'achievement' && pts}
         </div>
+        {look !== 'achievement' && pts}
+        {look === 'crt' && <div className="osd"><span className="ch">CH {CHANNELS[tier]}</span><span className="stamp">{stamp}</span></div>}
+        {look === 'transmission' && <div className="sig">{[0, 1, 2, 3].map(i => <i key={i} style={{ '--i': i } as CSSProperties} />)}</div>}
+        {look === 'bounty' && <i className="badge" />}
         <div className="timer"><i /></div>
       </div>
     </div>
