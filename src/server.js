@@ -10,6 +10,8 @@ const avatars = require('./avatars');
 const updater = require('./updater');
 const stats = require('./stats');
 const followers = require('./followers');
+const obsdocks = require('./obsdocks');
+const tts = require('./tts');
 const { checkToken: checkFacebookToken } = require('./connectors/facebook');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
@@ -91,6 +93,9 @@ function fromOwnPage(req) {
   } catch { return false; }
 }
 
+/** Message ids from a request: short strings only, at most 500 of them. */
+const messageIds = list => (Array.isArray(list) ? list : []).filter(x => typeof x === 'string' && /^[\x21-\x7e]{1,200}$/.test(x)).slice(0, 500);
+
 /** "application/json; charset=utf-8" -> "application/json" */
 const mediaType = req => String(req.headers['content-type'] || '').split(';')[0].trim().toLowerCase();
 const hasBody = req => Number(req.headers['content-length']) > 0 || req.headers['transfer-encoding'] !== undefined;
@@ -129,11 +134,16 @@ function pageHeaders(file, host) {
   // The overlays only show chat and numbers, so other tools (and the panel's previews) may still embed them.
   const panel = !/^(overlay|alerts|viewers|followers)\//.test(file);
   if (!panel) return { 'Content-Security-Policy': csp.join('; ') };
+  // The OBS docks have buttons (hide, replay): only Mergio's own pages may show them inside a frame.
+  if (file.startsWith('dock/')) { csp.push("frame-ancestors 'self'"); return { 'Content-Security-Policy': csp.join('; '), 'X-Frame-Options': 'SAMEORIGIN' }; }
   csp.push("frame-ancestors 'none'");
   return { 'Content-Security-Policy': csp.join('; '), 'X-Frame-Options': 'DENY', 'Cross-Origin-Opener-Policy': 'same-origin' };
 }
 
 function createServer(manager, { onQuit }) {
+  // what is on stream right now and isn't a setting: the pinned message, and whether alerts are paused
+  const live = { pinned: null, alertsPaused: false };
+  const pin = m => { live.pinned = m; broadcast({ op: 'pin', msg: m }); };
   const send = (res, code, body, type = 'application/json; charset=utf-8', extra = {}) => {
     res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-store', ...BASE_HEADERS, 'Content-Security-Policy': LOCKED_CSP, ...extra });
     res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
@@ -194,12 +204,19 @@ function createServer(manager, { onQuit }) {
         if (p === '/api/state' && req.method === 'GET') return send(res, 200, state());
         if (p === '/api/settings' && req.method === 'PUT') {
           delete body.sources; // chats are only added and removed through /api/sources, which checks them
+          delete body.templates; // saved looks only change through /api/templates
           const before = settings.get();
           const next = settings.update(body);
           broadcast({ op: 'settings', settings: settings.publicView(next) });
           if (next.advanced.tiktokSignApiKey !== before.advanced.tiktokSignApiKey) manager.reconnectPlatform('tiktok');
           if (next.advanced.facebookAccessToken !== before.advanced.facebookAccessToken) manager.reconnectPlatform('facebook');
           if (next.advanced.youtubeApiKey !== before.advanced.youtubeApiKey || (next.followers.enabled && !before.followers.enabled)) followers.refresh();
+          return send(res, 200, state());
+        }
+        if (p === '/api/templates' && req.method === 'POST') {
+          let next;
+          try { next = settings.template(String(body.action), String(body.type), body.slot, body.name); } catch (e) { return send(res, 400, { error: e.message }); }
+          broadcast({ op: 'settings', settings: settings.publicView(next) });
           return send(res, 200, state());
         }
         if (p === '/api/settings/reset' && req.method === 'POST') {
@@ -219,12 +236,74 @@ function createServer(manager, { onQuit }) {
           kinds.forEach((k, i) => setTimeout(() => manager.inject(testdata.make(k)), i * 350));
           return send(res, 200, { ok: true });
         }
+        // Read aloud: the alerts overlay asks by message id only, so the words always come from Mergio's own copy of the alert.
+        if (p === '/api/tts/voices' && req.method === 'GET') return send(res, 200, await tts.voices());
+        if ((p === '/api/tts' || p === '/api/tts/sample') && req.method === 'GET') {
+          const cur = settings.get();
+          let text = tts.SAMPLE;
+          if (p === '/api/tts') {
+            const id = String(url.searchParams.get('id') || '').replace(/~r\d+$/, ''); // a replay from the Gifts dock is the same alert
+            const msg = manager.events.findLast(x => x.id === id) || manager.recent.findLast(x => x.id === id);
+            if (!msg) return send(res, 404, { error: 'No such alert' });
+            text = tts.textFor(msg, cur.alerts, cur.general.blockedWords);
+            if (!text) return send(res, 204, '');
+          }
+          try {
+            const wav = await tts.speak(text, { voice: cur.alerts.ttsVoice, rate: cur.alerts.ttsRate });
+            return send(res, 200, wav, 'audio/wav');
+          } catch (e) {
+            log('tts', `could not speak: ${e.message}`);
+            // no voice on this computer: the overlay can still try the browser's own voice with these words
+            return send(res, 503, { error: e.message, text });
+          }
+        }
         if (p === '/api/autostart' && req.method === 'POST') {
           try { await autostart.setEnabled(!!body.enabled); } catch (e) { return send(res, 400, { error: e.message }); }
           return send(res, 200, state());
         }
         if (p === '/api/followers/refresh' && req.method === 'POST') { followers.refresh(body.force !== false); return send(res, 200, { ok: true }); }
-        if (p === '/api/clear' && req.method === 'POST') { manager.recent = []; broadcast({ op: 'clear' }); return send(res, 200, { ok: true }); }
+        if (p === '/api/clear' && req.method === 'POST') {
+          // keep: messages that stay on the overlay while everything else is cleared
+          const keep = messageIds(body.keep);
+          manager.clear(keep);
+          broadcast(keep.length ? { op: 'clear', keep } : { op: 'clear' });
+          if (live.pinned && !keep.includes(live.pinned.id)) pin(null);
+          return send(res, 200, { ok: true });
+        }
+        if (p === '/api/pin' && req.method === 'POST') {
+          // one message stays at the top of the chat overlay until it is unpinned (id: null)
+          if (body.id == null) { pin(null); return send(res, 200, { ok: true, pinned: null }); }
+          const [id] = messageIds([body.id]);
+          const m = id && manager.recent.find(x => x.id === id);
+          if (!m) return send(res, 404, { error: 'That message is no longer in the chat list.' });
+          pin(m);
+          return send(res, 200, { ok: true, pinned: m.id });
+        }
+        if (p === '/api/alerts/control' && req.method === 'POST') {
+          // pause holds new alerts in the queue (nothing is lost); skip ends the one on screen now
+          if (!['pause', 'resume', 'skip'].includes(body.action)) return send(res, 400, { error: 'Unknown action.' });
+          if (body.action !== 'skip') live.alertsPaused = body.action === 'pause';
+          broadcast({ op: 'alerts', paused: live.alertsPaused, ...(body.action === 'skip' ? { skip: true } : {}) });
+          return send(res, 200, { ok: true, paused: live.alertsPaused });
+        }
+        if (p === '/api/replay' && req.method === 'POST') {
+          // plays an alert again on the alerts overlay (from the Gifts dock); the chat is left alone
+          const m = manager.events.find(x => x.id === body.id);
+          if (!m) return send(res, 404, { error: 'That alert is too old to replay.' });
+          broadcast({ op: 'replay', msg: m });
+          return send(res, 200, { ok: true });
+        }
+        if (p === '/api/obs/docks' && req.method === 'GET') return send(res, 200, await obsdocks.status(settings.get().advanced.port));
+        if (p === '/api/obs/docks' && req.method === 'POST') {
+          try { return send(res, 200, await obsdocks.install(settings.get().advanced.port)); } catch (e) { return send(res, e.running ? 409 : 400, { error: e.message, running: !!e.running }); }
+        }
+        if (p === '/api/hide' && req.method === 'POST') {
+          const ids = messageIds(body.ids);
+          if (!ids.length) return send(res, 400, { error: 'Pick at least one message.' });
+          manager.hide(ids);
+          if (live.pinned && ids.includes(live.pinned.id)) pin(null);
+          return send(res, 200, { ok: true, hidden: ids.length });
+        }
         if (p === '/api/open-data' && req.method === 'POST') {
           const [cmd, args] = process.platform === 'win32' ? ['explorer.exe', [DATA_DIR]] : process.platform === 'darwin' ? ['open', [DATA_DIR]] : ['xdg-open', [DATA_DIR]];
           require('node:child_process').execFile(cmd, args, () => {});
@@ -259,6 +338,7 @@ function createServer(manager, { onQuit }) {
         : p === '/alerts' || p === '/alerts/' ? 'alerts/index.html'
         : p === '/viewers' || p === '/viewers/' ? 'viewers/index.html'
         : p === '/followers' || p === '/followers/' ? 'followers/index.html'
+        : /^\/dock\/(chat|gifts|viewers)\/?$/.test(p) ? 'dock/index.html' // the OBS docks are one page that reads its name from the link
         : p === '/manifest.webmanifest' ? 'dashboard/manifest.webmanifest'
         : p === '/sw.js' ? 'dashboard/sw.js' // served from the root so it can look after /dashboard
         : p === '/favicon.ico' ? 'shared/app-192.png' // browsers (and OBS) ask for it even when a page names its icon
@@ -310,7 +390,8 @@ function createServer(manager, { onQuit }) {
       broadcast({ op: 'overlays', ...overlayStatus() });
       if (client === 'followers') followers.refresh(false);
     }
-    ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(-60), stats: stats.view() }));
+    const dock = client === 'dock';
+    ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(dock ? -150 : -60), stats: stats.view(), live, ...(dock ? { events: manager.events.slice(-200) } : {}) }));
   });
   manager.on('message', m => broadcast({ op: 'msg', msg: m }));
   manager.on('delete', d => broadcast({ op: 'delete', ...d }));

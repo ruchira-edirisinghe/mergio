@@ -94,6 +94,9 @@
   function withOverrides(s) {
     // Any appearance/general key can be overridden per browser source: /overlay?fontSize=28&theme=neon
     const out = JSON.parse(JSON.stringify(s));
+    // ?slot=2: this browser source uses saved look 2 (Chat style → Saved looks)
+    const look = s.templates?.chat?.[Number(params.get('slot')) - 1];
+    if (look) for (const sec of ['appearance', 'general']) Object.assign(out[sec], look.values?.[sec] || {});
     for (const [k, v] of params) {
       for (const sec of ['appearance', 'general']) {
         if (k in out[sec]) {
@@ -144,6 +147,8 @@
     if (!sec) return false;
     const key = PLATFORM_KEYS[m.platform]?.[m.type] || 'messages';
     if (sec[key] === false) return false;
+    if (m.type === 'join' && S.general.showJoins === false) return false;
+    if (m.type === 'like' && S.general.showLikes === false) return false;
     if (S.alerts?.placement === 'overlay' && isAlert(m)) return false; // shown on the alerts overlay instead
     if (m.platform === 'tiktok' && m.type === 'gift' && (m.event?.diamonds || 0) < (sec.minGiftDiamonds || 0)) return false;
     if (m.platform === 'twitch' && m.flags?.shared && sec.sharedChat === 'hide') return false;
@@ -535,6 +540,31 @@
       ...list(S?.general.mentionNames)])];
   }
 
+  /* ---------------- pinned message: stays at the top (bottom when newest is on top) until unpinned ---------------- */
+  let pinned = null, pinBox = null;
+  function renderPin(animate) {
+    if (!pinned || !S) { if (pinBox) { const old = pinBox; pinBox = null; old.classList.add('leaving'); setTimeout(() => old.remove(), 420); } fitPin(); return; }
+    const el = build(pinned);
+    el.classList.add('pinned');
+    const tag = h('span', 'pin-tag'); tag.append(mergioIcon('pin', { stroke: 2.4 }), document.createTextNode('Pinned'));
+    (el.querySelector('.bubble') || el).prepend(tag);
+    const box = h('div', 'pin-box'); box.append(el);
+    if (animate && S.appearance.animation !== 'none') box.classList.add('pin-in');
+    if (pinBox) pinBox.replaceWith(box); else document.body.append(box);
+    pinBox = box;
+    fitPin();
+  }
+  /** keeps the chat from running under the pinned message */
+  function fitPin() {
+    const rev = S?.general.scrollDirection === 'reversed';
+    // the chat box itself ends where the pin starts, so older messages are cut off there instead of sliding under it
+    chat.style.top = ''; chat.style.bottom = '';
+    chat.classList.toggle('under-pin', !!pinBox && !rev); chat.classList.toggle('over-pin', !!pinBox && rev);
+    if (pinBox) { pinBox.classList.toggle('at-bottom', rev); chat.style[rev ? 'bottom' : 'top'] = `${pinBox.offsetHeight + 12}px`; }
+  }
+  if (window.ResizeObserver) new ResizeObserver(() => fitPin()).observe(document.body);
+  function setPin(m, animate = true) { pinned = m && m.id ? m : null; renderPin(animate); }
+
   /* ---------------- connection ---------------- */
   let retry = 0, lastSources = [];
   function connect() {
@@ -546,12 +576,14 @@
         case 'hello':
           lastSources = d.sources; history = d.recent || [];
           applySettings(d.settings); setSources(lastSources); rerender();
+          setPin(d.live?.pinned, false);
           break;
-        case 'settings': applySettings(d.settings); setSources(lastSources); break;
+        case 'settings': applySettings(d.settings); setSources(lastSources); renderPin(false); break;
+        case 'pin': setPin(d.msg); break;
         case 'sources': lastSources = d.sources; setSources(d.sources); break;
         case 'msg': remember(d.msg); show(d.msg); break;
         case 'delete': onDelete(d); break;
-        case 'clear': history = []; rerender(); break;
+        case 'clear': history = Array.isArray(d.keep) ? history.filter(m => d.keep.includes(m.id)) : []; rerender(); break;
       }
     };
     ws.onclose = () => {

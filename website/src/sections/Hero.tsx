@@ -1,4 +1,4 @@
-import { ArrowUpRight, BadgeCheck, Code2, Monitor, UserX } from 'lucide-react';
+import { ArrowUpRight, BadgeCheck, Code2, HardDrive, Monitor, UserX } from 'lucide-react';
 import { Fragment, type CSSProperties } from 'react';
 import { GithubIcon, PlatformIcon, PLATFORMS } from '../components/brand';
 import { ALERT_LOOKS, AlertShow, ChatFeed } from '../components/Overlay';
@@ -30,7 +30,7 @@ export function Hero() {
               style={{ '--d': '0ms' } as CSSProperties}
               className="word-in mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1.5 pl-1.5 pr-3 text-sm text-white/85 backdrop-blur-md hover:bg-white/15 transition-colors">
               <span className="rounded-full bg-gradient-to-r from-violet to-pink px-2.5 py-0.5 text-xs font-semibold text-white">{version}</span>
-              100% free &amp; open source
+              <span>New: 15 alert styles<span className="hidden sm:inline"> &amp; read aloud</span></span>
               <ArrowUpRight className="h-4 w-4" />
             </a>
             <h1 className="text-white text-5xl md:text-6xl xl:text-7xl font-medium leading-[1.02] max-w-xl mb-5" style={{ letterSpacing: '-0.045em' }}>
@@ -50,6 +50,7 @@ export function Hero() {
               </a>
             </div>
             <ul className="word-in mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/70" style={{ '--d': '950ms' } as CSSProperties}>
+              <li><a href="#local" className="inline-flex items-center gap-1.5 font-medium text-white underline-offset-4 hover:underline"><HardDrive className="h-4 w-4 text-[#4ade80]" />Runs 100% on your PC</a></li>
               <li className="inline-flex items-center gap-1.5"><BadgeCheck className="h-4 w-4 text-[#4ade80]" />Free forever</li>
               <li className="inline-flex items-center gap-1.5"><Code2 className="h-4 w-4 text-[#c9b8ff]" />Open source</li>
               <li className="inline-flex items-center gap-1.5"><UserX className="h-4 w-4 text-[#ff8fc7]" />No account needed</li>

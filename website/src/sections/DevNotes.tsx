@@ -1,4 +1,4 @@
-import { Fragment, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useState, type ReactNode } from 'react';
 import { ArrowUpRight, ChevronDown, Rocket, Sparkles, Wrench, type LucideIcon } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { GithubIcon } from '../components/brand';
@@ -15,10 +15,17 @@ const KIND: Record<Kind, { label: string; icon: LucideIcon; badge: string }> = {
 };
 
 const anchor = (tag: string) => tag.replace(/\./g, '-');
-const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric' });
+// UTC, so the date in the HTML built ahead of time matches the one the browser draws
+const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('en', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 function ago(iso: string) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 864e5);
   return days <= 0 ? 'today' : days === 1 ? 'yesterday' : days < 30 ? `${days} days ago` : `on ${fmtDate(iso)}`;
+}
+/** "Out 3 days ago": the built page says the date, and the browser turns it into how long ago once it runs. */
+function Ago({ iso }: { iso: string }) {
+  const [text, setText] = useState(`on ${fmtDate(iso)}`);
+  useEffect(() => setText(ago(iso)), [iso]);
+  return <>{text}</>;
 }
 
 /** **bold**, *italic* and `code` from the release notes. */
@@ -110,7 +117,7 @@ export function DevNotes() {
                 <p className="mt-1 font-mono text-3xl font-semibold text-gradient">{latest.tag}</p>
               </div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#22c55e]/15 px-3 py-1 text-xs font-semibold text-[#86efac] ring-1 ring-[#22c55e]/30">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e] anim-pulse" />Out {ago(latest.date)}
+                <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e] anim-pulse" />Out <Ago iso={latest.date} />
               </span>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">

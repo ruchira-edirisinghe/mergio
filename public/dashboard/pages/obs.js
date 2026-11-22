@@ -58,6 +58,55 @@
     ];
   }
 
+  /* ---------- OBS docks: chat, gifts and viewers inside OBS itself ---------- */
+  const DOCKS = [
+    ['chat', 'chat', 'Mergio Chat', 'Every chat in one list. Hover a message to hide it from the overlay.'],
+    ['gifts', 'gift', 'Mergio Gifts', 'Gifts, subs, Super Chats, follows and raids, with top supporters. ▶ plays an alert again.'],
+    ['viewers', 'raid', 'Mergio Viewers', 'Everyone watching, each platform, the peak and the last hour.'],
+  ];
+  let dockState = null;
+  async function loadDocks() {
+    try { dockState = await MG.api('GET', '/api/obs/docks'); } catch { dockState = { supported: false }; }
+    const el = document.getElementById('dockStatus'); if (el) el.replaceWith(dockStatus());
+  }
+  function dockStatus() {
+    const d = dockState;
+    const box = (cls, ic, title, text) => h('div', { class: `banner ${cls}`, id: 'dockStatus' }, icon(ic), h('div', {}, h('b', { text: title }), h('span', { text })));
+    if (!d) return box('', 'monitor', 'Looking for OBS…', '');
+    if (!d.found) return box('', 'monitor', 'OBS Studio not found on this computer', 'Use the links below in your streaming app instead, or start OBS once and come back.');
+    if (d.installed?.length === 3) return box('ok', 'check', 'The docks are in OBS', d.running ? 'Open them from the Docks menu in OBS if you closed them.' : 'Start OBS: they open as Mergio Chat, Mergio Gifts and Mergio Viewers. Drag them where you like.');
+    if (d.running) return box('warn', 'info', 'Close OBS to add the docks', 'OBS saves its own settings when it closes, so Mergio adds the docks while it is closed. Close OBS, then press Install.');
+    return box('', 'monitor', d.installed?.length ? 'Some docks are missing' : 'Not added yet', 'Press Install and Mergio adds all three to OBS for you.');
+  }
+  function docksCard(dash) {
+    const base = MG.st.overlayUrl.replace(/\/overlay$/, '');
+    const install = h('button', { class: 'btn primary', onclick: async () => {
+      install.disabled = true;
+      try {
+        dockState = await MG.api('POST', '/api/obs/docks', {});
+        MG.toast('Docks added. Start OBS to see them.');
+      } catch (e) { MG.toast(e.message, true); await loadDocks(); }
+      install.disabled = false;
+      const el = document.getElementById('dockStatus'); if (el) el.replaceWith(dockStatus());
+    } }, icon('plus'), 'Install the docks in OBS');
+    const card = h('section', { class: 'card docks-card' }, h('h2', { text: 'OBS docks' }),
+      h('p', { class: 'sub', text: 'Three small panels inside OBS itself: the full chat, a list of gifts and alerts, and your live viewer count. No browser window needed while you stream.' }),
+      dockStatus(),
+      h('div', { class: 'dock-list' }, ...DOCKS.map(([id, ic, name, text]) => {
+        const url = `${base}/dock/${id}`;
+        return h('div', { class: 'dock-it' }, h('span', { class: 'ov-ic' }, icon(ic)), h('div', { class: 'dock-t' }, h('b', { text: name }), h('span', { text })),
+          h('div', { class: 'dock-b' }, h('a', { class: 'btn sm ghost', href: url, target: '_blank', rel: 'noopener' }, icon('eye'), 'Open'), h('button', { class: 'btn sm ghost', onclick: () => MG.copy(url) }, icon('copy'), 'Copy link')));
+      })),
+      h('div', { class: 'btn-row' }, install, h('button', { class: 'btn ghost', onclick: loadDocks }, icon('refresh'), 'Check again')),
+      h('details', { class: 'fold-in' }, h('summary', { text: 'Add them by hand (or to another streaming app)' }),
+        h('ol', { class: 'big-steps compact' },
+          h('li', {}, h('span', {}, 'In OBS open ', h('b', { text: 'Docks → Custom Browser Docks…' }))),
+          h('li', {}, h('span', {}, 'Add a line for each dock: the name above and its copied link. The whole control panel works too: ', h('code', { text: dash }))),
+          h('li', {}, h('span', {}, 'Click ', h('b', { text: 'Apply' }), ' and drag the docks where you like.')))));
+    if (!dockState) loadDocks();
+    return card;
+  }
+
   function render(c) {
     const st = MG.st;
     const url = st.overlayUrl;
@@ -79,13 +128,7 @@
         h('li', {}, h('b', { text: 'Place it on your scene' }),
           h('span', { text: two ? 'Drag and resize each overlay like any other source, for example the chat on the side and alerts at the top middle. The alerts overlay is see-through until an alert comes in.' : 'Drag and resize the chat like any other source. Press "Send test" at the top to see it in action.' })))));
 
-    c.append(h('section', { class: 'card' }, h('h2', { text: 'Control Mergio from inside OBS (optional)' }),
-      h('p', { class: 'sub', text: 'Put this control panel in an OBS dock to read every chat and change settings without leaving OBS.' }),
-      h('ol', { class: 'big-steps compact' },
-        h('li', {}, h('span', {}, 'In OBS open ', h('b', { text: 'Docks → Custom Browser Docks…' }))),
-        h('li', {}, h('span', {}, 'Name it ', h('b', { text: 'Mergio' }), ' and use this URL:'),
-          h('div', { class: 'urlbox' }, h('code', { text: dash }), h('button', { class: 'btn sm', onclick: () => MG.copy(dash) }, icon('copy'), 'Copy'))),
-        h('li', {}, h('span', {}, 'Click ', h('b', { text: 'Apply' }), '. Tip: the ', h('b', { text: 'Live chat' }), ' page fits a narrow dock nicely.')))));
+    c.append(docksCard(dash));
 
     const scene = `${url}?fontSize=28&align=right`;
     c.append(h('details', { class: 'card fold' }, h('summary', {}, h('b', { text: 'Different look for one scene' }), h('span', { text: 'Bigger text in "Just Chatting", for example' })),

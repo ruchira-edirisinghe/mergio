@@ -36,7 +36,7 @@ export function DownloadCta() {
   );
 }
 
-const CREATOR = { name: 'Ruchira Edirisinghe', url: 'https://ruchiraedirisinghe.vercel.app', photo: '/ruchira.webp' };
+export const CREATOR = { name: 'Ruchira Edirisinghe', url: 'https://ruchiraedirisinghe.vercel.app', photo: '/ruchira.webp' };
 const LICENSE = `${REPO}/blob/main/LICENSE`;
 const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
 

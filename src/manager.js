@@ -29,6 +29,7 @@ class Manager extends EventEmitter {
     this.running = new Map();   // sourceId -> connector
     this.counts = new Map();    // sourceId -> messages received
     this.recent = [];           // last BUFFER messages (overlay backfill + dashboard feed)
+    this.events = [];           // last 200 alerts (gifts, subs, Super Chats…) for the Gifts dock and replays
     this.ctx = { settings: settings.get };
     this.on('status', list => stats.setSources(list));
   }
@@ -110,6 +111,10 @@ class Manager extends EventEmitter {
     if (m.sourceId) this.counts.set(m.sourceId, (this.counts.get(m.sourceId) || 0) + 1);
     const i = this.recent.findIndex(x => x.id === m.id);
     if (i >= 0) this.recent[i] = m; else { this.recent.push(m); if (this.recent.length > BUFFER) this.recent.shift(); }
+    if (m.event && !['chat', 'join', 'like', 'share'].includes(m.type)) {
+      const j = this.events.findIndex(x => x.id === m.id);
+      if (j >= 0) this.events[j] = m; else { this.events.push(m); if (this.events.length > 200) this.events.shift(); }
+    }
     this.emit('message', m);
   }
 
@@ -119,6 +124,19 @@ class Manager extends EventEmitter {
     else if (d.ids) this.recent = this.recent.filter(m => !d.ids.includes(m.id));
     else if (d.userId) this.recent = this.recent.filter(m => !(m.sourceId === source.id && m.user.id === d.userId));
     this.emit('delete', payload);
+  }
+
+  /** Takes chosen messages off the overlays (the control panel's "Hide from overlay"). */
+  hide(ids) {
+    const set = new Set(ids);
+    this.recent = this.recent.filter(m => !set.has(m.id));
+    this.emit('delete', { ids, hidden: true });
+  }
+
+  /** Clears the overlays, except the messages in keep. */
+  clear(keep = []) {
+    const set = new Set(keep);
+    this.recent = this.recent.filter(m => set.has(m.id));
   }
 
   /** Injects a message that did not come from a connector (test messages). */

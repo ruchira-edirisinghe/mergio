@@ -61,7 +61,7 @@ export function useFeed<T>(script: T[], ms: number, active: boolean, max = 8, pr
   return items;
 }
 
-const FALLBACK_VERSION = 'v1.5.1';
+const FALLBACK_VERSION = 'v1.7.0';
 /** Never show a version older than the one this page shipped with. */
 const newest = (tag: string) => (compareTags(tag, FALLBACK_VERSION) > 0 ? tag : FALLBACK_VERSION);
 

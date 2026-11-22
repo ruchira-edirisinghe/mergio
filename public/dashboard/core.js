@@ -33,7 +33,21 @@
 
   /* ---------------- API & state ---------------- */
   MG.st = null;
+  MG.live = { pinned: null, alertsPaused: false }; // the pinned message and whether alerts are paused (not settings)
+  /** Pause, resume or skip alerts on the alerts overlay. */
+  MG.alertControl = async action => {
+    try {
+      const r = await MG.api('POST', '/api/alerts/control', { action });
+      MG.live.alertsPaused = r.paused; MG.emit('live');
+      MG.toast(action === 'skip' ? 'Skipped the alert on screen' : r.paused ? 'Alerts paused. New ones wait their turn' : 'Alerts are back on');
+    } catch (e) { MG.toast(e.message, true); }
+  };
+  /** Pin a message on the chat overlay (null unpins). */
+  MG.pin = async id => {
+    try { await MG.api('POST', '/api/pin', { id }); MG.toast(id ? 'Pinned on the overlay' : 'Unpinned'); } catch (e) { MG.toast(e.message, true); }
+  };
   MG.feed = [];
+  MG.hidden = new Set(); // messages taken off the overlay (hidden from here, or deleted by a moderator)
   MG.overlays = { count: 0, obs: false, alerts: { count: 0, obs: false }, viewers: { count: 0, obs: false }, followers: { count: 0, obs: false } };
   MG.api = async (method, path, body) => {
     const res = await fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
@@ -87,6 +101,20 @@
     no.onclick = () => dlg.close();
     dlg.addEventListener('close', () => { dlg.remove(); resolve(answer); });
     document.body.append(dlg); dlg.showModal(); (danger ? no : yes).focus();
+  });
+
+  /** Asks for a short text (like a name). Resolves to the text, or null when cancelled. */
+  MG.ask = ({ title, label, value = '', ok = 'OK', max = 40 }) => new Promise(resolve => {
+    const input = h('input', { type: 'text', value, maxlength: String(max), 'aria-label': label || title });
+    const yes = h('button', { class: 'btn primary', type: 'submit', text: ok });
+    const no = h('button', { class: 'btn ghost', type: 'button', text: 'Cancel' });
+    const form = h('form', { method: 'dialog' }, h('h2', { id: 'ask-t', text: title }), label ? h('label', { class: 'ask-l', text: label }) : null, input, h('div', { class: 'ask-btns' }, no, yes));
+    const dlg = h('dialog', { class: 'ask', 'aria-labelledby': 'ask-t' }, form);
+    let answer = null;
+    form.addEventListener('submit', e => { e.preventDefault(); answer = input.value.trim(); dlg.close(); });
+    no.onclick = () => dlg.close();
+    dlg.addEventListener('close', () => { dlg.remove(); resolve(answer); });
+    document.body.append(dlg); dlg.showModal(); input.select();
   });
 
   /* ---------------- pages & navigation ---------------- */
@@ -196,7 +224,7 @@
         break;
       }
       case 'font':
-        ctl = MG.combo({ id, value: v, placeholder: 'Inter', suggestions: f.suggestions || [], onchange: x => MG.save(section, f.key, x.trim()) });
+        ctl = MG.combo({ id, value: v, placeholder: f.placeholder || 'Inter', suggestions: f.suggestions || [], onchange: x => MG.save(section, f.key, x.trim()) });
         break;
       case 'textarea':
         ctl = h('textarea', { id, placeholder: f.placeholder || '', onchange: e => MG.save(section, f.key, e.target.value) }, v);
@@ -420,6 +448,9 @@
     ws.onopen = () => document.body.classList.remove('offline');
     ws.onmessage = e => {
       const d = JSON.parse(e.data);
+      if (d.op === 'hello') { MG.live = d.live || MG.live; emit('live'); }
+      if (d.op === 'pin') { MG.live.pinned = d.msg || null; emit('live'); }
+      if (d.op === 'alerts') { MG.live.alertsPaused = !!d.paused; emit('live'); }
       if (d.op === 'hello') { MG.feed = d.recent || []; if (d.stats) MG.st.stats = d.stats; emit('feed'); emit('stats', MG.st.stats); }
       if (d.op === 'sources') { MG.st.sources = d.sources; emit('sources'); renderNav(); updateSummary(); }
       if (d.op === 'msg') {
@@ -427,7 +458,8 @@
         if (i >= 0) MG.feed[i] = d.msg; else { MG.feed.push(d.msg); if (MG.feed.length > 400) MG.feed.shift(); }
         emit('msg', { msg: d.msg, updated: i >= 0 });
       }
-      if (d.op === 'clear') { MG.feed = []; emit('feed'); }
+      if (d.op === 'clear') { MG.feed = Array.isArray(d.keep) ? MG.feed.filter(m => d.keep.includes(m.id)) : []; emit('feed'); }
+      if (d.op === 'delete' && Array.isArray(d.ids)) { for (const id of d.ids) MG.hidden.add(id); emit('hidden', d.ids); }
       if (d.op === 'settings') syncSettings(d.settings);
       if (d.op === 'update') emit('update', d.update);
       if (d.op === 'stats') { MG.st.stats = d.stats; emit('stats', d.stats); }
