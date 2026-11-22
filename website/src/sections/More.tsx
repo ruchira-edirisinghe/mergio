@@ -21,7 +21,7 @@ function ChipRow({ items, reverse }: { items: [LucideIcon, string][]; reverse?: 
           <div key={copy} className="flex shrink-0 gap-3 pr-3" aria-hidden={copy === 1}>
             {items.map(([Icon, label]) => (
               <span key={label} className="inline-flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-full bg-white/[.06] py-2.5 pl-2.5 pr-5 text-base font-medium text-white/85 ring-1 ring-white/10">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-violet/40 to-pink/30 text-white"><Icon className="h-4 w-4" /></span>
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-linear-to-br from-violet/40 to-pink/30 text-white"><Icon className="h-4 w-4" /></span>
                 {label}
               </span>
             ))}
@@ -37,7 +37,7 @@ export function Features() {
     <section className="bg-ink pb-20 md:pb-24">
       <Reveal className="mx-auto mb-10 max-w-[88rem] px-4 sm:px-6 text-center">
         <Eyebrow>And there's more</Eyebrow>
-        <h2 className="text-4xl md:text-5xl font-medium leading-tight" style={{ letterSpacing: '-0.03em' }}>Everything a multistream needs.</h2>
+        <h2 className="text-4xl md:text-5xl/none font-medium leading-tight" style={{ letterSpacing: '-0.03em' }}>Everything a multistream needs.</h2>
       </Reveal>
       <Reveal variant="scale" delay={150} className="grid gap-3">
         <ChipRow items={ROW_A} />
@@ -71,7 +71,7 @@ export function Faq() {
       <div className="max-w-[88rem] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <Reveal variant="left" className="lg:pr-12">
           <Eyebrow>FAQ</Eyebrow>
-          <h2 className="text-4xl md:text-5xl font-medium leading-tight mb-4" style={{ letterSpacing: '-0.03em' }}>Questions,<br />answered.</h2>
+          <h2 className="text-4xl md:text-5xl/none font-medium leading-tight mb-4" style={{ letterSpacing: '-0.03em' }}>Questions,<br />answered.</h2>
           <p className="text-white/60 text-base max-w-sm">More in the <a className="underline underline-offset-4 hover:text-white" href={readme('troubleshooting')} target="_blank" rel="noopener noreferrer">guide on GitHub</a>.</p>
         </Reveal>
         <Reveal variant="right" delay={100} className="divide-y divide-white/10 rounded-3xl bg-surface px-5 sm:px-6 md:px-8 ring-1 ring-white/[.07]">

@@ -20,7 +20,7 @@ export function Hero() {
     <section className="flex-1 px-4 sm:px-6 pt-20 pb-4 sm:pb-6 flex items-end">
       <div ref={ref} className="relative w-full rounded-2xl overflow-hidden bg-night ring-1 ring-white/10 lg:h-[calc(100vh-96px)] lg:min-h-[660px]">
         <VideoBackdrop clip="live-streamer" tall="live-streamer-tall" active={inView} />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#07060c]/85 via-[#07060c]/60 to-[#07060c]/85 lg:bg-gradient-to-r lg:from-[#07060c]/95 lg:via-[#07060c]/65 lg:to-[#07060c]/30" />
+        <div className="absolute inset-0 bg-linear-to-b from-[#07060c]/85 via-[#07060c]/60 to-[#07060c]/85 lg:bg-linear-to-r lg:from-[#07060c]/95 lg:via-[#07060c]/65 lg:to-[#07060c]/30" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(124,77,255,.25),transparent_55%)]" />
         <LiveHud active={inView} className="absolute bottom-4 right-4 z-20 justify-end sm:bottom-6 sm:right-6" />
 
@@ -29,17 +29,17 @@ export function Hero() {
             <a href={RELEASES} target="_blank" rel="noopener noreferrer"
               style={{ '--d': '0ms' } as CSSProperties}
               className="word-in mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1.5 pl-1.5 pr-3 text-sm text-white/85 backdrop-blur-md hover:bg-white/15 transition-colors">
-              <span className="rounded-full bg-gradient-to-r from-violet to-pink px-2.5 py-0.5 text-xs font-semibold text-white">{version}</span>
+              <span className="rounded-full bg-linear-to-r from-violet to-pink px-2.5 py-0.5 text-xs font-semibold text-white">{version}</span>
               <span>New: 15 alert styles<span className="hidden sm:inline"> &amp; read aloud</span></span>
               <ArrowUpRight className="h-4 w-4" />
             </a>
-            <h1 className="text-white text-5xl md:text-6xl xl:text-7xl font-medium leading-[1.02] max-w-xl mb-5" style={{ letterSpacing: '-0.045em' }}>
+            <h1 className="text-white text-5xl md:text-6xl/none xl:text-7xl/none font-medium leading-[1.02] max-w-xl mb-5" style={{ letterSpacing: '-0.045em' }}>
               {/* real spaces between the words, so screen readers and search engines read "Every live chat. One overlay." */}
               {['Every', 'live', 'chat.'].map((w, k) => <Fragment key={w}>{k > 0 && ' '}<span className="word-in inline-block" style={{ '--d': `${120 + k * 90}ms` } as CSSProperties}>{w}</span></Fragment>)}
               {' '}<br />
               {['One', 'overlay.'].map((w, k) => <Fragment key={w}>{k > 0 && ' '}<span className="word-in inline-block text-gradient-live pb-1" style={{ '--d': `${420 + k * 110}ms` } as CSSProperties}>{w}</span></Fragment>)}
             </h1>
-            <p className="word-in text-white/75 text-base md:text-lg max-w-md mb-8 leading-relaxed" style={{ '--d': '700ms' } as CSSProperties}>
+            <p className="word-in text-white/75 text-base md:text-lg/7 max-w-md mb-8 leading-relaxed" style={{ '--d': '700ms' } as CSSProperties}>
               YouTube, Twitch, Kick, TikTok and Facebook chat, merged into one beautiful OBS overlay. Free, and no accounts.
             </p>
             <div className="word-in flex flex-wrap items-center gap-3" style={{ '--d': '850ms' } as CSSProperties}>
@@ -66,7 +66,7 @@ export function Hero() {
                     <span className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-xl" style={{ background: `${p.color}24`, boxShadow: `inset 0 0 0 1px ${p.color}55` }}>
                       <PlatformIcon id={p.id} colored className="h-5 w-5 sm:h-[22px] sm:w-[22px]" />
                     </span>
-                    <span className="text-base sm:text-[17px] font-semibold tracking-tight text-white">{p.name}</span>
+                    <span className="text-base sm:text-[17px]/6 font-semibold tracking-tight text-white">{p.name}</span>
                   </li>
                 ))}
               </ul>
@@ -83,7 +83,7 @@ export function Hero() {
               <div className="relative h-full rounded-[3px] outline outline-[1.5px] outline-[#ff4d4d]/75">
                 <span className="absolute -top-6 left-0 rounded-t-md bg-[#ff4d4d]/85 px-2 py-0.5 text-[11px] font-semibold text-white">Browser source · Mergio</span>
                 {['-left-1 -top-1', '-right-1 -top-1', '-left-1 -bottom-1', '-right-1 -bottom-1'].map(c => <span key={c} className={`absolute ${c} h-2 w-2 bg-[#ff4d4d]`} />)}
-                <ChatFeed items={items} fontSize={14.5} className="absolute inset-0 p-3 [mask-image:linear-gradient(180deg,transparent,#000_22%)]" />
+                <ChatFeed items={items} fontSize={14.5} className="absolute inset-0 p-3 mask-[linear-gradient(180deg,transparent,#000_22%)]" />
               </div>
             </div>
           </div>

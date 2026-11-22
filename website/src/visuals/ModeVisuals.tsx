@@ -48,7 +48,7 @@ export function ThemeStage({ active }: { active: boolean }) {
           <span key={th.id} className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors duration-300 ${i === t ? 'bg-white text-black' : 'text-white/60'}`}>{th.name}</span>
         ))}
       </div>
-      <ChatFeed items={items} theme={THEMES[t].id} fontSize={16} className="min-h-0 w-full max-w-[420px] flex-1 [mask-image:linear-gradient(180deg,transparent,#000_25%)]" />
+      <ChatFeed items={items} theme={THEMES[t].id} fontSize={16} className="min-h-0 w-full max-w-[420px] flex-1 mask-[linear-gradient(180deg,transparent,#000_25%)]" />
     </div>
   );
 }
@@ -233,7 +233,7 @@ export function ObsDock({ active }: { active: boolean }) {
             <div className="relative aspect-video overflow-hidden rounded-md bg-black">
               <VideoBackdrop clip="live-streamer" active={active} />
               <div className="absolute bottom-[6%] right-[3%] top-[30%] w-[34%] outline outline-[1.5px] outline-[#ff4d4d]/80">
-                <ChatFeed items={overlay} fontSize={10.5} className="absolute inset-0 p-1.5 [mask-image:linear-gradient(180deg,transparent,#000_25%)]" />
+                <ChatFeed items={overlay} fontSize={10.5} className="absolute inset-0 p-1.5 mask-[linear-gradient(180deg,transparent,#000_25%)]" />
               </div>
               <span className="absolute left-2 top-2 rounded bg-[#ff2d55] px-1.5 py-0.5 text-[10px] font-bold tracking-wider">LIVE</span>
               <span className="absolute left-14 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold"><Eye className="h-3 w-3" />{counts.reduce((s, n) => s + n, 0).toLocaleString('en')} watching</span>
@@ -259,7 +259,7 @@ export function ObsDock({ active }: { active: boolean }) {
                     <div key={String(label)} className="mb-2">
                       <div className="mb-1 flex items-center gap-1.5 text-white/70"><I className="h-3 w-3" />{String(label)}</div>
                       <div className="h-2 overflow-hidden rounded bg-black/40">
-                        <div className="h-full rounded bg-gradient-to-r from-[#22c55e] via-[#eab308] to-[#ef4444] transition-[width] duration-150" style={{ width: `${levels[i] * 100}%` }} />
+                        <div className="h-full rounded bg-linear-to-r from-[#22c55e] via-[#eab308] to-[#ef4444] transition-[width] duration-150" style={{ width: `${levels[i] * 100}%` }} />
                       </div>
                     </div>
                   );

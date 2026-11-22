@@ -1,12 +1,33 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
+@theme {
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --color-page: #F5F5F5;
+  --color-ink: #07060c;
+  --color-surface: #121019;
+  --color-plum: #2B2644;
+  --color-night: #13111f;
+  --color-violet: #7c4dff;
+  --color-pink: #ff2d8f;
+  --color-youtube: #ff0033;
+  --color-twitch: #9146ff;
+  --color-kick: #53fc18;
+  --color-tiktok: #fe2c55;
+  --color-facebook: #0866ff;
+}
 
-html, body { font-family: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif; background: #07060c; color: #f4f3f8; color-scheme: dark; -webkit-font-smoothing: antialiased; }
-* { font-family: inherit; }
-html { scroll-behavior: smooth; }
-::selection { background: #7c4dff; color: #fff; }
+/* Page-wide element styles sit in the base layer so utility classes still win over them. */
+@layer base {
+  html, body { font-family: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif; background: #07060c; color: #f4f3f8; color-scheme: dark; -webkit-font-smoothing: antialiased; }
+  * { font-family: inherit; }
+  html { scroll-behavior: smooth; }
+  ::selection { background: #7c4dff; color: #fff; }
+  /* Sections that slide in from the side must not make the page scroll sideways on phones */
+  html, body { overflow-x: clip; }
+  /* Keep the Tailwind 3 defaults: light grey borders and a pointer on buttons. */
+  *, ::after, ::before, ::backdrop, ::file-selector-button { border-color: var(--color-gray-200, currentcolor); }
+  button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
+}
 
 /* Endless logo rows: the list is rendered twice and slides by half its width. */
 @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -38,9 +59,6 @@ html { scroll-behavior: smooth; }
 .anim-rise { animation: rise-in .6s cubic-bezier(.22, 1, .36, 1) both; }
 .anim-spin-slow { animation: spin-slow 18s linear infinite; }
 .anim-ring { animation: ring-out 1.6s ease-out infinite; }
-
-/* Sections that slide in from the side must not make the page scroll sideways on phones */
-html, body { overflow-x: clip; }
 
 /* Scroll reveal */
 .reveal { transition: opacity .9s cubic-bezier(.22, 1, .36, 1), transform .9s cubic-bezier(.22, 1, .36, 1), filter .9s ease; transition-delay: var(--d, 0ms); }

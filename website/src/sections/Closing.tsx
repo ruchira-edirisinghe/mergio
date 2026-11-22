@@ -18,7 +18,7 @@ export function DownloadCta() {
                 <MergioMark className="h-16 w-16" />
               </div>
             </div>
-            <h2 className="text-white text-4xl md:text-6xl font-medium leading-[1.05] mb-5" style={{ letterSpacing: '-0.04em' }}>Bring every<br />chat together.</h2>
+            <h2 className="text-white text-4xl md:text-6xl/none font-medium leading-[1.05] mb-5" style={{ letterSpacing: '-0.04em' }}>Bring every<br />chat together.</h2>
             <p className="text-white/65 text-base md:text-lg max-w-md mb-8">Free, forever. Download it from GitHub.</p>
             <div className="flex items-center gap-4 text-white/70">
               {PLATFORMS.map(p => <PlatformIcon key={p.id} id={p.id} className="h-6 w-6" aria-label={p.name} />)}
@@ -86,7 +86,7 @@ function CreatorCard() {
 export function Footer() {
   return (
     <footer className="relative overflow-hidden bg-ink px-4 pt-16 sm:px-6 md:pt-20">
-      <div className="pointer-events-none absolute left-1/2 top-0 h-px w-full max-w-[88rem] -translate-x-1/2 bg-gradient-to-r from-transparent via-violet/60 to-transparent" />
+      <div className="pointer-events-none absolute left-1/2 top-0 h-px w-full max-w-[88rem] -translate-x-1/2 bg-linear-to-r from-transparent via-violet/60 to-transparent" />
       <div className="pointer-events-none absolute -bottom-40 left-1/2 h-80 w-[60rem] max-w-full -translate-x-1/2 rounded-full bg-violet/15 blur-3xl" />
 
       <div className="relative mx-auto grid max-w-[88rem] grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16">
@@ -151,7 +151,7 @@ export function Footer() {
         Stock video from <a className="underline underline-offset-2 hover:text-white/70" href="https://www.pexels.com" {...ext}>Pexels</a> and <a className="underline underline-offset-2 hover:text-white/70" href="https://mixkit.co" {...ext}>Mixkit</a>, portraits from Pexels. Brand logos belong to their owners.
       </p>
 
-      <p aria-hidden="true" className="pointer-events-none relative mx-auto max-w-[88rem] select-none bg-gradient-to-b from-white/[.09] to-transparent bg-clip-text text-center font-semibold leading-[.8] text-transparent"
+      <p aria-hidden="true" className="pointer-events-none relative mx-auto max-w-[88rem] select-none bg-linear-to-b from-white/[.09] to-transparent bg-clip-text text-center font-semibold leading-[.8] text-transparent"
         style={{ fontSize: 'clamp(5rem, 22vw, 20rem)', letterSpacing: '-0.06em', marginBottom: '-0.14em' }}>
         Mergio
       </p>

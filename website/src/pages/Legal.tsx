@@ -15,7 +15,7 @@ const LICENSE = `${REPO}/blob/main/LICENSE`;
 const P = ({ children, id }: { children: ReactNode; id?: string }) => <p id={id} className="scroll-mt-24 text-[15.5px] leading-relaxed text-white/65">{children}</p>;
 const UL = ({ children }: { children: ReactNode }) => <ul className="grid gap-2.5 pl-1 text-[15.5px] leading-relaxed text-white/65">{children}</ul>;
 const LI = ({ children }: { children: ReactNode }) => (
-  <li className="flex gap-3"><span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-br from-violet to-pink" /><span>{children}</span></li>
+  <li className="flex gap-3"><span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-linear-to-br from-violet to-pink" /><span>{children}</span></li>
 );
 const B = ({ children }: { children: ReactNode }) => <strong className="font-semibold text-white/90">{children}</strong>;
 const A = ({ href, children }: { href: string; children: ReactNode }) => {
@@ -261,17 +261,17 @@ export function Legal({ doc }: { doc: LegalDoc }) {
             <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/[.06] px-3 py-1 text-xs font-medium uppercase tracking-[.16em] text-white/55 ring-1 ring-white/10">
               <FileText className="h-3.5 w-3.5" />Legal
             </p>
-            <h1 className="text-5xl font-medium leading-[1.02] text-white md:text-6xl" style={{ letterSpacing: '-0.045em' }}>{d.title}</h1>
+            <h1 className="text-5xl font-medium leading-[1.02] text-white md:text-6xl/none" style={{ letterSpacing: '-0.045em' }}>{d.title}</h1>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/65">{d.tagline}</p>
             <p className="mt-5 text-sm text-white/40">Last updated {UPDATED}</p>
           </div>
 
-          <section aria-labelledby="short" className="mb-14 rounded-3xl bg-gradient-to-br from-[#1b1630] to-surface p-5 ring-1 ring-violet/25 sm:p-7">
+          <section aria-labelledby="short" className="mb-14 rounded-3xl bg-linear-to-br from-[#1b1630] to-surface p-5 ring-1 ring-violet/25 sm:p-7">
             <h2 id="short" className="mb-5 text-sm font-medium uppercase tracking-[.16em] text-white/50">The short version</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {d.summary.map(s => (
                 <div key={s.title} className="rounded-2xl bg-white/[.04] p-4 ring-1 ring-white/[.06]">
-                  <span className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-violet to-pink text-white shadow-[0_8px_24px_-8px_rgba(124,77,255,.8)]"><s.icon className="h-5 w-5" /></span>
+                  <span className="mb-3 grid h-10 w-10 place-items-center rounded-xl bg-linear-to-br from-violet to-pink text-white shadow-[0_8px_24px_-8px_rgba(124,77,255,.8)]"><s.icon className="h-5 w-5" /></span>
                   <p className="font-semibold text-white">{s.title}</p>
                   <p className="mt-1 text-sm leading-relaxed text-white/60">{s.text}</p>
                 </div>
@@ -297,7 +297,7 @@ export function Legal({ doc }: { doc: LegalDoc }) {
             <div className="grid max-w-3xl gap-12">
               {d.sections.map((s, i) => (
                 <section key={s.id} id={s.id} className="scroll-mt-24">
-                  <h2 className="mb-4 flex items-baseline gap-3 text-2xl font-semibold tracking-tight text-white md:text-[28px]" style={{ letterSpacing: '-0.02em' }}>
+                  <h2 className="mb-4 flex items-baseline gap-3 text-2xl font-semibold tracking-tight text-white md:text-[28px]/8" style={{ letterSpacing: '-0.02em' }}>
                     <span className="font-mono text-base font-medium text-gradient">{String(i + 1).padStart(2, '0')}</span>{s.title}
                   </h2>
                   <div className="grid gap-4">{s.body}</div>
