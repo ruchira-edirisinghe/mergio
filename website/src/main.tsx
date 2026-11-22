@@ -1,26 +1,15 @@
 import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 import '@fontsource-variable/inter';
 import './index.css';
 import './overlay.css';
 import './alerts.css';
-import App from './App';
-import { Legal } from './pages/Legal';
-import { SITE } from './lib/links';
+import { pageFor } from './routes';
 
-/** /privacy and /terms are their own pages; everything else is the main page. */
-const path = location.pathname.replace(/\/+$/, '').toLowerCase();
-const page = path === '/privacy' ? <Legal doc="privacy" /> : path === '/terms' ? <Legal doc="terms" /> : <App />;
+const root = document.getElementById('root')!;
+const tree = <StrictMode>{pageFor(location.pathname)}</StrictMode>;
 
-// the legal pages are their own address for search engines and link previews
-if (path === '/privacy' || path === '/terms') {
-  const url = `${SITE}${path}`;
-  document.querySelector('link[rel="canonical"]')?.setAttribute('href', url);
-  document.querySelector('meta[property="og:url"]')?.setAttribute('content', url);
-}
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    {page}
-  </StrictMode>,
-);
+// The built pages come already rendered (scripts/prerender.mjs), so React takes over that HTML;
+// the dev server sends an empty page, so React draws it.
+if (root.hasChildNodes()) hydrateRoot(root, tree);
+else createRoot(root).render(tree);

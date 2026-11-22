@@ -7,13 +7,16 @@ import { ALERTS, CHATS, SCRIPT, type ChatItem } from '../lib/chat';
 import { useCycle, useFeed, useInterval } from '../lib/hooks';
 import { VideoBackdrop } from './Backdrop';
 
+// measures before paint in the browser; the HTML built ahead of time (entry-server.tsx) skips it
+const useLayout = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
 /** Renders a fixed-width design and scales it down to fit its box (so the mock-ups look the same on phones). */
 export function Scaled({ width, children, className = '' }: { width: number; children: ReactNode; className?: string }) {
   const outer = useRef<HTMLDivElement>(null);
   const inner = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [height, setHeight] = useState<number>();
-  useLayoutEffect(() => {
+  useLayout(() => {
     const o = outer.current, i = inner.current;
     if (!o || !i) return;
     const fit = () => {

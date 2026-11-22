@@ -50,7 +50,8 @@ export function Features() {
   );
 }
 
-const FAQ: [string, string][] = [
+/** The questions on the page, also used for the FAQ data search engines read (see seo.ts). */
+export const FAQ: [string, string][] = [
   ['Is it really free?', 'Yes. Mergio is free and open source under the MIT License, with credit to its creator. No subscriptions, no account.'],
   ['Do I need API keys?', 'No. Type your username or paste a link. Only Facebook needs a free Page token, and the guide shows how.'],
   ['Can it show my viewers and follower goals?', 'Yes. The viewer count and follower goal overlays add up every platform live, and can sit in one line.'],
