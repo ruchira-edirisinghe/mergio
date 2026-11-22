@@ -140,6 +140,16 @@ test('settings stay in range, on real choices and real colours', () => {
   settings.reset();
 });
 
+test('the viewer count can hide single platforms and shorten big numbers', () => {
+  const s = settings.update({ viewers: { kick: false, numberFormat: 'short', totalAll: 'false' } });
+  assert.equal(s.viewers.kick, false);
+  assert.equal(s.viewers.twitch, true);
+  assert.equal(s.viewers.numberFormat, 'short');
+  assert.equal(s.viewers.totalAll, false);
+  assert.equal(settings.update({ viewers: { numberFormat: 'huge' } }).viewers.numberFormat, 'short');
+  settings.reset();
+});
+
 console.log('Connections');
 test('Twitch is live again after a reconnect to the same channel', () => {
   const { TwitchConnector } = require(join(root, 'src/connectors/twitch.js'));

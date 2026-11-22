@@ -47,13 +47,16 @@
   function draw() {
     if (!S) return;
     const per = perPlatform();
-    const plats = C.PLATFORMS.filter(p => p in per && (!S.hideOffline || per[p] != null));
-    const live = plats.some(p => per[p] != null);
-    const total = plats.reduce((n, p) => n + (per[p] || 0), 0);
+    // every platform that is there (for the total), and the ones that get their own number
+    const all = C.PLATFORMS.filter(p => p in per && (!S.hideOffline || per[p] != null));
+    const plats = all.filter(p => S[p] !== false);
+    const live = all.some(p => per[p] != null);
+    const total = (S.totalAll ? all : plats).reduce((n, p) => n + (per[p] || 0), 0);
+    const fmt = S.numberFormat === 'short' ? C.short : C.fmt;
     const shape = [S.style, S.layout, S.align, S.showTotal, S.showPlatforms, S.showNames, S.showLiveDot, S.showShare, S.totalLabel, plats.join()].join('|');
     if (shape !== built) build(plats, shape);
     root.classList.toggle('offline', !live);
-    if (els.total) C.roll(els.total, total, { animate: S.animate });
+    if (els.total) C.roll(els.total, total, { animate: S.animate, format: fmt });
     for (const p of plats) {
       const n = per[p];
       const row = els[p];
@@ -62,7 +65,7 @@
       if (n == null) { row.num.textContent = '–'; row.num.dataset.n = ''; }
       else {
         const before = Number(row.num.dataset.n);
-        C.roll(row.num, n, { animate: S.animate });
+        C.roll(row.num, n, { animate: S.animate, format: fmt });
         if (Number.isFinite(before) && before !== n) C.replay(row.el, n > before ? 'up' : 'down');
       }
       if (row.seg) row.seg.style.flexGrow = String(n || 0);

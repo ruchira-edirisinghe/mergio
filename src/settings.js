@@ -80,6 +80,9 @@ const DEFAULTS = {
     showTotal: true,            // one number for every platform together
     totalLabel: 'watching',
     showPlatforms: true,        // a number for each platform
+    youtube: true, twitch: true, kick: true, tiktok: true, facebook: true, // which platforms get their own number
+    totalAll: true,             // the total still counts platforms whose own number is hidden
+    numberFormat: 'full',       // full (1,234) | short (1.2K)
     showNames: false,           // "Twitch 120" instead of just the logo
     hideOffline: true,          // only platforms that are live right now
     showLiveDot: true,
@@ -148,7 +151,7 @@ const CHOICES = {
     animation: ['slide', 'fade', 'pop', 'none'], align: ['left', 'right'], eventStyle: ['compact', 'card'], followStyle: ['card', 'pill'] },
   general: { scrollDirection: ['normal', 'reversed'], groupStyle: ['tuck', 'merge'], imageEmbedPermissionLevel: ['broadcaster', 'mods', 'vips', 'subs', 'everyone', 'nobody'] },
   alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['spotlight', 'banner', 'neon', 'bubble', 'card', 'toast'], animation: ['pop', 'slide', 'fade'] },
-  viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
+  viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'], numberFormat: ['full', 'short'] },
   followers: { style: ['panel', 'line', 'cards', 'neon', 'bars'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
   twitch: { sharedChat: ['show', 'highlight', 'hide'] },
 };
