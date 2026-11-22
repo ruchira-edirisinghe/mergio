@@ -182,7 +182,9 @@
     const xp = h('div', 'xp'); xp.append(h('i'), h('span', 'xp-t', `+${POINTS[tier].toLocaleString('en-US')} XP`));
     info.appendChild(xp);
     art.append(lvl, h('div', 'rar', TIER_NAMES[tier]));
-    el.append(decor(), art, info, pts, h('div', 'timer'));
+    if (style === 'achievement') info.appendChild(pts); else el.appendChild(pts);
+    el.prepend(decor(), art, info);
+    el.append(h('div', 'timer'));
     el.lastChild.appendChild(h('i'));
     if (style === 'arcade') countUp(pts, POINTS[tier]);
     return el;

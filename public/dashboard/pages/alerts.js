@@ -65,7 +65,7 @@
   /* ---------- alert styles, each with a little looping preview ---------- */
   const STYLES = [
     ['levelup', 'Level up', 'An RPG panel: the XP bar fills and the viewer levels up', 'Game'],
-    ['achievement', 'Achievement', 'A medal spins in and the plate slides out. Bronze to gold by size', 'Game'],
+    ['achievement', 'Achievement', 'A medal spins down onto a trophy plaque. Bronze to gold by size', 'Game'],
     ['loot', 'Loot drop', 'A card flips over in its rarity colour: Common to Legendary', 'Game'],
     ['arcade', 'Arcade', '8-bit box, blinking 1UP and a score that counts up', 'Game'],
     ['combo', 'Combo', 'A fighting-game hit: COMBO! slams in over speed lines', 'Game'],
