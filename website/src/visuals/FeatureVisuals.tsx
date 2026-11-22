@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, Radio } from 'lucide-react';
 import { MergioMark, PlatformIcon, PLATFORMS, platformColor, type PlatformId } from '../components/brand';
-import { Face } from '../components/Face';
 import { GiftArt } from '../components/GiftArt';
-import { ChatFeed } from '../components/Overlay';
+import { ChatFeed, type ThemeId } from '../components/Overlay';
 import { VideoBackdrop } from './Backdrop';
-import { CHATS, GIFTS, USERS, type GiftId } from '../lib/chat';
+import { CHATS, GIFTS, type GiftId } from '../lib/chat';
 import { useCycle, useFeed, useInterval } from '../lib/hooks';
 
 /* ---------- 1. Five chats flow into Mergio and out as one overlay ---------- */
@@ -81,41 +80,34 @@ export function GiftShow({ active }: { active: boolean }) {
   );
 }
 
-/* ---------- 3. Gifts level up: rarer gifts, more XP, and the viewer goes up a level ---------- */
-const DROPS: { gift: GiftId; count: number; tier: string; color: string; xp: number; who: number }[] = [
-  { gift: 'rose', count: 12, tier: 'Common', color: '#a7b1c2', xp: 50, who: 0 },
-  { gift: 'doughnut', count: 10, tier: 'Rare', color: '#3fa1ff', xp: 250, who: 1 },
-  { gift: 'galaxy', count: 1, tier: 'Epic', color: '#b866ff', xp: 1000, who: 2 },
-  { gift: 'galaxy', count: 12, tier: 'Legendary', color: '#ffb627', xp: 5000, who: 3 },
+/* ---------- 3. Three saved looks: one click restyles the overlay, ?slot=N gives a scene its own ---------- */
+const LOOKS: { name: string; theme: ThemeId; avatars: boolean; size: number }[] = [
+  { name: 'Gameplay', theme: 'glass', avatars: true, size: 10.5 },
+  { name: 'Chatting', theme: 'neon', avatars: true, size: 11.5 },
+  { name: 'Retro night', theme: 'retro', avatars: false, size: 11 },
 ];
-const FILL = 12; // ticks while the XP bar fills
-const HOLD = 12; // ticks it stays after the level goes up
-export function LevelUp({ active }: { active: boolean }) {
-  const [s, setS] = useState({ i: 0, t: 0 });
-  useInterval(() => setS(({ i, t }) => (t < FILL + HOLD ? { i, t: t + 1 } : { i: (i + 1) % DROPS.length, t: 0 })), active ? 110 : null);
-  const d = DROPS[s.i];
-  const u = USERS[d.who];
-  const level = 3 + s.i * 2;
-  const up = s.t >= FILL;
-  const fill = Math.min(1, s.t / FILL);
+export function SavedLooks({ active }: { active: boolean }) {
+  const [i] = useCycle(LOOKS.length, 2800, active);
+  const items = useFeed(CHATS, 1300, active, 4, 3);
+  const look = LOOKS[i];
   return (
-    <div className="relative flex w-full max-w-[250px] flex-col items-center text-center" aria-hidden="true">
-      <div className="absolute top-0 h-36 w-36 rounded-full blur-2xl transition-colors duration-500" style={{ background: `${d.color}55` }} />
-      <div key={`g-${s.i}`} className="relative h-24 w-24 anim-pop"><GiftArt gift={d.gift} className="h-full w-full drop-shadow-[0_8px_18px_rgba(0,0,0,.4)]" /></div>
-      <span key={`t-${s.i}`} className="relative mt-2 rounded-full px-3 py-0.5 text-[11px] font-extrabold uppercase tracking-[.16em] anim-pop"
-        style={{ color: d.color, background: `${d.color}22`, boxShadow: `inset 0 0 0 1px ${d.color}66` }}>{d.tier} drop</span>
-      <p className="relative mt-2 text-sm text-white/70"><b className="font-semibold text-white">{u.name}</b> sent {GIFTS[d.gift].name} ×{d.count}</p>
-      <div className="relative mt-3 flex w-full items-center gap-2.5 rounded-xl bg-black/25 px-2.5 py-2 ring-1 ring-white/10">
-        <span className="relative h-8 w-8 shrink-0">
-          <Face name={u.name} className="h-full w-full rounded-full" />
-          <span key={`lv-${s.i}-${up}`} className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 rounded px-1 text-[9px] font-black leading-[14px] text-black ${up ? 'anim-bump' : ''}`} style={{ background: up ? d.color : '#e8e6f0' }}>LV{level + (up ? 1 : 0)}</span>
-        </span>
-        <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="flex justify-between text-[11px] font-semibold"><span className="text-white/55">{up ? 'Level up!' : 'XP'}</span><span className="tabular-nums" style={{ color: d.color }}>+{d.xp.toLocaleString('en-US')} XP</span></span>
-          <span className="relative h-1.5 overflow-hidden rounded-full bg-white/10">
-            <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${fill * 100}%`, background: d.color, boxShadow: `0 0 10px ${d.color}` }} />
+    <div className="w-full max-w-[260px]" aria-hidden="true">
+      <div className="mb-3 grid grid-cols-3 gap-1.5">
+        {LOOKS.map((l, k) => (
+          <span key={l.name} className={`relative flex flex-col items-start gap-0.5 rounded-xl px-2 py-1.5 text-left ring-1 transition-colors duration-300 ${k === i ? 'bg-white text-black ring-white' : 'bg-white/[.06] text-white/70 ring-white/10'}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${k === i ? 'text-black/50' : 'text-white/40'}`}>Slot {k + 1}</span>
+            <span className="w-full truncate text-[11.5px] font-semibold">{l.name}</span>
+            {k === i && <Check className="absolute right-1.5 top-1.5 h-3 w-3 anim-pop" />}
           </span>
-        </span>
+        ))}
+      </div>
+      <div className="relative h-[150px] overflow-hidden rounded-xl bg-night ring-1 ring-white/10">
+        <VideoBackdrop clip="neon-gamer" active={active} />
+        <div className="absolute inset-0 bg-black/35" />
+        <ChatFeed key={i} items={items} theme={look.theme} showAvatar={look.avatars} fontSize={look.size} className="absolute inset-0 p-2 anim-rise [mask-image:linear-gradient(180deg,transparent,#000_30%)]" />
+      </div>
+      <div className="mt-2.5 flex items-center gap-2 rounded-lg bg-black/30 px-2.5 py-1.5 font-mono text-[11px] text-white/55 ring-1 ring-white/10">
+        <span className="truncate">localhost:8787/overlay?slot=<b key={i} className="inline-block text-white anim-bump">{i + 1}</b></span>
       </div>
     </div>
   );
