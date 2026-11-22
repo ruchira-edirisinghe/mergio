@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { PillLink } from '../components/ui';
 import { Reveal } from '../components/Reveal';
 import { useInView } from '../lib/hooks';
-import { AutoDetect, Counters, GiftShow, LevelUp, MergeFlow, Placement } from '../visuals/FeatureVisuals';
+import { AutoDetect, Counters, GiftShow, MergeFlow, Placement, SavedLooks } from '../visuals/FeatureVisuals';
 
 function Card({ tone, title, body, wide, delay = 0, children }: { tone: 'light' | 'plum'; title: ReactNode; body: ReactNode; wide?: boolean; delay?: number; children: (active: boolean) => ReactNode }) {
   const [ref, inView] = useInView<HTMLDivElement>();
@@ -41,8 +41,8 @@ export function Info() {
           <Card tone="plum" delay={100} title={'The real gift,\nevery time.'} body="Gifts show up as the real thing, combos count live.">
             {a => <GiftShow active={a} />}
           </Card>
-          <Card tone="plum" title={'Gifts that\nlevel up.'} body="Bigger gifts drop rarer alerts, from common to legendary.">
-            {a => <LevelUp active={a} />}
+          <Card tone="plum" title={'Your looks,\nsaved.'} body="Three saved looks for every overlay. Switch in one click, or give each scene its own.">
+            {a => <SavedLooks active={a} />}
           </Card>
           <Card tone="plum" delay={100} title={'Connects when\nyou go live.'} body="Add your channels once. That's it.">
             {a => <AutoDetect active={a} />}
