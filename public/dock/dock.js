@@ -179,8 +179,8 @@
     main.textContent = '';
     $('tools').textContent = '';
     const s = stats || { viewers: [], totalViewers: 0 };
-    const per = {};
-    for (const v of s.viewers) { if (v.count == null) { if (!(v.platform in per)) per[v.platform] = null; continue; } per[v.platform] = (per[v.platform] || 0) + v.count; }
+    const per = new Map(); // platform -> viewers (null while not live)
+    for (const v of s.viewers) { if (v.count == null) { if (!per.has(v.platform)) per.set(v.platform, null); continue; } per.set(v.platform, (per.get(v.platform) || 0) + v.count); }
     const live = s.viewers.some(v => v.count != null);
     $('sub').textContent = live ? 'live' : 'not live';
     $('sub').className = `sub ${live ? 'live' : ''}`;
@@ -188,11 +188,11 @@
       h('div', { class: 'bn' }, h('span', { class: `dot ${live ? 'live' : ''}` }), h('b', { text: fmt(s.totalViewers || 0) }), h('small', { text: 'watching' })),
       h('div', { class: 'pk' }, h('small', { text: 'Peak' }), h('b', { text: fmt(s.peakViewers || 0) }))));
     const sp = spark(s.history); if (sp) main.append(h('div', { class: 'sparkbox' }, sp, h('small', { text: 'Last hour' })));
-    const plats = PLATFORMS.filter(p => p in per);
-    const total = plats.reduce((n, p) => n + (per[p] || 0), 0);
+    const plats = PLATFORMS.filter(p => per.has(p));
+    const total = plats.reduce((n, p) => n + (per.get(p) || 0), 0);
     if (!plats.length) main.append(h('div', { class: 'empty' }, icon('raid'), h('span', { text: 'Add your channels in Mergio. Their viewer counts show up here when you go live.' })));
     for (const p of plats) {
-      const n = per[p];
+      const n = per.get(p);
       main.append(h('div', { class: `vrow ${n == null ? 'off' : ''}`, style: `--pc: var(--${p})` }, plat(p), h('span', { class: 'vn', text: NAMES[p] }),
         h('span', { class: 'bar' }, h('i', { style: `width:${total && n ? Math.max(3, (n / total) * 100) : 0}%` })), h('b', { text: n == null ? 'Not live' : fmt(n) })));
     }
