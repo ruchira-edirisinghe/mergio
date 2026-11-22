@@ -56,6 +56,14 @@ test('coerces types and drops unknown keys', () => {
   assert.equal('nope' in s.appearance, false);
   assert.equal('bogus' in s, false);
 });
+test('alert sounds by size accept known sounds only', () => {
+  const s = settings.update({ alerts: { tierSounds: 'true', soundEpic: 'fanfare', soundLegendary: 'sparkle', soundRare: 'nope' } });
+  assert.equal(s.alerts.tierSounds, true);
+  assert.equal(s.alerts.soundEpic, 'fanfare');
+  assert.equal(s.alerts.soundLegendary, 'sparkle');
+  assert.equal(s.alerts.soundRare, 'same');
+  settings.update({ alerts: { tierSounds: false, soundEpic: 'same', soundLegendary: 'same' } });
+});
 test('public view hides tokens', () => {
   settings.update({ advanced: { facebookAccessToken: 'secret' } });
   assert.equal(JSON.stringify(settings.publicView()).includes('secret'), false);

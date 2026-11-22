@@ -82,7 +82,9 @@ const DEFAULTS = {
     textColor: '#ffffff',
     font: '',                   // '' = the theme's own font
     sound: false,               // a short sound with each alert
-    soundType: 'chime',         // chime | coin | levelup | arcade | soft
+    soundType: 'chime',         // chime | coin | levelup | arcade | soft | fanfare | sparkle
+    tierSounds: false,          // a different sound for bigger alerts (by tier)
+    soundCommon: 'same', soundRare: 'same', soundEpic: 'same', soundLegendary: 'same', // 'same' = the main sound
     volume: 0.6,
   },
   viewers: {
@@ -191,12 +193,14 @@ const RANGES = {
     goalTiktok: [0, 1e9, true], goalFacebook: [0, 1e9, true], goalTotal: [0, 1e9, true] },
   tiktok: { minGiftDiamonds: [0, 100000, true] },
 };
+const SOUND_TYPES = ['chime', 'coin', 'levelup', 'arcade', 'soft', 'fanfare', 'sparkle'];
 const CHOICES = {
   appearance: { theme: ['glass', 'neon', 'minimal', 'soft', 'retro'], timeFormat: ['12', '24'], nameColorMode: ['user', 'platform', 'custom'],
     animation: ['slide', 'fade', 'pop', 'none'], align: ['left', 'right'], eventStyle: ['compact', 'card'], followStyle: ['card', 'pill'] },
   general: { scrollDirection: ['normal', 'reversed'], groupStyle: ['tuck', 'merge'], imageEmbedPermissionLevel: ['broadcaster', 'mods', 'vips', 'subs', 'everyone', 'nobody'] },
   alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['levelup', 'achievement', 'loot', 'arcade', 'combo', 'quest', 'cyber', 'gacha', 'roulette', 'crt', 'transmission', 'bounty', 'spotlight', 'neon', 'bubble'],
-    animation: ['pop', 'slide', 'fade'], colorMode: ['platform', 'tier', 'custom'], soundType: ['chime', 'coin', 'levelup', 'arcade', 'soft'] },
+    animation: ['pop', 'slide', 'fade'], colorMode: ['platform', 'tier', 'custom'], soundType: SOUND_TYPES,
+    soundCommon: ['same', ...SOUND_TYPES], soundRare: ['same', ...SOUND_TYPES], soundEpic: ['same', ...SOUND_TYPES], soundLegendary: ['same', ...SOUND_TYPES] },
   viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'], numberFormat: ['full', 'short'] },
   followers: { style: ['panel', 'line', 'cards', 'neon', 'bars'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
   twitch: { sharedChat: ['show', 'highlight', 'hide'] },

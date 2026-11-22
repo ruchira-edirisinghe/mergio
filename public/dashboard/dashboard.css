@@ -957,7 +957,8 @@ body.side-min .upd-pill > :not(.upd-dot) { display: none; }
 .ev-row label span { color: var(--muted); }
 @media (max-width: 760px) { .ev-row { grid-template-columns: 34px minmax(0, 1fr) auto; } }
 .fields > .fw-callout { margin: 6px 0 10px; }
-.try-row { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.try-row, .hear-row { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.hear-row + .try-row { margin-top: 8px; padding-top: 0; border-top: 0; }
 .card > .fields { margin-top: 4px; }
 .install-how { max-width: 280px; font-size: 12px; }
 /* live chat: the same layout as the overlay (picture column, name line, message underneath) */
