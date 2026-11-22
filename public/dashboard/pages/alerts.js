@@ -64,15 +64,24 @@
 
   /* ---------- alert styles, each with a little looping preview ---------- */
   const STYLES = [
+    ['levelup', 'Level up', 'An RPG panel: the XP bar fills and the viewer levels up', 'Game'],
+    ['achievement', 'Achievement', 'A medal spins down onto a trophy plaque. Bronze to gold by size', 'Game'],
+    ['loot', 'Loot drop', 'A card flips over in its rarity colour: Common to Legendary', 'Game'],
+    ['arcade', 'Arcade', '8-bit box, blinking 1UP and a score that counts up', 'Game'],
+    ['combo', 'Combo', 'A fighting-game hit: COMBO! slams in over speed lines', 'Game'],
+    ['quest', 'Quest', 'A parchment scroll unrolls with a wax seal', 'Game'],
+    ['cyber', 'Cyber HUD', 'Brackets lock on, a scan line sweeps, the name decodes', 'Game'],
     ['spotlight', 'Spotlight', 'The picture big, with the name rising in'],
-    ['banner', 'Banner', 'A TV-style lower third that wipes in'],
     ['neon', 'Neon', 'A glowing sign that lights up'],
     ['bubble', 'Bubbly', 'A bright sticker that slaps on'],
-    ['card', 'Card', 'Frosted glass that tilts into place'],
-    ['toast', 'Minimal', 'A small black pill that grows open'],
   ];
-  const mini = id => h('div', { class: `ast ast-${id}`, 'aria-hidden': 'true' },
-    h('i', { class: 'a1' }), h('i', { class: 'a2' }), h('i', { class: 'a3' }));
+  MG.ALERT_STYLES = STYLES;
+  /** A small live preview: the real alerts overlay playing sample alerts in that style. */
+  const mini = id => {
+    const f = h('iframe', { src: `/alerts?preview=1&demo=1&style=${id}&position=center&duration=3`, title: `${id} preview`, tabindex: '-1', loading: 'lazy', 'aria-hidden': 'true' });
+    return h('div', { class: 'ast', 'aria-hidden': 'true' }, f);
+  };
+  const fitMinis = grid => { for (const f of grid.querySelectorAll('.ast iframe')) { const w = f.parentElement.clientWidth; if (!w) continue; const k = Math.min(w / 800, f.parentElement.clientHeight / 340); f.style.transform = `translate(${(w - 800 * k) / 2}px, ${(f.parentElement.clientHeight - 500 * k) / 2}px) scale(${k})`; } };
   function stylePicker() {
     const cur = MG.st.settings.alerts.style;
     const grid = h('div', { class: 'astyles', role: 'radiogroup', 'aria-label': 'Alert style' });
@@ -82,10 +91,12 @@
       MG.refreshDeps();
       setTimeout(() => MG.test('gift'), 250); // show it in the preview (and in OBS)
     };
-    for (const [id, name, desc] of STYLES)
+    for (const [id, name, desc, tag] of STYLES)
       grid.append(h('button', { class: `astyle ${cur === id ? 'on' : ''}`, 'data-id': id, role: 'radio', 'aria-checked': String(cur === id), onclick: () => pick(id) },
-        mini(id), h('b', { text: name }), h('span', { text: desc })));
-    return MG.card('Alert style', 'Pick a look. Each one plays a test alert in the preview so you can see it move.', grid);
+        mini(id), tag ? h('span', { class: 'tag', text: tag }) : null, h('b', { text: name }), h('span', { text: desc })));
+    requestAnimationFrame(() => fitMinis(grid));
+    new ResizeObserver(() => fitMinis(grid)).observe(grid);
+    return MG.card('Alert style', 'Pick a look. Each card plays sample alerts; picking one also plays a test alert in the preview.', grid);
   }
 
   function alertsStatus() {
@@ -135,13 +146,23 @@
         [A, { key: 'duration', icon: 'timer', label: 'Each alert stays for', hint: 'Seconds on screen', type: 'range', min: 2, max: 20, unit: 's', keywords: 'time seconds' }],
         [A, { key: 'size', icon: 'size', label: 'Size', hint: 'Bigger or smaller than normal', type: 'range', min: 0.6, max: 2, step: 0.1, unit: '×', keywords: 'scale bigger smaller' }],
         [A, { key: 'position', icon: 'move', label: 'Where in its box', hint: 'Within the browser source', type: 'select', options: [['top', 'Top'], ['center', 'Middle'], ['bottom', 'Bottom']] }],
-        [A, { key: 'animation', icon: 'sparkle', label: 'How alerts appear', hint: 'The other styles have their own entrance', type: 'select', options: [['pop', 'Tilt up'], ['slide', 'Slide up'], ['fade', 'Fade in']], when: s => s.alerts.style === 'card' }],
+        { sub: 'Colours and font' },
+        [A, { key: 'colorMode', icon: 'palette', help: 'Platform: Twitch alerts are purple, TikTok pink and so on (Super Chats keep their own colour). By size: grey for small alerts, blue, purple, then gold for the biggest, like loot in a game. One colour: your own colour for everything.', label: 'Accent colour', type: 'select', dropdown: true, options: [['platform', 'Colour of the platform'], ['tier', 'By size: Common, Rare, Epic, Legendary'], ['custom', 'One colour for everything']], keywords: 'color colour tier rarity legendary' }],
+        [A, { key: 'accent', icon: 'droplet', label: 'Your colour', type: 'color', when: s => s.alerts.colorMode === 'custom' }],
+        [A, { key: 'textColor', icon: 'droplet', label: 'Text colour', hint: 'Quest and Bubbly keep their dark ink', type: 'color' }],
+        [A, { key: 'font', icon: 'type', help: 'Each style has a font that suits it (Arcade uses a pixel font, Quest an old serif). Type any Google Font or a font on your PC to use it instead. Leave empty for the style’s own font.', label: 'Font', hint: 'Empty = the style’s own font', type: 'font', placeholder: 'Style’s own font', suggestions: ['Lilita One', 'Press Start 2P', 'Bangers', 'Cinzel', 'Orbitron', 'Rubik', ...(MG.FONTS || [])], keywords: 'font typeface' }],
         { sub: 'What each alert shows' },
+        [A, { key: 'showHeadline', icon: 'sparkle', label: 'The big word on top', hint: '"LEVEL UP!", "Epic drop", "Quest complete"…', type: 'toggle', when: s => !['spotlight', 'neon', 'bubble'].includes(s.alerts.style) }],
+        [A, { key: 'headline', icon: 'type', label: 'Your own big word', hint: 'Empty = the style’s own words', type: 'text', placeholder: 'e.g. THANK YOU!', when: s => s.alerts.showHeadline && !['spotlight', 'neon', 'bubble'].includes(s.alerts.style) }],
+        [A, { key: 'showLabel', icon: 'tag', label: 'What happened', hint: '"NEW SUBSCRIBER", "GIFT"…', type: 'toggle' }],
+        [A, { key: 'showPlatform', icon: 'host', label: 'Which platform', hint: '"on Twitch"', type: 'toggle' }],
         [A, { key: 'showAvatar', icon: 'image', label: 'Profile picture', type: 'toggle' }],
         [A, { key: 'showMessage', icon: 'chat', label: 'Their message', hint: 'Super Chats, resubs and more', type: 'toggle' }],
+        [A, { key: 'showTimer', icon: 'timer', label: 'Time-left bar', hint: 'A thin bar that runs out', type: 'toggle' }],
         { sub: 'Sound' },
-        [A, { key: 'sound', icon: 'volume', label: 'Play a chime', hint: 'A short sound with each alert, made by Mergio', type: 'toggle', keywords: 'sound audio chime volume' }],
-        [A, { key: 'volume', icon: 'volume', label: 'Chime volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'sound audio', when: s => s.alerts.sound }],
+        [A, { key: 'sound', icon: 'volume', label: 'Play a sound', hint: 'A short sound with each alert, made by Mergio', type: 'toggle', keywords: 'sound audio chime volume' }],
+        [A, { key: 'soundType', icon: 'volume', label: 'Sound', type: 'select', dropdown: true, options: [['chime', 'Chime (changes with the alert)'], ['coin', 'Coin pickup'], ['levelup', 'Level up'], ['arcade', '8-bit arcade'], ['soft', 'Soft bell']], keywords: 'sound audio', when: s => s.alerts.sound }],
+        [A, { key: 'volume', icon: 'volume', label: 'Volume', type: 'range', min: 0, max: 1, step: 0.05, unit: '%', keywords: 'sound audio', when: s => s.alerts.sound }],
       ]),
       h('div', { class: 'btn-row try-row' }, h('span', { class: 'lbl', text: 'Try:' }),
         ...[['gift', 'Gift'], ['sub', 'Sub'], ['superchat', 'Super Chat'], ['follow', 'Follow'], ['raid', 'Raid']].map(([k, t]) => h('button', { class: 'btn ghost sm', onclick: () => MG.test(k) }, icon('play'), t)))));

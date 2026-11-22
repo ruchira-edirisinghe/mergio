@@ -197,7 +197,7 @@
         break;
       }
       case 'font':
-        ctl = MG.combo({ id, value: v, placeholder: 'Inter', suggestions: f.suggestions || [], onchange: x => MG.save(section, f.key, x.trim()) });
+        ctl = MG.combo({ id, value: v, placeholder: f.placeholder || 'Inter', suggestions: f.suggestions || [], onchange: x => MG.save(section, f.key, x.trim()) });
         break;
       case 'textarea':
         ctl = h('textarea', { id, placeholder: f.placeholder || '', onchange: e => MG.save(section, f.key, e.target.value) }, v);
