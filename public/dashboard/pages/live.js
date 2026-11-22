@@ -202,7 +202,7 @@
     return h('div', { class: 'live-bar', id: 'liveBar' },
       p ? h('div', { class: 'pin-now', style: `--pc: var(--${p.platform})` }, icon('pin'), h('span', { class: 'pin-t' }, h('b', { text: p.user.name }), ` ${text}`),
         h('button', { type: 'button', class: 'btn sm ghost', onclick: () => MG.pin(null) }, 'Unpin'))
-        : h('div', { class: 'pin-now empty-pin' }, icon('pin'), h('span', { text: 'Hover a message and press the pin to keep it at the top of your overlay.' })),
+        : h('div', { class: 'pin-now empty-pin' }, icon('pin'), h('span', { text: 'Press the pin on a message to keep it at the top of your overlay.' })),
       h('div', { class: 'alert-ctl', role: 'group', 'aria-label': 'Alerts on stream' },
         h('span', { class: `al-state ${paused ? 'paused' : ''}` }, h('i'), paused ? 'Alerts paused' : 'Alerts on'),
         h('button', { type: 'button', class: `btn sm ${paused ? 'primary' : 'ghost'}`, title: paused ? 'Show alerts again, starting with the ones that waited' : 'Hold new alerts until you resume. None are lost', onclick: () => MG.alertControl(paused ? 'resume' : 'pause') }, icon(paused ? 'play' : 'pause'), paused ? 'Resume' : 'Pause'),

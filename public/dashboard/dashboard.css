@@ -1219,3 +1219,12 @@ a.btn { text-decoration: none; }
 .alert-live.paused { border-color: rgba(245, 165, 36, .45); background: color-mix(in srgb, #f5a524 8%, var(--panel)); }
 .alert-live .al-state { flex: 1 1 240px; flex-wrap: wrap; color: var(--text); }
 .alert-live .al-state > span { flex-basis: 100%; padding-left: 14px; font-weight: 500; color: var(--muted); }
+
+/* ---------- touch screens and narrow windows ---------- */
+/* no hover on touch screens: the message buttons are always shown there */
+@media (hover: none) { .fi-act { opacity: 1; } .fi:not(.hid) .fh { padding-right: 66px; } }
+/* Viewer count tiles: the On overlay / Hidden label moves under the number instead of squeezing it */
+@media (max-width: 640px) {
+  button.now-it { grid-template-columns: 30px minmax(0, 1fr); }
+  button.now-it .vis { grid-row: auto; grid-column: 2; justify-self: start; white-space: nowrap; }
+}
