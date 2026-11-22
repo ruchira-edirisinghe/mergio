@@ -87,6 +87,13 @@ const DEFAULTS = {
     tierSounds: false,          // a different sound for bigger alerts (by tier)
     soundCommon: 'same', soundRare: 'same', soundEpic: 'same', soundLegendary: 'same', // 'same' = the main sound
     volume: 0.6,
+    readAloud: false,           // a voice reads the alert on the alerts overlay (made on this computer, offline)
+    readWhat: 'message',        // message (only what they wrote) | full (who, what, then the message)
+    readMin: 'all',             // all | rare | epic | legendary: the smallest alert that gets read
+    ttsVoice: '',               // '' = the computer's default voice
+    ttsRate: 1,                 // speed
+    ttsVolume: 0.8,
+    ttsMaxLength: 200,          // longer messages are cut (letters)
   },
   viewers: {
     style: 'pill',              // pill | glass | neon | broadcast | minimal
@@ -188,7 +195,7 @@ const RANGES = {
   appearance: { avatarSize: [1.2, 3.5], fontSize: [12, 48], fontWeight: [100, 900, true], lineSpacing: [0, 1.5], bubbleOpacity: [0, 1], bubbleRadius: [0, 28, true],
     opacity: [0, 1], emoteScale: [0.8, 3], maxMessages: [5, 80, true] },
   general: { hideAfter: [5, 300, true], joinLifetime: [2, 20, true] },
-  alerts: { duration: [2, 20], gap: [0, 30], size: [0.6, 2], volume: [0, 1] },
+  alerts: { duration: [2, 20], gap: [0, 30], size: [0.6, 2], volume: [0, 1], ttsRate: [0.6, 1.8], ttsVolume: [0, 1], ttsMaxLength: [20, 300] },
   viewers: { fontSize: [14, 80], bgOpacity: [0, 1] },
   followers: { fontSize: [16, 90], goalStep: [1, 1e6, true], goalYoutube: [0, 1e9, true], goalTwitch: [0, 1e9, true], goalKick: [0, 1e9, true],
     goalTiktok: [0, 1e9, true], goalFacebook: [0, 1e9, true], goalTotal: [0, 1e9, true] },
@@ -201,7 +208,8 @@ const CHOICES = {
   general: { scrollDirection: ['normal', 'reversed'], groupStyle: ['tuck', 'merge'], imageEmbedPermissionLevel: ['broadcaster', 'mods', 'vips', 'subs', 'everyone', 'nobody'] },
   alerts: { placement: ['chat', 'overlay', 'both'], position: ['top', 'center', 'bottom'], style: ['levelup', 'achievement', 'loot', 'arcade', 'combo', 'quest', 'cyber', 'gacha', 'roulette', 'crt', 'transmission', 'bounty', 'spotlight', 'neon', 'bubble'],
     animation: ['pop', 'slide', 'fade'], colorMode: ['platform', 'tier', 'custom'], soundType: SOUND_TYPES,
-    soundCommon: ['same', ...SOUND_TYPES], soundRare: ['same', ...SOUND_TYPES], soundEpic: ['same', ...SOUND_TYPES], soundLegendary: ['same', ...SOUND_TYPES] },
+    soundCommon: ['same', ...SOUND_TYPES], soundRare: ['same', ...SOUND_TYPES], soundEpic: ['same', ...SOUND_TYPES], soundLegendary: ['same', ...SOUND_TYPES],
+    readWhat: ['message', 'full'], readMin: ['all', 'rare', 'epic', 'legendary'] },
   viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'], numberFormat: ['full', 'short'] },
   followers: { style: ['panel', 'line', 'cards', 'neon', 'bars'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
   twitch: { sharedChat: ['show', 'highlight', 'hide'] },

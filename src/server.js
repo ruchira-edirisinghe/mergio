@@ -11,6 +11,7 @@ const updater = require('./updater');
 const stats = require('./stats');
 const followers = require('./followers');
 const obsdocks = require('./obsdocks');
+const tts = require('./tts');
 const { checkToken: checkFacebookToken } = require('./connectors/facebook');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
@@ -234,6 +235,27 @@ function createServer(manager, { onQuit }) {
           const kinds = body.kind === 'burst' ? testdata.KINDS : [body.kind || 'random'];
           kinds.forEach((k, i) => setTimeout(() => manager.inject(testdata.make(k)), i * 350));
           return send(res, 200, { ok: true });
+        }
+        // Read aloud: the alerts overlay asks by message id only, so the words always come from Mergio's own copy of the alert.
+        if (p === '/api/tts/voices' && req.method === 'GET') return send(res, 200, await tts.voices());
+        if ((p === '/api/tts' || p === '/api/tts/sample') && req.method === 'GET') {
+          const cur = settings.get();
+          let text = tts.SAMPLE;
+          if (p === '/api/tts') {
+            const id = String(url.searchParams.get('id') || '').replace(/~r\d+$/, ''); // a replay from the Gifts dock is the same alert
+            const msg = manager.events.findLast(x => x.id === id) || manager.recent.findLast(x => x.id === id);
+            if (!msg) return send(res, 404, { error: 'No such alert' });
+            text = tts.textFor(msg, cur.alerts, cur.general.blockedWords);
+            if (!text) return send(res, 204, '');
+          }
+          try {
+            const wav = await tts.speak(text, { voice: cur.alerts.ttsVoice, rate: cur.alerts.ttsRate });
+            return send(res, 200, wav, 'audio/wav');
+          } catch (e) {
+            log('tts', `could not speak: ${e.message}`);
+            // no voice on this computer: the overlay can still try the browser's own voice with these words
+            return send(res, 503, { error: e.message, text });
+          }
         }
         if (p === '/api/autostart' && req.method === 'POST') {
           try { await autostart.setEnabled(!!body.enabled); } catch (e) { return send(res, 400, { error: e.message }); }

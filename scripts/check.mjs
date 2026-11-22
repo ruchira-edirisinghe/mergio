@@ -70,6 +70,26 @@ test('space between alerts stays between 0 and 30 seconds', () => {
   assert.equal(settings.update({ alerts: { gap: -3 } }).alerts.gap, 0);
   settings.update({ alerts: { gap: 0 } });
 });
+test('read aloud: what gets said', () => {
+  const tts = require(join(root, 'src/tts.js'));
+  const m = { user: { name: 'LunaByte' }, parts: [{ type: 'text', text: 'Keep it up!!!!!!! https://x.example/a' }, { type: 'emote', name: 'Kappa' }], event: { kind: 'superchat', title: 'sent a Super Chat', amount: '$20.00' } };
+  assert.equal(tts.textFor(m, { readWhat: 'message', ttsMaxLength: 200 }, ''), 'Keep it up!!! link');
+  assert.equal(tts.textFor(m, { readWhat: 'full', ttsMaxLength: 200 }, ''), 'LunaByte sent a Super Chat $20.00. Keep it up!!! link');
+  assert.equal(tts.textFor(m, { readWhat: 'message', ttsMaxLength: 200 }, 'keep'), '', 'blocked words are never read');
+  const g = { user: { name: 'Nova' }, parts: [], event: { kind: 'gift', title: 'sent Galaxy', amount: '×3' } };
+  assert.equal(tts.textFor(g, { readWhat: 'full', ttsMaxLength: 200 }, ''), 'Nova sent Galaxy times 3.');
+  const long = { user: { name: 'A' }, parts: [{ type: 'text', text: 'word '.repeat(80) }], event: {} };
+  assert.ok(tts.textFor(long, { readWhat: 'message', ttsMaxLength: 50 }, '').length <= 50);
+});
+test('read aloud settings stay in range', () => {
+  const s = settings.update({ alerts: { readAloud: 'true', readMin: 'epic', readWhat: 'nope', ttsRate: 9, ttsMaxLength: 5 } });
+  assert.equal(s.alerts.readAloud, true);
+  assert.equal(s.alerts.readMin, 'epic');
+  assert.equal(s.alerts.readWhat, 'message');
+  assert.equal(s.alerts.ttsRate, 1.8);
+  assert.equal(s.alerts.ttsMaxLength, 20);
+  settings.update({ alerts: { readAloud: false, readMin: 'all', ttsRate: 1, ttsMaxLength: 200 } });
+});
 test('public view hides tokens', () => {
   settings.update({ advanced: { facebookAccessToken: 'secret' } });
   assert.equal(JSON.stringify(settings.publicView()).includes('secret'), false);
