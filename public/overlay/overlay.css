@@ -33,7 +33,7 @@ body.align-right .msg { transform-origin: right bottom; }
 .msg.grouped { margin-top: calc(var(--gap) * -0.3); }
 body.shadow .msg { text-shadow: var(--shadow); }
 
-.bubble { display: inline-block; max-width: 100%; padding: .42em .7em; border-radius: var(--radius); position: relative; overflow-wrap: anywhere; }
+.bubble { display: inline-block; max-width: 100%; padding: .42em .7em; border-radius: var(--radius); position: relative; overflow-wrap: break-word; }
 body.bubbles .bubble { background: var(--bubble); }
 /* No box: plain text lined up with the edge, nothing drawn around it. */
 body:not(.bubbles) .bubble { padding-left: 0; padding-right: 0; border: 0; box-shadow: none; background: none; }

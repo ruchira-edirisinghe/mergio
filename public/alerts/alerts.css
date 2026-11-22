@@ -31,13 +31,13 @@ body.pos-bottom #stage { justify-content: flex-end; }
 .label { display: flex; align-items: center; gap: .55em; flex-wrap: wrap; font-size: .56em; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .label .pchip { display: inline-flex; align-items: center; gap: .35em; letter-spacing: .02em; text-transform: none; font-weight: 700; opacity: .85; }
 .label .pchip svg { width: 1.2em; height: 1.2em; }
-.name { font-size: 1.3em; font-weight: 900; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.name { font-size: 1.3em; font-weight: 900; letter-spacing: -.01em; overflow-wrap: break-word; }
 .name .l { display: inline-block; white-space: pre; }
 .title { font-weight: 600; opacity: .9; }
 .amount { align-self: flex-start; margin-top: .25em; padding: .1em .55em; border-radius: .45em; font-weight: 900; font-variant-numeric: tabular-nums; background: var(--ev); color: #fff; }
 .p-kick .amount { color: #0b0b0f; }
 .amount.bump { animation: bump .45s var(--spring); }
-.msg { margin-top: .4em; font-size: .86em; font-weight: 500; overflow-wrap: anywhere; max-height: 4.2em; overflow: hidden; }
+.msg { margin-top: .4em; font-size: .86em; font-weight: 500; overflow-wrap: break-word; max-height: 4.2em; overflow: hidden; }
 .msg .emote { height: 1.4em; vertical-align: middle; margin: -.2em .05em; }
 .timer { position: absolute; left: 0; right: 0; bottom: 0; height: .14em; overflow: hidden; animation: fade .5s .7s both; }
 .timer i { display: block; height: 100%; background: var(--ev); transform-origin: left; animation: timer var(--hold, 6s) linear forwards; }
