@@ -33,7 +33,8 @@ Multistreaming means your viewers chat in five places. Mergio reads all of them 
 
 - 🔗 **Connects by itself.** Add your channels once. Mergio connects when you go live and reconnects if the connection drops.
 - 🎁 **The real thing, every time.** Real profile pictures, real TikTok and Kick gift pictures, combos that count up live, cheermotes and 7TV, BTTV and FFZ emotes.
-- 🔔 **Alerts where you want them:** in the chat as calm lines, on their own overlay, or both. Fifteen styles: twelve game themes (Level up, Achievement, Loot drop, Arcade, Combo, Quest, Cyber HUD, Gacha pull, Item roulette, CRT broadcast, Transmission, Bounty poster) where bigger gifts get a rarer tier, plus Spotlight, Neon and Bubbly. Pick the colours, font, headline, what shows and one of five sounds. **Pause** or **Skip** alerts while you're live.
+- 🔔 **Alerts where you want them:** in the chat as calm lines, on their own overlay, or both. Fifteen styles: twelve game themes (Level up, Achievement, Loot drop, Arcade, Combo, Quest, Cyber HUD, Gacha pull, Item roulette, CRT broadcast, Transmission, Bounty poster) where bigger gifts get a rarer tier, plus Spotlight, Neon and Bubbly. Pick the colours, font, headline, what shows and one of seven sounds (a different one for each tier if you like), and add a pause between alerts. **Pause** or **Skip** alerts while you're live.
+- 🗣️ **Read aloud:** a voice reads Super Chats, Bits and other messages from the alerts overlay, so OBS records it with the alert. It uses your computer's own voices, works offline and never reads a message with a blocked word.
 - 👀 **Viewer count:** everyone watching on every platform, added up live, in five styles. Pick which platforms show, whether the total counts the hidden ones, and full or short numbers (1.2K).
 - 🎯 **Follower goals:** each platform's followers with a goal and a progress bar that celebrates when you reach it, in five styles.
 - ➖ **All in one line:** the counters can sit in a single row and shrink to fit any browser source.
@@ -110,6 +111,8 @@ Open **Chat style** and click a style. Open a section below it to fine-tune: eac
 ### Step 4 · Choose your alerts
 
 Open **Alerts** and choose where alerts show: **in the chat**, on **their own overlay**, or **both**. Pick one of the fifteen styles (each tile plays a preview). The game themes give bigger gifts a rarer tier (Common, Rare, Epic, Legendary), and you can change their colours, font, headline, sound and what shows. Then switch off anything you don't want on stream, and press **Try** to see any alert.
+
+Under **Sound** you can give each tier its own sound (press **Hear it** to listen). Under **Timing and size**, **Space between alerts** adds a pause when several come in at once. Switch on **Read messages aloud** to have a voice read them: pick which alerts (every alert, or only Rare and bigger, and so on), the voice and the speed. On Windows and macOS the voices are already there. On Linux, install `espeak-ng`.
 
 <div align="center"><img src="docs/guide/04-alerts.png" alt="The Alerts page with the alert styles" width="820"></div>
 
