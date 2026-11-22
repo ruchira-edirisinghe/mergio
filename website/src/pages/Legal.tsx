@@ -74,6 +74,7 @@ const PRIVACY: Doc = {
         </UL>
         <P>Chat messages, gifts, alerts, viewer counts and follower counts are kept in memory while Mergio runs and shown on your overlays. They are not saved to disk. Delete the data folder and everything Mergio stored is gone.</P>
         <P>If you press <B>Install the docks in OBS</B>, Mergio adds its three docks (Mergio Chat, Mergio Gifts and Mergio Viewers) to OBS Studio's own settings file (<Code>user.ini</Code>, or <Code>global.ini</Code> in older versions) while OBS is closed. It keeps a copy of that file the first time, named <Code>.mergio-backup</Code>, and leaves any docks you added yourself alone. Nothing else in OBS is changed, and you can remove the docks in OBS at any time.</P>
+        <P>If you switch on <B>Read messages aloud</B>, the voice comes from your own computer (Windows speech, <Code>say</Code> on macOS, <Code>espeak-ng</Code> on Linux). It works offline: the audio is made on your PC, kept in memory only while it plays and never sent anywhere.</P>
       </>,
     },
     {
