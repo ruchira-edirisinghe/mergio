@@ -614,7 +614,7 @@ body.no-label.no-platform .label { display: none; }
 .st-bounty .nail { position: absolute; top: .4em; width: .46em; height: .46em; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #e2e2e2, #747474 60%, #333); box-shadow: 0 .08em .12em rgba(0, 0, 0, .6); }
 .st-bounty .nail.l { left: .5em; } .st-bounty .nail.r { right: .5em; }
 .st-bounty .info { display: contents; }
-.st-bounty .alert > :not(.fx):not(.timer):not(.badge), .st-bounty .info > * { animation: by-drop .6s .2s cubic-bezier(.3, 1.35, .6, 1) both; }
+.st-bounty .alert > :not(.fx):not(.timer), .st-bounty .info > * { animation: by-drop .6s .2s cubic-bezier(.3, 1.35, .6, 1) both; }
 .st-bounty .hw { display: block; order: -1; font-size: 1.95em; font-weight: 400; line-height: 1; letter-spacing: .05em; color: #4a2a12; padding-bottom: .12em; margin-bottom: .2em; border-bottom: .06em double #4a2a12; box-shadow: 0 .05em 0 #4a2a12; }
 .st-bounty .art { width: 5.4em; height: 4.6em; margin: .3em 0 .45em; padding: .2em; background: rgba(90, 50, 15, .14); box-shadow: inset 0 0 0 .14em #3b2412; border-radius: .08em; }
 .st-bounty .art > img.av { width: 3.9em; height: 3.9em; border-radius: 50%; filter: sepia(.85) contrast(1.15) brightness(.95); }
@@ -629,7 +629,7 @@ body.no-label.no-platform .label { display: none; }
 .st-bounty .amount { display: flex; flex-direction: column; align-items: center; align-self: center; margin-top: .4em; padding: 0; border-radius: 0; background: none; color: #3b2412; font-size: calc(1.1em + var(--t, 0) * .24em); font-weight: 400; line-height: 1; }
 .st-bounty .amount::before { content: 'REWARD'; margin-bottom: .2em; font-size: max(.4em, 9px); letter-spacing: .32em; color: #6b4423; }
 .st-bounty .msg { font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: .78em; }
-.st-bounty .badge { position: absolute; right: 1.25em; bottom: 1.15em; z-index: 3; width: calc(2.6em + var(--t, 0) * .55em); aspect-ratio: 1; rotate: -14deg; filter: drop-shadow(0 .12em .1em rgba(0, 0, 0, .55)); animation: by-stamp .45s 1.05s cubic-bezier(.2, 1.5, .4, 1) both; }
+.st-bounty .badge { position: absolute; left: calc(100% + .45em); top: 50%; margin-top: calc(-1.2em - var(--t, 0) * .25em); z-index: 3; width: calc(2.4em + var(--t, 0) * .5em); aspect-ratio: 1; rotate: -14deg; filter: drop-shadow(0 .12em .1em rgba(0, 0, 0, .55)); animation: by-stamp .45s 1.05s cubic-bezier(.2, 1.5, .4, 1) both; }
 .st-bounty .badge::before { content: ''; position: absolute; inset: 0;
   background: radial-gradient(circle, #fff3b0 0 7%, transparent 8%), radial-gradient(circle, transparent 0 21%, #8a5d0a 22% 25%, transparent 26%), linear-gradient(145deg, #fff0a8, #e3a812 45%, #ffd75a 60%, #a66d00);
   clip-path: polygon(50% 0, 63% 27.5%, 93.3% 25%, 76% 50%, 93.3% 75%, 63% 72.5%, 50% 100%, 37% 72.5%, 6.7% 75%, 24% 50%, 6.7% 25%, 37% 27.5%); }
