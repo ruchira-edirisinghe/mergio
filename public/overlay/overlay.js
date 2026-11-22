@@ -551,7 +551,7 @@
         case 'sources': lastSources = d.sources; setSources(d.sources); break;
         case 'msg': remember(d.msg); show(d.msg); break;
         case 'delete': onDelete(d); break;
-        case 'clear': history = []; rerender(); break;
+        case 'clear': history = Array.isArray(d.keep) ? history.filter(m => d.keep.includes(m.id)) : []; rerender(); break;
       }
     };
     ws.onclose = () => {

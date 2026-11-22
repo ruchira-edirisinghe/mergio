@@ -249,7 +249,12 @@
       const d = JSON.parse(e.data);
       if (d.op === 'hello' || d.op === 'settings') applySettings(d.settings); // old alerts are never replayed
       else if (d.op === 'msg') onMsg(d.msg);
-      else if (d.op === 'clear') { queue.length = 0; if (current) leave(); }
+      else if (d.op === 'clear') { queue.length = 0; if (current && !(d.keep || []).includes(current.m.id)) leave(); }
+      else if (d.op === 'delete' && Array.isArray(d.ids)) {
+        // hidden from the control panel (or deleted by a moderator): drop it, even mid-alert
+        for (let i = queue.length - 1; i >= 0; i--) if (d.ids.includes(queue[i].id)) queue.splice(i, 1);
+        if (current && d.ids.includes(current.m.id)) leave();
+      }
     };
     ws.onclose = () => {
       if (!isPreview) connBadge.hidden = retry < 2;

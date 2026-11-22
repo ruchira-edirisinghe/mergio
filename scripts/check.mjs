@@ -187,7 +187,7 @@ console.log('Local server security');
   const WebSocket = require('ws');
   const { createServer } = require(join(root, 'src/server.js'));
   const noop = () => {};
-  const manager = Object.assign(new EventEmitter(), { list: () => [], recent: [], add: noop, remove: noop, reconnect: noop, setEnabled: noop, inject: noop, reconnectPlatform: noop });
+  const manager = Object.assign(new EventEmitter(), { list: () => [], recent: [], add: noop, remove: noop, reconnect: noop, setEnabled: noop, inject: noop, reconnectPlatform: noop, clear: noop, hide: noop });
   const server = createServer(manager, { onQuit: noop });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   const port = server.address().port;
@@ -203,6 +203,10 @@ console.log('Local server security');
   const atest = async (name, fn) => { try { await fn(); console.log(`  ok  ${name}`); } catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); } };
 
   await atest('accepts the control panel (same origin, JSON)', async () => assert.equal((await call('/api/clear', { method: 'POST', headers: { ...json, Origin: self, 'Sec-Fetch-Site': 'same-origin' }, body: '{}' })).status, 200));
+  await atest('hiding messages needs real message ids', async () => {
+    assert.equal((await call('/api/hide', { method: 'POST', headers: json, body: JSON.stringify({ ids: [1, {}, 'a b'] }) })).status, 400);
+    assert.equal((await call('/api/hide', { method: 'POST', headers: json, body: JSON.stringify({ ids: ['test-1', 'yt.Cg0KC=='] }) })).status, 200);
+  });
   await atest('accepts tools that are not browsers', async () => assert.equal((await call('/api/clear', { method: 'POST', headers: json, body: '{}' })).status, 200));
   await atest('accepts a request without a body (remove a chat)', async () => assert.equal((await call('/api/sources/s-none', { method: 'DELETE', headers: { Origin: self } })).status, 200));
   await atest('blocks other websites (Origin)', async () => assert.equal((await call('/api/quit', { method: 'POST', headers: { ...json, Origin: 'https://evil.example' }, body: '{}' })).status, 403));
