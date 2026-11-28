@@ -78,11 +78,16 @@
     MG.refreshDeps();
     if ((section === 'appearance' || section === 'general') && !MG.st.settings.advanced.styleSeen) MG.save('advanced', 'styleSeen', true);
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(async () => {
-      const patch = { ...pending }; for (const k of Object.keys(pending)) delete pending[k];
-      try { await MG.update('PUT', '/api/settings', patch); emit('saved'); } catch (e) { MG.toast(e.message, true); }
-    }, 160);
+    saveTimer = setTimeout(flush, 160);
   };
+  /** Saves waiting changes now (before a button that needs them, like sending a test post). */
+  async function flush() {
+    clearTimeout(saveTimer);
+    if (!Object.keys(pending).length) return;
+    const patch = { ...pending }; for (const k of Object.keys(pending)) delete pending[k];
+    try { await MG.update('PUT', '/api/settings', patch); emit('saved'); } catch (e) { MG.toast(e.message, true); }
+  }
+  MG.flush = flush;
 
   /* ---------------- events between pages ---------------- */
   const listeners = {};
@@ -261,10 +266,19 @@
         // A saved key shows as dots: clicking the field selects them, so typing or pasting replaces the old key.
         ctl = h('input', { type: 'password', id, value: v, placeholder: f.placeholder || '', autocomplete: 'off',
           onfocus: e => { if (e.target.value.includes('•')) requestAnimationFrame(() => e.target.select()); },
-          onchange: e => { const val = e.target.value.trim(); MG.save(section, f.key, val); MG.toast(!val ? 'Removed' : val.includes('•') && !val.replaceAll('•', '') ? 'Nothing changed' : 'Saved. Mergio uses it from now on.'); } });
+          onchange: e => {
+            const val = e.target.value.trim();
+            const typed = val.replaceAll('•', '');
+            if (typed && f.check && f.check(typed) !== true) { MG.toast(f.check(typed), true); e.target.value = MG.st.settings[section][f.key]; return; }
+            MG.save(section, f.key, val); MG.toast(!val ? 'Removed' : val.includes('•') && !typed ? 'Nothing changed' : 'Saved. Mergio uses it from now on.');
+          } });
         break;
       default:
-        ctl = h('input', { type: 'text', id, value: v, placeholder: f.placeholder || '', onchange: e => MG.save(section, f.key, e.target.value) });
+        ctl = h('input', { type: 'text', id, value: v, placeholder: f.placeholder || '', onchange: e => {
+          const val = e.target.value;
+          if (val.trim() && f.check && f.check(val.trim()) !== true) { MG.toast(f.check(val.trim()), true); e.target.value = MG.st.settings[section][f.key]; return; }
+          MG.save(section, f.key, val);
+        } });
     }
     // Each setting is its own row: an icon, what it is (with a short line explaining it), and the control.
     const el = h('div', { class: `f ${f.wide ? 'wide' : ''}`, 'data-search': `${f.label} ${f.hint || ''} ${f.keywords || ''}`.toLowerCase() },
@@ -491,6 +505,7 @@
       if (d.op === 'settings') syncSettings(d.settings);
       if (d.op === 'update') emit('update', d.update);
       if (d.op === 'obsdocks') emit('obsdocks', d);
+      if (d.op === 'golive') emit('golive', d.golive);
       if (d.op === 'stats') { MG.st.stats = d.stats; emit('stats', d.stats); }
       if (d.op === 'overlays') { MG.overlays = { count: d.count, obs: d.obs, alerts: d.alerts || { count: 0, obs: false }, viewers: d.viewers || { count: 0, obs: false }, followers: d.followers || { count: 0, obs: false } }; if (d.count) MG.st.settings.advanced.overlaySeen = true; emit('overlays'); renderNav(); }
     };
