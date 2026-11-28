@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Bookmark, ImagePlus, Megaphone, Smartphone, Eye, EyeOff, Filter, Package, Pause, Pin, Speech, Timer, Volume2, Gift, Info, Languages, Layers, Lock, Palette, PanelRight, Radar, RefreshCw, Rows3, ShieldCheck, Smile, Sparkles, Target, Trophy, Zap, Plus, type LucideIcon } from 'lucide-react';
+import { Bookmark, Clapperboard, ImagePlus, Megaphone, Smartphone, Eye, EyeOff, Filter, Package, Pause, Pin, Speech, Timer, Volume2, Gift, Info, Languages, Layers, Lock, Palette, PanelRight, Radar, RefreshCw, Rows3, ShieldCheck, Smile, Sparkles, Target, Trophy, Zap, Plus, type LucideIcon } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { Eyebrow } from '../components/ui';
 import { readme } from '../lib/links';
 
 const ROW_A: [LucideIcon, string][] = [
-  [Megaphone, 'Go-live post to Discord'], [ImagePlus, 'WhatsApp status picture'], [Smartphone, 'Android app'], [Sparkles, 'Fifteen alert themes'], [Trophy, 'Gift rarity & levels'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'],
+  [Megaphone, 'Go-live post to Discord'], [Clapperboard, 'Live card with thumbnail'], [ImagePlus, 'WhatsApp status picture'], [Smartphone, 'Android app'], [Sparkles, 'Fifteen alert themes'], [Trophy, 'Gift rarity & levels'], [Radar, 'Auto-connect'], [Gift, 'Every alert type'], [Smile, '7TV, BTTV & FFZ emotes'],
   [Palette, 'Any Google Font'], [Eye, 'Viewer count'], [Target, 'Follower goals'], [Languages, 'Any language'], [Bookmark, 'Three saved looks'], [Package, 'Ten matching packs'], [Pause, 'Pause & skip alerts'],
 ];
 const ROW_B: [LucideIcon, string][] = [
@@ -61,7 +61,7 @@ export const FAQ: [string, string][] = [
   ['Will it slow down my stream?', 'No. Mergio uses under 100 MB of memory and almost no CPU while it waits, so your game and your stream keep the power.'],
   ['Does read aloud send my chat anywhere?', 'No. It uses the voices already on your computer and works offline. The audio is made on your PC and never saved or sent, and messages with a blocked word are never read.'],
   ['Is it safe?', "Mergio only listens on your own PC, and websites you visit can't talk to it. Your keys never reach the overlays, chat is always shown as plain text, and updates are checked before they install. The security policy, linked at the bottom of this page, has the details."],
-  ['Can it tell my Discord that I’m live?', 'Yes. When your stream starts, your own Discord bot posts your title and link, with every other place you’re live, in the channels you name, and pings the role you pick. It posts once per stream. For WhatsApp, Mergio makes a status picture with all your streams, and the phone app puts it on your status in one tap.'],
+  ['Can it tell my Discord that I’m live?', 'Yes. When your stream starts, your own Discord bot posts the link to the stream itself, with a card showing its thumbnail, the title, every place you’re live and your channel names. Pick the channels by name, ID or link, and the role to ping. It posts once per stream. For WhatsApp, Mergio makes a status picture with all your streams, and the phone app puts it on your status in one tap.'],
   ['Is there a phone app?', "Yes, for Android. It runs Mergio on the phone itself, so you can read your live chat anywhere, even with your PC off. Download the .apk from GitHub and open it on your phone. Kick doesn't work on the phone yet."],
   ['How do I update?', 'Mergio tells you when a new version is out. On Windows, one click downloads it, installs it and opens Mergio again.'],
 ];
