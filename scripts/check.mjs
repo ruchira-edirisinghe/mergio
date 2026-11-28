@@ -305,6 +305,11 @@ console.log('Go-live post');
   test('the share and status caption lists every stream, without a ping', () => {
     assert.equal(golive.textFor(post, g, 'caption', '<@&1>'), '🔴 Zenitron Gaming is LIVE now!\n\n🎬 GTA 6 IS HERE!!\n\n🔴 YouTube: https://www.youtube.com/watch?v=N1Jz8-GHx_I\n🟣 Twitch: https://www.twitch.tv/zen\n⚫ TikTok: https://www.tiktok.com/@zen/live');
   });
+  test('a live YouTube stream gets its own card, so its link stays plain and Discord adds no second card', () => {
+    const live = { ...post, thumb: 'N1Jz8-GHx_I' };
+    assert.ok(golive.textFor(live, g, 'discord', '').includes('🎬 GTA 6 IS HERE!!\n<https://www.youtube.com/watch?v=N1Jz8-GHx_I>'));
+    assert.ok(golive.textFor(live, g, 'caption').includes('🔴 YouTube: https://www.youtube.com/watch?v=N1Jz8-GHx_I'), 'the caption is for other apps: plain links');
+  });
   test('lines with nothing to show are left out', () => {
     assert.equal(golive.render('A {name}\n🎬 {title}\n{link}\n\n\n\n{others}\nB', { name: 'Z', title: '', link: 'L', others: '', mention: '' }), 'A Z\nL\n\nB');
     assert.equal(golive.render('{unknown} stays', { name: '' }), '{unknown} stays');
@@ -337,6 +342,8 @@ console.log('Go-live post');
   const fakeDiscord = http.createServer((req, res) => {
     let b = ''; req.on('data', c => (b += c)); req.on('end', () => {
       const json = x => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(x)); };
+      // YouTube's thumbnails: this stream has no live-sized one yet, so the next size is used
+      if (req.url.startsWith('/yt/')) { if (req.url === '/yt/vi/N1Jz8-GHx_I/maxresdefault.jpg') return res.end('jpeg'); res.statusCode = 404; return res.end(); }
       if (req.headers.authorization !== `Bot ${FAKE_BOT}`) { res.statusCode = 401; return json({ message: '401: Unauthorized', code: 0 }); }
       const u = req.url.replace(/^\/api/, '');
       if (u === '/users/@me') return json({ id: '900', username: 'Mergio Bot' });
@@ -350,6 +357,7 @@ console.log('Go-live post');
   });
   await new Promise(r => fakeDiscord.listen(0, '127.0.0.1', r));
   process.env.MERGIO_DISCORD_API = `http://127.0.0.1:${fakeDiscord.address().port}/api`;
+  process.env.MERGIO_YTIMG = `http://127.0.0.1:${fakeDiscord.address().port}/yt`;
   const { EventEmitter } = require('node:events');
   const conn = (info, extra = {}) => ({ liveInfo: () => info.current, channelName: '@zen', ...extra });
   const yt = { current: null }, tt = { current: null };
@@ -381,7 +389,14 @@ console.log('Go-live post');
     golive.check(); await wait(400);
     assert.equal(posted.length, 1);
     assert.ok(posted[0].content.startsWith('<@&30> 🚨'));
-    assert.ok(posted[0].content.includes('🎬 GTA 6\nhttps://www.youtube.com/watch?v=N1Jz8-GHx_I'));
+    assert.ok(posted[0].content.includes('🎬 GTA 6\n<https://www.youtube.com/watch?v=N1Jz8-GHx_I>'), 'the stream link, shown as a link');
+    const card = posted[0].embeds?.[0];
+    assert.equal(card?.url, 'https://www.youtube.com/watch?v=N1Jz8-GHx_I', 'the card opens the stream itself, not the channel');
+    assert.equal(card.title, 'GTA 6');
+    assert.equal(card.author.name, 'Zenitron Gaming is live on YouTube');
+    assert.equal(card.image.url, `${process.env.MERGIO_YTIMG}/vi/N1Jz8-GHx_I/maxresdefault.jpg`, 'the biggest thumbnail there is');
+    assert.equal(await golive.cardFor({ ...post, thumb: '' }), null, 'not started yet: no card');
+    assert.equal(await golive.cardFor({ ...post, platform: 'twitch', thumb: 'N1Jz8-GHx_I' }), null, 'only YouTube gets one');
     assert.ok(posted[0].content.includes('⚫ TikTok: <https://www.tiktok.com/@zen/live>'));
     assert.deepEqual(posted[0].allowed_mentions, { parse: [], roles: ['30'], users: [] });
     tt.current = { url: 'https://www.tiktok.com/@zen/live', title: '', videoId: '77', started: true };
@@ -406,6 +421,7 @@ console.log('Go-live post');
   settings.get().sources = saved;
   settings.update({ golive: { enabled: false, trigger: 'youtube', delay: 30, name: '', discordBotToken: '', discordTargets: [] } });
   delete process.env.MERGIO_DISCORD_API;
+  delete process.env.MERGIO_YTIMG;
   fakeDiscord.close();
 }
 
