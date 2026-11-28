@@ -1,4 +1,4 @@
-/* Mergio for Android: the phone's screens (Chat, Alerts, Viewers, Chats, Settings). Mergio's own server runs on
+/* Mergio for Android: the phone's screens (Chat, Alerts, Go live, Viewers, Chats, Settings). Mergio's own server runs on
    the phone and connects to the chats; this page talks to it like the OBS docks do. No user text is set as HTML.
    window.MergioAndroid (from the app) keeps the screen on, reads aloud, vibrates, opens links and shares the
    "I'm live" status picture (straight to WhatsApp status). */
@@ -80,7 +80,7 @@
   let events = [];       // gifts, subs and other alerts
   let update = null;
   const hidden = new Set();
-  let tab = (/^#(chat|alerts|viewers|chats|settings)$/.exec(location.hash) || [])[1] || 'chat';
+  let tab = (/^#(chat|alerts|live|viewers|chats|settings)$/.exec(location.hash) || [])[1] || 'chat';
   let newAlerts = 0;
 
   /* ---------- what the chat shows: the same filters as the overlay ---------- */
@@ -337,8 +337,8 @@
     scr.append(h('div', { class: 'big' },
       h('div', { class: 'bn' }, h('span', { class: `dot ${live ? 'live' : ''}` }), h('b', { text: fmt(stats.totalViewers || 0) }), h('small', { text: 'watching' })),
       h('div', { class: 'pk' }, h('small', { text: 'Peak' }), h('b', { text: fmt(stats.peakViewers || 0) }))));
-    scr.append(h('button', { class: `st-cta ${live ? 'on' : ''}`, type: 'button', onclick: liveSheet }, icon('whatsapp'),
-      h('div', {}, h('b', { text: 'Add to status' }), h('span', { text: live ? 'Put your live picture and stream links on your WhatsApp status' : 'Your live picture and stream links, for your WhatsApp status and chats' })),
+    scr.append(h('button', { class: `st-cta ${live ? 'on' : ''}`, type: 'button', onclick: () => go('live') }, icon('megaphone'),
+      h('div', {}, h('b', { text: live ? 'Tell everyone you’re live' : 'Go live tools' }), h('span', { text: 'Your status picture and stream links, for WhatsApp, Telegram and more' })),
       icon('chevron')));
     const sp = spark(stats.history); if (sp) scr.append(h('div', { class: 'sparkbox' }, sp, h('small', { text: 'Last hour' })));
     const plats = PLATFORMS.filter(p => per.has(p));
@@ -451,7 +451,7 @@
       setRow('bolt', 'Vibrate for alerts', null, sw(prefs.vibrate, v => { prefs.vibrate = v; savePrefs(); }, 'Vibrate for alerts'))));
 
     scr.append(h('div', { class: 'h', text: 'Going live' }), h('div', { class: 'card' },
-      setRow('image', 'Status picture', 'Your live picture and links for WhatsApp status, Telegram and more', h('button', { class: 'btn sm', type: 'button', onclick: liveSheet }, 'Open'))));
+      setRow('image', 'Status picture', 'Your live picture and links for WhatsApp status, Telegram and more', h('button', { class: 'btn sm', type: 'button', onclick: () => go('live') }, 'Open'))));
 
     scr.append(h('div', { class: 'h', text: 'Platform keys' }), h('div', { class: 'card' },
       colRow('key', 'TikTok sign key', 'Optional. Helps when TikTok is busy (eulerstream.com).', secretSetting('tiktokSignApiKey', 'Paste your key')),
@@ -478,7 +478,7 @@
   function showUpdate() {
     const b = $('banner'); b.textContent = '';
     if (nudge) b.append(h('div', { class: 'banner live' }, h('span', { class: 'dot live' }), h('span', { text: 'You’re live! Tell everyone.' }),
-      h('button', { class: 'btn sm primary', type: 'button', onclick: liveSheet }, 'Add to status'),
+      h('button', { class: 'btn sm primary', type: 'button', onclick: () => { nudge = false; showUpdate(); go('live'); } }, 'Tell everyone'),
       h('button', { class: 'btn sm ghost', type: 'button', onclick: () => { nudge = false; showUpdate(); } }, 'Not now')));
     if (!update?.available) return;
     b.append(h('div', { class: 'banner' }, icon('download'), h('span', { text: `Mergio ${update.latest} is out.` }), h('button', { class: 'btn sm primary', type: 'button', onclick: () => open(update.url) }, 'Download')));
@@ -508,9 +508,13 @@
     else if (!live && nudge) { nudge = false; showUpdate(); }
     wasLive = live;
   }
-  async function liveSheet() {
+  let liveRefresh = null; // the Go live screen's own redraw, while it is open
+  async function liveScreen(main) {
     if (nudge) { nudge = false; showUpdate(); }
+    const scr = h('div', { class: 'screen hub-screen' });
+    main.append(scr);
     if (!panel) await loadPanel();
+    if (!scr.isConnected) return;
     let data = null, drawing = Promise.resolve();
     const g = goLive();
     const canvas = h('canvas', { class: 'st-card', role: 'img', 'aria-label': 'Your status picture' });
@@ -521,13 +525,24 @@
       const o = goLive();
       if (data && window.MergioStatusCard) await MergioStatusCard.draw(canvas, data.preview.card, { theme: o.statusTheme, headline: o.statusHeadline, showTitle: o.statusTitle !== false, showHandles: o.statusHandles !== false });
     })().catch(() => {}));
+    const hub = h('div', { class: 'hub' });
+    const drawHub = () => {
+      const live = isLive();
+      hub.className = `hub ${live ? 'on' : ''}`;
+      hub.replaceChildren(...[h('span', { class: 'hub-ic' }, icon('live')),
+        h('div', { class: 'hub-tx' }, h('b', { text: live ? 'You’re live' : 'Not live yet' }),
+          h('span', { text: live ? 'Share your stream everywhere from here.' : 'Start your stream. Your title, thumbnail and links fill in by themselves.' })),
+        live ? h('div', { class: 'hub-vw' }, h('b', { text: fmt(stats.totalViewers || 0) }), h('small', { text: 'watching' })) : null].filter(Boolean));
+    };
     const load = async () => {
+      drawHub();
       try { data = await api('GET', '/api/golive'); } catch (e) { toast(e.message, true); return; }
       cap.textContent = caption();
       note.hidden = !!data.preview.live;
       note.textContent = 'You’re not live yet. Your stream’s title, thumbnail and links fill in when you go live.';
       await redraw();
     };
+    liveRefresh = load;
     const set = async (key, v) => { await save({ golive: { [key]: v } }); await load(); };
     const busy = async (btn, fn) => { btn.disabled = true; try { await drawing; if (data) await fn(); } finally { btn.disabled = false; } };
     const share = target => async e => busy(e.currentTarget, async () => {
@@ -565,7 +580,9 @@
     capEdit.addEventListener('change', () => set('caption', capEdit.value));
     const tog = (label, key) => h('div', { class: 'st-tog' }, h('span', { text: label }), sw(g[key] !== false, v => set(key, v), label));
 
-    sheet(() => [
+    scr.append(hub,
+      h('div', { class: 'h', text: 'Status picture' }),
+      h('div', { class: 'box' },
       h('div', { class: 'st-top' },
         h('div', { class: 'st-prev' }, canvas),
         h('div', { class: 'st-acts' },
@@ -586,21 +603,44 @@
         tog('Show the stream title', 'statusTitle'),
         tog('Show your channel names', 'statusHandles'),
         field('Caption', capEdit),
-        h('p', { class: 'st-hint', text: 'Fill-ins: {name} your name, {title} the stream title, {all} every stream’s link, {link} the main link, {others} the other links. A line with nothing to fill in is left out.' })),
-    ]);
+        h('p', { class: 'st-hint', text: 'Fill-ins: {name} your name, {title} the stream title, {all} every stream’s link, {link} the main link, {others} the other links. A line with nothing to fill in is left out.' }))));
     load();
   }
 
   /* ======================= tabs and wiring ======================= */
-  const TABS = [['chat', 'chat', 'Chat'], ['alerts', 'gift', 'Alerts'], ['viewers', 'raid', 'Viewers'], ['chats', 'link', 'Chats'], ['settings', 'settings', 'Settings']];
+  // The dock: four screens around the big Go live button. Settings is the gear at the top.
+  const TABS = [['chat', 'chat', 'Chat'], ['alerts', 'gift', 'Alerts'], ['live', 'live', 'Go live'], ['viewers', 'raid', 'Viewers'], ['chats', 'link', 'Chats']];
+  const tick = () => { try { if (prefs.vibrate) A?.vibrate?.(8); } catch { /* not in the app */ } };
+  /** Built once, so the highlight can slide from tab to tab; then only its state changes. */
   function tabs() {
-    const nav = $('tabs'); nav.textContent = '';
-    for (const [id, ic, label] of TABS) {
-      const b = h('button', { class: tab === id ? 'on' : '', type: 'button', 'aria-current': tab === id ? 'page' : null, onclick: () => go(id) }, icon(ic), label);
+    const nav = $('tabs');
+    if (!nav.querySelector('button')) {
+      nav.append(h('span', { class: 'ind', 'aria-hidden': 'true' }));
+      for (const [id, ic, label] of TABS) {
+        nav.append(h('button', { type: 'button', 'data-tab': id, class: id === 'live' ? 'golive' : '', onclick: () => { tick(); go(id); } },
+          h('span', { class: id === 'live' ? 'orb' : 'ico' }, icon(ic)), h('span', { class: 'lb', text: label })));
+      }
+    }
+    const at = TABS.findIndex(t => t[0] === tab);
+    nav.style.setProperty('--at', String(Math.max(0, at)));
+    nav.classList.toggle('free', at < 0 || tab === 'live'); // the highlight hides on Settings and under the Go live button
+    const live = isLive();
+    for (const b of nav.querySelectorAll('button')) {
+      const id = b.dataset.tab, on = id === tab;
+      b.classList.toggle('on', on);
+      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+      b.querySelector('.badge')?.remove();
+      if (id === 'live') {
+        b.classList.toggle('is-live', live);
+        b.querySelector('.lb').textContent = live ? 'LIVE' : 'Go live';
+        b.setAttribute('aria-label', live ? 'Go live: you’re live now' : 'Go live');
+      }
       if (id === 'alerts' && newAlerts && tab !== 'alerts') b.append(h('span', { class: 'badge', text: newAlerts > 99 ? '99+' : String(newAlerts) }));
       if (id === 'chats' && sources.some(s => s.state === 'error')) b.append(h('span', { class: 'badge', text: '!' }));
-      nav.append(b);
     }
+    const gear = $('gear');
+    gear.classList.toggle('on', tab === 'settings');
+    if (tab === 'settings') gear.setAttribute('aria-current', 'page'); else gear.removeAttribute('aria-current');
   }
   function go(id) {
     if (id === tab) { const s = document.querySelector('.screen, .feed'); s?.scrollTo({ top: id === 'chat' ? s.scrollHeight : 0, behavior: 'smooth' }); return; }
@@ -613,27 +653,32 @@
     const live = isLive();
     c.hidden = !sources.length;
     c.append(h('span', { class: `dot ${live ? 'live' : ''}` }), ...(live ? [icon('eye'), fmt(stats.totalViewers || 0)] : ['Offline']));
+    c.setAttribute('aria-label', live ? `Live, ${fmt(stats.totalViewers || 0)} watching` : 'Offline');
     c.onclick = () => go('viewers');
+    tabs();
   }
   /** keepScroll: redraw the alerts list without jumping to the top */
   function render(keepScroll) {
     const main = $('main');
     const old = main.querySelector('.screen');
     const top = keepScroll && old ? old.scrollTop : 0;
-    main.textContent = ''; feedEl = null;
+    main.textContent = ''; feedEl = null; liveRefresh = null;
     if (!S) { main.append(h('div', { class: 'empty' }, icon('chat'), h('span', { text: 'Starting Mergio…' }))); tabs(); return; }
     switch (tab) {
       case 'alerts': alertsScreen(main); break;
+      case 'live': liveScreen(main); break;
       case 'viewers': viewersScreen(main); break;
       case 'chats': chatsScreen(main); break;
       case 'settings': settingsScreen(main); break;
       default: chatScreen(main);
     }
-    if (top) main.querySelector('.screen').scrollTop = top;
+    if (top && main.querySelector('.screen')) main.querySelector('.screen').scrollTop = top;
     tabs(); liveChip();
   }
 
   document.documentElement.style.setProperty('--fs', `${prefs.fontSize}px`);
+  $('gear').append(icon('settings'));
+  $('gear').onclick = () => { tick(); go('settings'); };
   applyScreenOn();
   let retry = 0, first = true;
   async function loadPanel() { try { panel = await api('GET', '/api/state'); update = panel.update; showUpdate(); if (tab === 'settings') render(true); } catch { /* the live connection retries */ } }
@@ -648,9 +693,10 @@
         if (first) { first = false; loadPanel(); }
         render(); watchLive();
       } else if (d.op === 'msg') onMessage(d.msg);
-      else if (d.op === 'settings') { S = d.settings; if (tab !== 'settings') render(true); }
+      else if (d.op === 'settings') { S = d.settings; if (tab === 'live') liveRefresh?.(); else if (tab !== 'settings') render(true); }
       else if (d.op === 'sources') { sources = d.sources; if (tab === 'chats') render(true); else { tabs(); liveChip(); } watchLive(); }
       else if (d.op === 'stats') { stats = d.stats; liveChip(); if (tab === 'viewers') render(true); watchLive(); }
+      else if (d.op === 'golive' && tab === 'live') liveRefresh?.();
       else if (d.op === 'update') { update = d.update; showUpdate(); }
       else if (d.op === 'delete' && Array.isArray(d.ids)) {
         for (const id of d.ids) { hidden.add(id); const el = feedEl?.querySelector(`[data-id="${CSS.escape(id)}"]`); if (el) el.classList.add('hid'); }
