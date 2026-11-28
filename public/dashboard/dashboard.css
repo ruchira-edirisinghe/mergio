@@ -1292,12 +1292,25 @@ a.btn { text-decoration: none; }
 .gl-guide ol { margin: 10px 0 2px; padding-left: 20px; display: grid; gap: 6px; color: var(--muted); }
 .gl-guide b { color: var(--text); }
 .gl-guide a { color: #b9a8ff; }
-.gl-check { margin-top: 10px; padding: 10px 14px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--line); display: grid; gap: 4px; }
-.gl-check p { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
-.gl-check p svg { width: 14px; height: 14px; vertical-align: -2px; color: var(--ok); }
-.gl-check p.bad svg { color: var(--err); } .gl-check p.warn svg { color: var(--warn); }
-.gl-check b { color: var(--text); }
-.gl-check .btn-row { margin-top: 6px; }
+.gl-check { margin-top: 10px; padding: 12px; border-radius: 14px; background: var(--panel-2); border: 1px solid var(--line); display: grid; gap: 8px; }
+.gl-check b { color: var(--text); font-weight: 650; }
+.gl-bot { display: flex; align-items: center; gap: 10px; padding: 2px 2px 4px; }
+.gl-bot > svg { flex: none; width: 30px; height: 30px; padding: 7px; border-radius: 9px; background: rgba(34, 197, 94, .14); color: var(--ok); }
+.gl-bot > div { flex: 1; min-width: 0; }
+.gl-bot b, .gl-res b { display: block; overflow-wrap: anywhere; }
+.gl-bot span, .gl-res span { display: block; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.gl-sum { flex: none; padding: 4px 10px; border-radius: 99px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.gl-sum.ok { background: rgba(34, 197, 94, .14); color: #86efac; }
+.gl-sum.bad { background: rgba(245, 185, 66, .14); color: #fcd581; }
+.gl-servers { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 2px 2px; }
+.gl-srv { max-width: 100%; padding: 3px 10px; border-radius: 99px; background: var(--panel); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gl-res { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; align-items: start; padding: 9px 12px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--ok); }
+.gl-res > svg { width: 18px; height: 18px; margin-top: 1px; color: var(--ok); }
+.gl-res.bad { border-left-color: var(--err); }
+.gl-res.bad > svg { color: var(--err); }
+.gl-res.warn { border-left-color: var(--warn); }
+.gl-res.warn > svg { color: var(--warn); }
+.gl-check .btn-row { margin-top: 2px; }
 .gl-thead, .gl-trow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.1fr) 76px; gap: 8px; align-items: center; }
 .gl-thead { color: var(--faint); font-size: 12px; font-weight: 600; margin: 4px 0 6px; }
 .gl-targets { display: grid; gap: 8px; margin-bottom: 8px; }
