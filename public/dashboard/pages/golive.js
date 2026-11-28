@@ -215,7 +215,8 @@
           h('button', { class: 'link', onclick: () => { MG.save('golive', 'message', DEFAULT); MG.render(); } }, 'Use the standard message')),
         h('div', {},
           h('div', { class: 'gl-prev-h' }, h('b', { text: 'Preview' })),
-          h('pre', { class: 'gl-preview', id: 'gl-preview', text: shown(data?.preview?.discord) || '…' }))),
+          h('pre', { class: 'gl-preview', id: 'gl-preview', text: shown(data?.preview?.discord) || '…' }),
+          h('p', { class: 'hint', text: 'Live on YouTube? The post also gets a card with your stream’s title and thumbnail, linking to the stream.' }))),
       MG.subhead('Also live on', 'Your other channels, in the post, the caption and the status picture'),
       h('div', { class: 'fields' }, ...PLATS.filter(([p]) => have.has(p)).map(([p, name]) =>
         MG.field('golive', { key: LINK_KEY[p], icon: p, label: name, hint: MG.st.sources.find(x => x.platform === p)?.label || '', type: 'toggle' }))),
