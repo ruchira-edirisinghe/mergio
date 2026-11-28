@@ -152,17 +152,17 @@ function explain(e, t) {
 }
 
 /**
- * Posts content to one found channel. A real post is skipped when the bot already posted this stream's link
+ * Posts content (and any cards, Discord's "embeds") to one found channel. A real post is skipped when the bot already posted this stream's link
  * there, so Mergio on the PC and on the phone never post the same stream twice.
  */
-async function send(token, r, content, { url, test = false } = {}) {
+async function send(token, r, content, { url, test = false, embeds = [] } = {}) {
   const c = await look(token);
   try {
     if (!test && url) {
       const recent = await call(token, `/channels/${r.channel.id}/messages?limit=25`).catch(() => []);
       if (recent.some(m => m.author?.id === c.me.id && String(m.content || '').includes(url))) return { dest: 'discord', label: r.label, ok: true, skipped: true };
     }
-    const msg = await call(token, `/channels/${r.channel.id}/messages`, { method: 'POST', body: { content, allowed_mentions: test ? { parse: [] } : r.mention.allowed } });
+    const msg = await call(token, `/channels/${r.channel.id}/messages`, { method: 'POST', body: { content, ...(embeds.length ? { embeds } : {}), allowed_mentions: test ? { parse: [] } : r.mention.allowed } });
     // an announcement channel: publish it to the servers that follow it too (needs Manage Messages; fine without)
     if (r.channel.type === NEWS && !test) call(token, `/channels/${r.channel.id}/messages/${msg.id}/crosspost`, { method: 'POST' }).catch(() => {});
     return { dest: 'discord', label: r.label, ok: true, ...(r.warning ? { warning: r.warning } : {}) };
