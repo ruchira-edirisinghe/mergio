@@ -229,6 +229,28 @@ test('OBS docks are added to OBS settings without touching anything else', () =>
   assert.equal(readDocks(withDocks('[BasicWindow]\nX=1\n', 8787)).length, 3);
 });
 
+test('go-live post: links and tokens are checked, kept secret and never reach the overlays', () => {
+  const hook = 'https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnopqrstuvwxyz_-ABCDEFG';
+  let s = settings.update({ golive: { discordWebhook: hook, telegramBotToken: 'nope', telegramChat: '@my_channel', discordMention: '@everyone 123456789012345678', trigger: 'nope', delay: 9999 } });
+  assert.equal(s.golive.discordWebhook, hook);
+  assert.equal(s.golive.telegramBotToken, '', 'a token that does not look like one is not saved');
+  assert.equal(s.golive.telegramChat, '@my_channel');
+  assert.equal(s.golive.trigger, 'youtube');
+  assert.equal(s.golive.delay, 600);
+  assert.equal(settings.panelView().golive.discordWebhook, settings.MASK);
+  assert.equal('golive' in settings.publicView(), false);
+  s = settings.update({ golive: { discordWebhook: settings.MASK } });
+  assert.equal(s.golive.discordWebhook, hook, 'the mask sent back keeps the saved link');
+  s = settings.update({ golive: { discordWebhook: 'https://example.com/steal', discordMention: '@CUSTOMERS' } });
+  assert.equal(s.golive.discordWebhook, hook, 'only real Discord webhook links');
+  assert.equal(s.golive.discordMention, '@everyone 123456789012345678', 'role names cannot be pinged by a webhook');
+  s = settings.update({ golive: { message: '   ' } });
+  assert.equal(s.golive.message, settings.GOLIVE_MESSAGE);
+  settings.reset();
+  assert.equal(settings.get().golive.discordWebhook, hook, 'reset all keeps the go-live post');
+  settings.update({ golive: { discordWebhook: '', telegramChat: '', discordMention: '', delay: 30 } });
+});
+
 console.log('Android app');
 test('the phone screens script parses', () => { new Function(readFileSync(join(root, 'public/phone/phone.js'), 'utf8')); });
 test('the phone entry point only starts what the phone needs', () => {

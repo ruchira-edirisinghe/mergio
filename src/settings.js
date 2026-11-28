@@ -4,9 +4,15 @@ const path = require('node:path');
 const { DATA_DIR, log } = require('./util');
 
 const FILE = path.join(DATA_DIR, 'config.json');
-// Tokens and keys: the control panel only ever gets MASK back, never the saved value.
-const SECRETS = ['tiktokSignApiKey', 'facebookAccessToken', 'youtubeApiKey'];
+// Tokens, keys and private links, by section: the control panel only ever gets MASK back, never the saved value.
+const SECRETS = {
+  advanced: ['tiktokSignApiKey', 'facebookAccessToken', 'youtubeApiKey'],
+  golive: ['discordWebhook', 'telegramBotToken', 'slackWebhook', 'webhookUrl'],
+};
 const MASK = '•'.repeat(12);
+
+// The go-live post. {others} is the "Also live on" list; a line whose placeholders are all empty is left out.
+const GOLIVE_MESSAGE = '{mention} 🚨\n\n🔴 {name} is now LIVE!\n\n🎬 {title}\n{link}\n\n{others}';
 
 /** Every overlay/app option with its default. The dashboard renders its form from SCHEMA (public/dashboard). */
 const DEFAULTS = {
@@ -149,6 +155,20 @@ const DEFAULTS = {
   kick: { messages: true, subs: true, giftSubs: true, hosts: true, rewards: true, kicksGifts: true, follows: true },
   tiktok: { messages: true, joins: true, gifts: true, likes: true, follows: true, shares: false, subs: true, minGiftDiamonds: 0 },
   facebook: { messages: true },
+  golive: {
+    enabled: false,             // post a "going live" message when the stream starts
+    trigger: 'youtube',         // youtube | twitch | kick | tiktok | facebook | any: which going live starts the post
+    delay: 30,                  // seconds to wait first, so the other platforms (and Facebook's link) are up too
+    name: '',                   // the name in the post ('' = the channel's name)
+    message: GOLIVE_MESSAGE,
+    linkYoutube: true, linkTwitch: true, linkKick: true, linkTiktok: true, linkFacebook: true, // listed under "Also live on"
+    discordWebhook: '',         // a channel's webhook link (Discord: Edit channel > Integrations > Webhooks)
+    discordMention: '',         // @everyone, @here or role ids, pinged in the Discord post only
+    telegramBotToken: '',       // a bot from @BotFather that is an admin of the channel or group
+    telegramChat: '',           // @channelname or the chat's number
+    slackWebhook: '',           // a Slack incoming webhook link
+    webhookUrl: '',             // any other app (Zapier, Make, n8n, IFTTT…): gets the post as JSON
+  },
   advanced: { configVersion: 3, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', youtubeApiKey: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
   sources: [],
   templates: { chat: [null, null, null], alerts: [null, null, null], viewers: [null, null, null], followers: [null, null, null] },
@@ -200,6 +220,7 @@ const RANGES = {
   followers: { fontSize: [16, 90], goalStep: [1, 1e6, true], goalYoutube: [0, 1e9, true], goalTwitch: [0, 1e9, true], goalKick: [0, 1e9, true],
     goalTiktok: [0, 1e9, true], goalFacebook: [0, 1e9, true], goalTotal: [0, 1e9, true] },
   tiktok: { minGiftDiamonds: [0, 100000, true] },
+  golive: { delay: [0, 600, true] },
 };
 const SOUND_TYPES = ['chime', 'coin', 'levelup', 'arcade', 'soft', 'fanfare', 'sparkle'];
 const CHOICES = {
@@ -213,8 +234,19 @@ const CHOICES = {
   viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'], numberFormat: ['full', 'short'] },
   followers: { style: ['panel', 'line', 'cards', 'neon', 'bars'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
   twitch: { sharedChat: ['show', 'highlight', 'hide'] },
+  golive: { trigger: ['youtube', 'twitch', 'kick', 'tiktok', 'facebook', 'any'] },
 };
 const COLOR = /^#[\da-f]{6}$/i;
+// Where a go-live post may be sent. A link or token that doesn't look right keeps the one saved before.
+const GOLIVE_FORMAT = {
+  discordWebhook: /^https:\/\/(?:(?:canary|ptb)\.)?discord(?:app)?\.com\/api\/(?:v\d+\/)?webhooks\/\d{5,30}\/[\w-]{20,200}$/,
+  telegramBotToken: /^\d{5,15}:[\w-]{30,80}$/,
+  telegramChat: /^(?:@[A-Za-z][\w]{3,63}|-?\d{1,20})$/,
+  slackWebhook: /^https:\/\/hooks\.slack\.com\/(?:services|workflows|triggers)\/[\w/-]{10,300}$/,
+  webhookUrl: /^https?:\/\/[^\s"<>]{4,500}$/,
+  discordMention: /^(?:(?:@everyone|@here|<@&?\d{5,30}>|\d{5,30})(?:[\s,]+|$))*$/,
+};
+const GOLIVE_MAX = 1800; // Discord takes 2000 letters per message; leave room for the links
 const FONT = /^[\p{L}\p{N} _.-]{0,80}$/u; // a font name: letters, numbers, spaces (it ends up in CSS and a Google Fonts link)
 
 /** Keeps every setting of s valid; prev holds the values to fall back to (the ones saved before). */
@@ -235,6 +267,14 @@ function validate(s, prev = DEFAULTS) {
     }
     if (!FONT.test(s[sec].font)) s[sec].font = FONT.test(prev[sec].font) ? prev[sec].font : DEFAULTS[sec].font;
   }
+  const g = s.golive;
+  for (const [k, re] of Object.entries(GOLIVE_FORMAT)) {
+    g[k] = String(g[k]).trim();
+    if (g[k] && !re.test(g[k])) g[k] = re.test(prev.golive[k]) ? prev.golive[k] : '';
+  }
+  g.name = g.name.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 80);
+  g.message = g.message.replace(/\r\n?/g, '\n').slice(0, GOLIVE_MAX);
+  if (!g.message.trim()) g.message = GOLIVE_MESSAGE;
   return s;
 }
 
@@ -317,14 +357,15 @@ function update(patch) {
   // The panel sends the mask back when a token field wasn't really changed: keep the saved token then.
   // A key typed or pasted after the mask ("••••NEWKEY") is the new key. Real tokens and keys are plain ASCII,
   // so anything else is ignored.
-  const adv = patch?.advanced;
-  if (adv && typeof adv === 'object') {
-    for (const k of SECRETS) {
-      if (typeof adv[k] !== 'string') continue;
-      const typed = adv[k].replaceAll(MASK[0], '').trim();
-      if (!typed && adv[k].includes(MASK[0])) delete adv[k];
-      else if (/[^\x20-\x7e]/.test(typed)) delete adv[k];
-      else adv[k] = typed;
+  for (const [sec, keys] of Object.entries(SECRETS)) {
+    const part = patch?.[sec];
+    if (!part || typeof part !== 'object') continue;
+    for (const k of keys) {
+      if (typeof part[k] !== 'string') continue;
+      const typed = part[k].replaceAll(MASK[0], '').trim();
+      if (!typed && part[k].includes(MASK[0])) delete part[k];
+      else if (/[^\x20-\x7e]/.test(typed)) delete part[k];
+      else part[k] = typed;
     }
   }
   const templates = current.templates; // saved looks only change through template()
@@ -362,22 +403,26 @@ function template(action, type, slot, name) {
 
 function reset(section) {
   if (section && Object.hasOwn(DEFAULTS, section) && section !== 'sources' && section !== 'templates') current[section] = structuredClone(DEFAULTS[section]);
-  else current = { ...structuredClone(DEFAULTS), sources: current.sources, advanced: current.advanced, templates: current.templates };
+  // a full reset is about the look: chats, keys, saved looks and the go-live post (with its links) stay
+  else current = { ...structuredClone(DEFAULTS), sources: current.sources, advanced: current.advanced, templates: current.templates, golive: current.golive };
   save();
   return current;
 }
 
 /** Overlay-facing view: never leaks tokens to browser sources. */
 function publicView(s = current) {
-  const { advanced, sources, ...rest } = s;
+  const { advanced, sources, golive, ...rest } = s;
   return rest;
 }
 
 /** Control-panel view: everything, but a saved token shows as MASK (so the panel knows one is set). */
 function panelView(s = current) {
-  const advanced = { ...s.advanced };
-  for (const k of SECRETS) if (advanced[k]) advanced[k] = MASK;
-  return { ...s, advanced };
+  const out = { ...s };
+  for (const [sec, keys] of Object.entries(SECRETS)) {
+    out[sec] = { ...s[sec] };
+    for (const k of keys) if (out[sec][k]) out[sec][k] = MASK;
+  }
+  return out;
 }
 
-module.exports = { DEFAULTS, FILE, MASK, get, update, reset, save, template, publicView, panelView };
+module.exports = { DEFAULTS, FILE, MASK, GOLIVE_MESSAGE, get, update, reset, save, template, publicView, panelView };
