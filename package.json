@@ -12,6 +12,7 @@
     "icons": "node scripts/gen-icons.mjs",
     "build": "node scripts/build.mjs",
     "package": "node scripts/package.mjs",
+    "android": "node scripts/android.mjs",
     "check": "node scripts/check.mjs"
   },
   "keywords": [
