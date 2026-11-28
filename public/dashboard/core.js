@@ -462,6 +462,7 @@
       if (d.op === 'delete' && Array.isArray(d.ids)) { for (const id of d.ids) MG.hidden.add(id); emit('hidden', d.ids); }
       if (d.op === 'settings') syncSettings(d.settings);
       if (d.op === 'update') emit('update', d.update);
+      if (d.op === 'obsdocks') emit('obsdocks', d);
       if (d.op === 'stats') { MG.st.stats = d.stats; emit('stats', d.stats); }
       if (d.op === 'overlays') { MG.overlays = { count: d.count, obs: d.obs, alerts: d.alerts || { count: 0, obs: false }, viewers: d.viewers || { count: 0, obs: false }, followers: d.followers || { count: 0, obs: false } }; if (d.count) MG.st.settings.advanced.overlaySeen = true; emit('overlays'); renderNav(); }
     };
