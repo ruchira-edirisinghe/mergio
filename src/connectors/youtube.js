@@ -10,6 +10,13 @@ const argb = n => {
   return `#${[(n >> 16) & 255, (n >> 8) & 255, n & 255].map(x => x.toString(16).padStart(2, '0')).join('')}`;
 };
 const simple = t => (t ? t.simpleText ?? (t.runs || []).map(r => r.text ?? r.emoji?.emojiId ?? '').join('') : '');
+const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+/** "Tom &amp; Jerry&#39;s" -> "Tom & Jerry's" (page titles come HTML-escaped). */
+const unescapeHtml = s => s.replace(/&(#x[\da-f]+|#\d+|\w+);/gi, (m, e) => {
+  if (e[0] !== '#') return ENTITIES[e.toLowerCase()] ?? m;
+  const n = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : Number(e.slice(1));
+  return n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : m;
+});
 
 function runsToParts(runs = []) {
   const parts = [];
@@ -58,7 +65,15 @@ class YouTubeConnector extends Connector {
     const canon = /<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([\w-]{11})"/.exec(html);
     const title = /<meta name="title" content="([^"]*)"/.exec(html);
     if (title) this.channelName = t.startsWith('@') ? t : this.channelName;
+    // the stream's title, and whether it has really started (a scheduled stream has a page and a chat too)
+    this.liveTitle = canon && title ? unescapeHtml(title[1]) : '';
+    this.liveNow = canon ? /"isLiveNow":true/.test(html) : false;
     return canon ? canon[1] : null;
+  }
+
+  /** The live stream's link and title, for the go-live alert. */
+  liveInfo() {
+    return this.videoId ? { url: `https://www.youtube.com/watch?v=${this.videoId}`, title: this.liveTitle || '', videoId: this.videoId, started: this.liveNow !== false } : null;
   }
 
   async run() {
@@ -67,6 +82,7 @@ class YouTubeConnector extends Connector {
       this.setState('connecting', 'Looking for the live stream…');
       const videoId = await this.resolveVideoId();
       if (!videoId) {
+        this.videoId = null;
         this.setState('waiting', 'Not live right now. Checking again every 30s.');
         return this.later(() => this.run(), 30000);
       }
@@ -197,4 +213,4 @@ function contOf(c) {
   return { token: d?.continuation, timeout: d?.timeoutMs };
 }
 
-module.exports = { YouTubeConnector };
+module.exports = { YouTubeConnector, unescapeHtml };

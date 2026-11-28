@@ -51,24 +51,33 @@ class FacebookConnector extends Connector {
       this.page = { id: page.id, name: page.name || slug };
       this.channelName = this.page.name;
     }
-    const res = await this.api(`${this.page.id}/live_videos`, `broadcast_status=${encodeURIComponent('["LIVE"]')}&fields=id,title,status&limit=1`);
+    const res = await this.api(`${this.page.id}/live_videos`, `broadcast_status=${encodeURIComponent('["LIVE"]')}&fields=id,title,status,permalink_url&limit=1`);
     const live = (res.data || []).find(v => !v.status || v.status === 'LIVE');
     this.attempt = 0;
     if (!live) {
       this.setState('waiting', `${this.page.name} is not live right now. Checking again in ${LOOK_EVERY / 1000}s.`);
       return this.later(() => this.run(), LOOK_EVERY);
     }
-    this.watch(live.id, live.title);
+    this.watch(live.id, live.title, live.permalink_url);
   }
 
   /** Starts reading the comments of one live video. */
-  watch(videoId, title) {
+  watch(videoId, title, permalink) {
     this.videoId = videoId;
+    this.liveTitle = title || '';
+    // Facebook answers with a link without the host ("/123/videos/456")
+    this.liveUrl = /^\/[\w./-]+$/.test(permalink || '') ? `https://www.facebook.com${permalink}` : `https://www.facebook.com/watch/live/?v=${encodeURIComponent(videoId)}`;
     this.seen = new Set();
     this.primed = false;
     this.checkedAt = 0; // look up the viewer count straight away
     this.setState('live', `Connected${title ? ' to "' + title + '"' : ''}`);
     this.poll();
+  }
+
+  /** The live video's link and title, for the go-live alert (null while the Page isn't live). */
+  liveInfo() {
+    if (this.state === 'live' && this.videoId) return { url: this.liveUrl, title: this.liveTitle || '', videoId: this.videoId, started: true };
+    return null;
   }
 
   async poll() {
