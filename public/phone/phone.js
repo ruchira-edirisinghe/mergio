@@ -438,7 +438,14 @@
         h('button', { class: 'btn sm ghost', type: 'button', onclick: () => open('https://github.com/ruchira-edirisinghe/mergio') }, icon('external'), 'GitHub'))));
     main.append(scr);
   }
-  const open = url => { if (A?.openUrl) A.openUrl(url); else window.open(url, '_blank', 'noopener'); };
+  // only GitHub links (the project page and release downloads) ever open from here
+  const LINK_HOSTS = ['github.com', 'objects.githubusercontent.com', 'release-assets.githubusercontent.com'];
+  const open = url => {
+    let u;
+    try { u = new URL(url); } catch { return; }
+    if (u.protocol !== 'https:' || !LINK_HOSTS.includes(u.hostname)) return;
+    if (A?.openUrl) A.openUrl(u.href); else window.open(u.href, '_blank', 'noopener');
+  };
 
   /* ---------- updates: the app can't install itself, so it links to the download ---------- */
   function showUpdate() {
@@ -482,7 +489,8 @@
     const top = keepScroll && old ? old.scrollTop : 0;
     main.textContent = ''; feedEl = null;
     if (!S) { main.append(h('div', { class: 'empty' }, icon('chat'), h('span', { text: 'Starting Mergio…' }))); tabs(); return; }
-    ({ chat: chatScreen, alerts: alertsScreen, viewers: viewersScreen, chats: chatsScreen, settings: settingsScreen })[tab](main);
+    const screens = new Map([['chat', chatScreen], ['alerts', alertsScreen], ['viewers', viewersScreen], ['chats', chatsScreen], ['settings', settingsScreen]]);
+    (screens.get(tab) || chatScreen)(main);
     if (top) main.querySelector('.screen').scrollTop = top;
     tabs(); liveChip();
   }
