@@ -41,6 +41,25 @@
  },
  "releases": [
   {
+   "tag": "v1.8.0",
+   "date": "2026-11-28T13:20:02Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.8.0",
+   "notes": [
+    {
+     "title": "Tell Discord you're live, by itself",
+     "text": "A new **Go-live post** page posts your stream's title and link, with your other channels under *Also live on*, in the Discord channels you name, the moment you go live. Type the server, channel and role by name (like `@CUSTOMERS`) and it pings them. It posts once per stream, even with Mergio open on your PC and your phone. Discord only lets bots post for you, so the page walks you through making your own free bot (about 3 minutes, once)."
+    },
+    {
+     "title": "Your live picture for WhatsApp status",
+     "text": "A 9:16 status picture with your stream's thumbnail, LIVE NOW, your name, the title and every channel you're live on, plus a caption with all your links. Pick the background and headline, then share it to WhatsApp, Telegram, Facebook or X, copy it or save the picture."
+    },
+    {
+     "title": "Add to status from your phone",
+     "text": "In the phone app, one tap on **Add to status** opens WhatsApp's status screen with the picture and caption ready. When you go live, a banner offers it, and it's under *Viewers* any time. It can also go to WhatsApp chats, Telegram or any other app, or be saved in your Pictures."
+    }
+   ]
+  },
+  {
    "tag": "v1.7.1",
    "date": "2026-11-28T09:07:18Z",
    "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.7.1",

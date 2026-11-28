@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { BellRing, Filter, Smartphone, Speech, WifiOff, type LucideIcon } from 'lucide-react';
+import { BellRing, Filter, ImagePlus, Smartphone, Speech, WifiOff, type LucideIcon } from 'lucide-react';
 import { Reveal } from '../components/Reveal';
 import { PillLink, Eyebrow } from '../components/ui';
 import { DOWNLOADS, readme } from '../lib/links';
@@ -8,6 +8,7 @@ const POINTS: [LucideIcon, string, string][] = [
   [WifiOff, 'No PC needed', 'Mergio runs on the phone itself. Leave the PC off and the chat still comes in.'],
   [Filter, 'The same chat as your overlay', 'YouTube, Twitch, TikTok and Facebook together, with your filters, alerts and viewer counts.'],
   [Speech, 'Hands free', 'Read messages aloud, buzz for gifts and keep the screen on while you stream.'],
+  [ImagePlus, 'Add to status', 'When you go live, one tap puts your live picture and every stream link on your WhatsApp status.'],
 ];
 
 const android = DOWNLOADS.find(d => d.id === 'android')!;
@@ -53,7 +54,7 @@ export function Phone() {
         style={{ backgroundImage: 'radial-gradient(at 0% 0%, rgba(124,77,255,.18) 0, transparent 45%), radial-gradient(at 100% 100%, rgba(255,45,143,.14) 0, transparent 50%)' }}>
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,.8fr)] lg:gap-16">
           <Reveal variant="left">
-            <Eyebrow><span className="inline-flex items-center gap-2"><Smartphone className="h-4 w-4" />New in 1.7.1</span></Eyebrow>
+            <Eyebrow><span className="inline-flex items-center gap-2"><Smartphone className="h-4 w-4" />New in 1.8: Add to status</span></Eyebrow>
             <h2 className="mb-5 text-4xl font-medium leading-tight md:text-5xl/none" style={{ letterSpacing: '-0.03em' }}>Your chat,<br /><span className="text-white/55">in your pocket.</span></h2>
             <p className="mb-8 max-w-lg text-lg text-white/70">Mergio for Android shows every live chat on your phone. Read it from the couch, the kitchen or the street.</p>
             <ul className="mb-9 space-y-5">
