@@ -37,8 +37,14 @@ class KickConnector extends Connector {
     if (this.state !== 'live') return;
     const ch = await curlJson(`https://kick.com/api/v2/channels/${encodeURIComponent(this.source.target)}`);
     if (!ch || ch.message) return;
+    this.liveTitle = ch.livestream?.session_title || '';
     this.setViewers(ch.livestream ? Number(ch.livestream.viewer_count) || 0 : null);
     this.setFollowers(ch.followers_count ?? ch.followersCount);
+  }
+
+  /** The chat connects whether or not you stream: you're live while Kick reports a viewer count. */
+  liveInfo() {
+    return this.state === 'live' && this.viewers != null ? { url: `https://kick.com/${this.source.target}`, title: this.liveTitle || '', started: true } : null;
   }
 
   stop() {

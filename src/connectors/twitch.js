@@ -83,11 +83,17 @@ class TwitchConnector extends Connector {
     if (this.state !== 'live') return;
     const res = await fetch(GQL, {
       method: 'POST', headers: { 'Client-Id': GQL_CLIENT, 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ query: `query{user(login:${JSON.stringify(this.source.target)}){stream{viewersCount}}}` }),
+      body: JSON.stringify({ query: `query{user(login:${JSON.stringify(this.source.target)}){stream{viewersCount title}}}` }),
       signal: AbortSignal.timeout(10000),
     });
     const stream = (await res.json())?.data?.user?.stream;
+    this.liveTitle = stream?.title || '';
     this.setViewers(stream ? Number(stream.viewersCount) || 0 : null);
+  }
+
+  /** The chat connects whether or not you stream: you're live while Twitch reports a viewer count. */
+  liveInfo() {
+    return this.state === 'live' && this.viewers != null ? { url: `https://www.twitch.tv/${this.source.target}`, title: this.liveTitle || '', started: true } : null;
   }
 
   connect() {

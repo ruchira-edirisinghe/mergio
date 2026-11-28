@@ -71,6 +71,16 @@ class YouTubeConnector extends Connector {
     return canon ? canon[1] : null;
   }
 
+  /** Looks at the stream's page again: has a scheduled stream started yet, and what is its title now? */
+  async refreshLive() {
+    if (!this.videoId) return null;
+    const html = await fetchText(`https://www.youtube.com/watch?v=${this.videoId}&hl=en`, { headers: { Cookie: COOKIE } });
+    const title = /<meta name="title" content="([^"]*)"/.exec(html);
+    if (title) this.liveTitle = unescapeHtml(title[1]);
+    this.liveNow = /"isLiveNow":true/.test(html);
+    return this.liveInfo();
+  }
+
   /** The live stream's link and title, for the go-live alert. */
   liveInfo() {
     return this.videoId ? { url: `https://www.youtube.com/watch?v=${this.videoId}`, title: this.liveTitle || '', videoId: this.videoId, started: this.liveNow !== false } : null;
