@@ -65,16 +65,18 @@ function render(template, vars) {
 function textFor(post, g, dest, mention = '') {
   const others = ORDER.filter(p => p !== post.platform && post.links[p]);
   // On Discord <link> stops the extra link previews, so only the stream itself gets a big card. A YouTube stream
-  // gets Mergio's own card (see cardFor), so its link is kept plain too, or Discord would add a second one.
+  // gets Mergio's own card (see cardFor) with every live link in it, so its link is kept plain too, or Discord
+  // would add a second card, and the "Also live on" list is left to the card.
+  const card = dest === 'discord' && hasCard(post);
   const wrap = url => (dest === 'discord' ? `<${url}>` : url);
-  const link = dest === 'discord' && hasCard(post) ? wrap(post.url) : post.url;
+  const link = card ? wrap(post.url) : post.url;
   const own = p => (p === post.platform ? link : wrap(post.links[p]));
   const line = p => `${DOTS[p]} ${NAMES[p]}: ${own(p)}`;
   const all = ORDER.filter(p => post.links[p]);
   const vars = Object.fromEntries([
     ['mention', dest === 'discord' ? mention : ''],
     ['name', post.name], ['title', post.title], ['link', link], ['platform', NAMES[post.platform] || ''],
-    ['others', others.length ? ['Also live on:', ...others.map(line)].join('\n') : ''],
+    ['others', others.length && !card ? ['Also live on:', ...others.map(line)].join('\n') : ''],
     ['all', all.map(line).join('\n')],
     ...ORDER.map(p => [p, post.links[p] ? own(p) : '']),
   ]);
@@ -84,17 +86,27 @@ function textFor(post, g, dest, mention = '') {
 /** A YouTube stream that has started gets a card with its thumbnail; Discord's own preview of a live link often has none. */
 const hasCard = post => post.platform === 'youtube' && !!post.thumb && !!post.url;
 
-/** The Discord card for a YouTube stream: the title linking to the stream, the stream's thumbnail, YouTube red. */
-async function cardFor(post) {
-  if (!hasCard(post)) return null;
+/**
+ * The Discord card for a YouTube stream, without its picture: who is live, the title linking to the stream,
+ * every live link, and under the thumbnail the channel names. YouTube red.
+ */
+function cardBody(post) {
+  const live = ORDER.filter(p => post.links[p]);
+  const tags = live.filter(p => post.handles?.[p]).map(p => `${DOTS[p]} ${post.handles[p]}`);
   return {
     color: 0xff0000,
     author: { name: (post.name ? `${post.name} is live on YouTube` : 'Live on YouTube').slice(0, 256) },
     title: (post.title || 'Watch the stream').slice(0, 256),
     url: post.url,
-    image: { url: await thumbUrl(post.thumb) },
-    timestamp: new Date().toISOString(),
+    description: live.map(p => `${DOTS[p]} ${NAMES[p]}: ${post.links[p]}`).join('\n').slice(0, 4000),
+    ...(tags.length ? { footer: { text: tags.join('  ·  ').slice(0, 2000) } } : {}),
   };
+}
+
+/** The card a post gets on Discord, with the stream's biggest thumbnail. */
+async function cardFor(post) {
+  if (!hasCard(post)) return null;
+  return { ...cardBody(post), image: { url: await thumbUrl(post.thumb) }, timestamp: new Date().toISOString() };
 }
 
 /** Where posts go by themselves: the Discord channels, once the bot's token and a channel are filled in. */
@@ -316,9 +328,12 @@ async function viewFull() {
   const src = previewSource(g);
   const post = await buildPost(src?.id, { test: true });
   const live = !!post.info?.started;
+  const card = post.platform === 'youtube' && !!post.url;
   const ping = g.discordTargets[0]?.ping ? discord.mentionFor(g.discordTargets[0].ping).text || g.discordTargets[0].ping : '';
   return { ...view(), preview: {
-    discord: textFor(post, g, 'discord', ping), caption: textFor(post, g, 'caption'), url: post.url, live,
+    // the post as it goes out when the stream starts: a YouTube stream gets the card (without its thumbnail until then)
+    discord: textFor(card ? { ...post, thumb: post.thumb || 'not-live-yet' } : post, g, 'discord', ping), caption: textFor(post, g, 'caption'), url: post.url, live,
+    discordCard: card ? { ...cardBody(post), image: post.thumb ? { url: `/api/golive/thumb?id=${post.thumb}` } : null } : null,
     // what the status picture shows
     card: { name: post.name, title: live ? post.title : '', platforms: ORDER.filter(p => post.links[p]).map(p => ({ platform: p, handle: post.handles[p] || '' })),
       thumb: post.thumb ? `/api/golive/thumb?id=${post.thumb}` : '' },
