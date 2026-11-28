@@ -489,8 +489,13 @@
     const top = keepScroll && old ? old.scrollTop : 0;
     main.textContent = ''; feedEl = null;
     if (!S) { main.append(h('div', { class: 'empty' }, icon('chat'), h('span', { text: 'Starting Mergio…' }))); tabs(); return; }
-    const screens = new Map([['chat', chatScreen], ['alerts', alertsScreen], ['viewers', viewersScreen], ['chats', chatsScreen], ['settings', settingsScreen]]);
-    (screens.get(tab) || chatScreen)(main);
+    switch (tab) {
+      case 'alerts': alertsScreen(main); break;
+      case 'viewers': viewersScreen(main); break;
+      case 'chats': chatsScreen(main); break;
+      case 'settings': settingsScreen(main); break;
+      default: chatScreen(main);
+    }
     if (top) main.querySelector('.screen').scrollTop = top;
     tabs(); liveChip();
   }
