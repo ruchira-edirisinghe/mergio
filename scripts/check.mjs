@@ -229,6 +229,13 @@ test('OBS docks are added to OBS settings without touching anything else', () =>
   assert.equal(readDocks(withDocks('[BasicWindow]\nX=1\n', 8787)).length, 3);
 });
 
+console.log('Android app');
+test('the phone screens script parses', () => { new Function(readFileSync(join(root, 'public/phone/phone.js'), 'utf8')); });
+test('the phone entry point only starts what the phone needs', () => {
+  const src = readFileSync(join(root, 'src/phone.js'), 'utf8');
+  for (const no of ['obsdocks', 'autostart', 'openBrowser', 'protectDataDir']) assert.ok(!src.includes(no), no);
+});
+
 console.log('Connections');
 test('Twitch is live again after a reconnect to the same channel', () => {
   const { TwitchConnector } = require(join(root, 'src/connectors/twitch.js'));
@@ -325,6 +332,13 @@ console.log('Local server security');
     assert.match(h['content-security-policy'], /frame-ancestors 'none'/);
     assert.equal(h['x-frame-options'], 'DENY');
     assert.equal(h['x-content-type-options'], 'nosniff');
+  });
+  await atest('the Android app screens (/phone) have the strict CSP and cannot be framed', async () => {
+    const { status, headers: h } = await call('/phone');
+    assert.equal(status, 200);
+    assert.match(h['content-security-policy'], /script-src 'self'(;|$)/);
+    assert.match(h['content-security-policy'], /frame-ancestors 'none'/);
+    assert.equal(h['x-frame-options'], 'DENY');
   });
   await atest('overlay has a CSP and can still be embedded', async () => {
     const { headers: h } = await call('/overlay');

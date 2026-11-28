@@ -75,6 +75,7 @@ Get the file for your computer from the [**latest release**](https://github.com/
 | **Mac** (Apple silicon) | `Mergio-macos-arm64.dmg` | Drag to Applications |
 | **Ubuntu, Debian, Mint…** | `Mergio-linux-x64.deb` | `sudo apt install ./Mergio-linux-x64.deb` |
 | **Any other Linux** | `Mergio-linux-x64.tar.gz` | Unpack and run `./install.sh` |
+| **Android phone** | `Mergio-android-arm64.apk` | Chat on your phone, no PC needed ([more](#mergio-on-your-phone-android)) |
 
 The Windows installer explains each step: what it installs, where and why. If Windows says *"Windows protected your PC"*, click **More info → Run anyway** (Mergio is free, so it isn't code-signed).
 
@@ -161,6 +162,23 @@ To keep all of this inside OBS, open **Add to OBS → OBS docks** and press **In
 <div align="center"><img src="docs/guide/06-live-chat.png" alt="The Live chat page with platform filters" width="820"></div>
 
 🎉 **You're all set.** Turn on **Settings → Start Mergio with Windows** so it's always ready.
+
+## Mergio on your phone (Android)
+
+Mergio for Android shows every live chat on your phone. It connects to YouTube, Twitch, TikTok and Facebook **by itself**, with the same connections as the desktop app, so it works without your PC and without anything in between.
+
+1. On your phone, open the [latest release](https://github.com/ruchira-edirisinghe/mergio/releases/latest) and download `Mergio-android-arm64.apk` (older phones: `Mergio-android-armv7.apk`).
+2. Open the file. Android asks to allow installs from your browser the first time: allow it, then press **Install**.
+3. Open Mergio, go to **Chats** and paste your channel links (the same ones as on the desktop app).
+
+What it has:
+
+- **Chat**: every chat in one list, with profile pictures, badges, emotes and gifts. Tap a platform to hide it. Tap a message to **copy** it, **hide** it or **mute** that person.
+- **Alerts**: gifts, subs, Super Chats, follows and raids with totals and your top supporters. **Viewers**: your live viewer count per platform, the peak and the last hour.
+- **Settings**: show or hide joins and TikTok likes, hide `!commands`, highlight your name, muted people and blocked words, text size, and the TikTok sign key and Facebook Page token.
+- **Phone extras**: keep the screen on, **read aloud** (alerts only, or every message) with the phone's own voice, and a sound or a buzz for alerts.
+
+Mergio keeps the chats connected while it's in the background (you see a "connected to your chats" notification; **Stop** there closes it). Its settings are separate from the desktop app's. Kick doesn't work on the phone yet: Kick blocks apps that aren't a browser (the desktop app gets around this with `curl`). The app is only on GitHub, not in the Play Store, and updates the same way: when a new version is out, Mergio shows a **Download** button.
 
 ## Good to know
 
@@ -249,6 +267,7 @@ npm install
 npm start            # or: npm run dev (restarts when you edit files)
 npm run build        # one executable in dist/
 npm run package      # installers for this system in dist/release
+npm run android      # the Android app in dist/release (needs JDK 17, the Android SDK, NDK 27.3 and CMake 3.22.1)
 ```
 
 How it works, the message format, the local API and how to add a platform are in [docs/DEVELOPERS.md](docs/DEVELOPERS.md). Bug reports, ideas and pull requests are welcome; please open an issue first for bigger changes.

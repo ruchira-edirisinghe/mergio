@@ -129,6 +129,9 @@ function curlJson(url, body) {
     if (body !== undefined) args.push('-H', 'Content-Type: application/json', '-X', 'POST', '--data-binary', JSON.stringify(body));
     args.push(url);
     execFile(bin, args, { maxBuffer: 8 * 1024 * 1024, windowsHide: true }, (err, stdout) => {
+      // curl is missing or can't be started here (Android, some Linux installs): try Node's own fetch instead.
+      // (A curl that ran and failed has a number as its code; one that couldn't start has ENOENT, EACCES…)
+      if (typeof err?.code === 'string') return resolve(fetchJson(url, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }));
       if (err) return reject(new Error(`curl failed: ${redact(err.message)}`));
       try { resolve(JSON.parse(stdout)); } catch { reject(new Error(`Unexpected response from ${new URL(url).host}`)); }
     });

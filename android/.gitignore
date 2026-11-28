@@ -1,0 +1,11 @@
+# built or downloaded by scripts/android.mjs
+.gradle/
+build/
+app/build/
+app/.cxx/
+app/libnode/
+app/src/main/assets/nodejs-project/
+local.properties
+keystore.properties
+*.jks
+*.keystore

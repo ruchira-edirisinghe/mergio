@@ -340,12 +340,13 @@ function createServer(manager, { onQuit }) {
       }
       if ((m = /^\/avatar\/default\/(.{1,300})$/.exec(p))) return send(res, 200, defaultAvatar(m[1]), 'image/svg+xml', { 'Cache-Control': 'max-age=86400' });
 
-      if (p === '/' ) return send(res, 302, '', 'text/plain', { Location: '/dashboard' });
+      if (p === '/' ) return send(res, 302, '', 'text/plain', { Location: process.env.MERGIO_PHONE ? '/phone' : '/dashboard' });
       const file = p === '/overlay' || p === '/overlay/' ? 'overlay/index.html'
         : p === '/alerts' || p === '/alerts/' ? 'alerts/index.html'
         : p === '/viewers' || p === '/viewers/' ? 'viewers/index.html'
         : p === '/followers' || p === '/followers/' ? 'followers/index.html'
         : /^\/dock\/(chat|gifts|viewers)\/?$/.test(p) ? 'dock/index.html' // the OBS docks are one page that reads its name from the link
+        : p === '/phone' || p === '/phone/' ? 'phone/index.html' // the Android app's screens
         : p === '/manifest.webmanifest' ? 'dashboard/manifest.webmanifest'
         : p === '/sw.js' ? 'dashboard/sw.js' // served from the root so it can look after /dashboard
         : p === '/favicon.ico' ? 'shared/app-192.png' // browsers (and OBS) ask for it even when a page names its icon
@@ -397,7 +398,7 @@ function createServer(manager, { onQuit }) {
       broadcast({ op: 'overlays', ...overlayStatus() });
       if (client === 'followers') followers.refresh(false);
     }
-    const dock = client === 'dock';
+    const dock = client === 'dock' || client === 'phone'; // both list gifts and alerts too
     ws.send(JSON.stringify({ op: 'hello', version: pkg.version, settings: settings.publicView(), sources: manager.list(), recent: manager.recent.slice(dock ? -150 : -60), stats: stats.view(), live, ...(dock ? { events: manager.events.slice(-200) } : {}) }));
   });
   manager.on('message', m => broadcast({ op: 'msg', msg: m }));
