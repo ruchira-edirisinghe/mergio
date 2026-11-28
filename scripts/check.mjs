@@ -229,26 +229,29 @@ test('OBS docks are added to OBS settings without touching anything else', () =>
   assert.equal(readDocks(withDocks('[BasicWindow]\nX=1\n', 8787)).length, 3);
 });
 
-test('go-live post: links and tokens are checked, kept secret and never reach the overlays', () => {
-  const hook = 'https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnopqrstuvwxyz_-ABCDEFG';
-  let s = settings.update({ golive: { discordWebhook: hook, telegramBotToken: 'nope', telegramChat: '@my_channel', discordMention: '@everyone 123456789012345678', trigger: 'nope', delay: 9999 } });
-  assert.equal(s.golive.discordWebhook, hook);
-  assert.equal(s.golive.telegramBotToken, '', 'a token that does not look like one is not saved');
-  assert.equal(s.golive.telegramChat, '@my_channel');
+// a made-up bot token, built from pieces so it never looks like a real one in the source
+const FAKE_BOT = ['MTIzNDU2Nzg5MDEyMzQ1Njc4OQ', 'GaBcDe', 'abcdefghijklmnopqrstuvwxyz0123456789AB'].join('.');
+test('go-live post: the bot token is checked and kept secret, channels are cleaned, nothing reaches the overlays', () => {
+  const token = FAKE_BOT;
+  let s = settings.update({ golive: { discordBotToken: token, discordTargets: [{ server: ' Zenitron  Gaming ', channel: '#live-alerts', ping: '@CUSTOMERS' }, { server: 'x' }, 'bad'], trigger: 'nope', delay: 9999, statusTheme: 'nope', statusHeadline: '' } });
+  assert.equal(s.golive.discordBotToken, token);
+  assert.deepEqual(s.golive.discordTargets, [{ server: 'Zenitron Gaming', channel: 'live-alerts', ping: '@CUSTOMERS' }]);
   assert.equal(s.golive.trigger, 'youtube');
   assert.equal(s.golive.delay, 600);
-  assert.equal(settings.panelView().golive.discordWebhook, settings.MASK);
+  assert.equal(s.golive.statusTheme, 'thumb');
+  assert.equal(s.golive.statusHeadline, 'LIVE NOW');
+  assert.equal(settings.panelView().golive.discordBotToken, settings.MASK);
   assert.equal('golive' in settings.publicView(), false);
-  s = settings.update({ golive: { discordWebhook: settings.MASK } });
-  assert.equal(s.golive.discordWebhook, hook, 'the mask sent back keeps the saved link');
-  s = settings.update({ golive: { discordWebhook: 'https://example.com/steal', discordMention: '@CUSTOMERS' } });
-  assert.equal(s.golive.discordWebhook, hook, 'only real Discord webhook links');
-  assert.equal(s.golive.discordMention, '@everyone 123456789012345678', 'role names cannot be pinged by a webhook');
-  s = settings.update({ golive: { message: '   ' } });
+  s = settings.update({ golive: { discordBotToken: settings.MASK } });
+  assert.equal(s.golive.discordBotToken, token, 'the mask sent back keeps the saved token');
+  s = settings.update({ golive: { discordBotToken: 'not-a-token' } });
+  assert.equal(s.golive.discordBotToken, token, 'something that is not a token is not saved');
+  s = settings.update({ golive: { message: '   ', caption: '' } });
   assert.equal(s.golive.message, settings.GOLIVE_MESSAGE);
+  assert.equal(s.golive.caption, settings.GOLIVE_CAPTION);
   settings.reset();
-  assert.equal(settings.get().golive.discordWebhook, hook, 'reset all keeps the go-live post');
-  settings.update({ golive: { discordWebhook: '', telegramChat: '', discordMention: '', delay: 30 } });
+  assert.equal(settings.get().golive.discordBotToken, token, 'reset all keeps the go-live post');
+  settings.update({ golive: { discordBotToken: '', discordTargets: [], delay: 30 } });
 });
 
 console.log('Android app');
@@ -291,23 +294,28 @@ test('a follower error goes away when the lookup works again', () => {
 console.log('Go-live post');
 {
   const golive = require(join(root, 'src/golive.js'));
-  const g = { ...settings.get().golive, discordMention: '@everyone 123456789012345678' };
+  const discord = require(join(root, 'src/discord.js'));
+  const g = { ...settings.get().golive };
   const post = { platform: 'youtube', url: 'https://www.youtube.com/watch?v=N1Jz8-GHx_I', title: 'GTA 6 IS HERE!!', name: 'Zenitron Gaming',
     links: { youtube: 'https://www.youtube.com/watch?v=N1Jz8-GHx_I', twitch: 'https://www.twitch.tv/zen', tiktok: 'https://www.tiktok.com/@zen/live' } };
-  test('the post has the title, the stream link and the other channels', () => {
-    const t = golive.textFor(post, g, 'telegram');
-    assert.equal(t, '🚨\n\n🔴 Zenitron Gaming is now LIVE!\n\n🎬 GTA 6 IS HERE!!\nhttps://www.youtube.com/watch?v=N1Jz8-GHx_I\n\nAlso live on:\n🟣 Twitch: https://www.twitch.tv/zen\n⚫ TikTok: https://www.tiktok.com/@zen/live');
+  test('the Discord post has the ping, the title, the stream link and the other channels', () => {
+    const t = golive.textFor(post, g, 'discord', '<@&42424242>');
+    assert.equal(t, '<@&42424242> 🚨\n\n🔴 Zenitron Gaming is now LIVE!\n\n🎬 GTA 6 IS HERE!!\nhttps://www.youtube.com/watch?v=N1Jz8-GHx_I\n\nAlso live on:\n🟣 Twitch: <https://www.twitch.tv/zen>\n⚫ TikTok: <https://www.tiktok.com/@zen/live>');
   });
-  test('Discord pings, and only the stream link gets a preview', () => {
-    const t = golive.textFor(post, g, 'discord');
-    assert.ok(t.startsWith('@everyone <@&123456789012345678> 🚨'));
-    assert.ok(t.includes('\nhttps://www.youtube.com/watch?v=N1Jz8-GHx_I\n'));
-    assert.ok(t.includes('Twitch: <https://www.twitch.tv/zen>'));
-    assert.deepEqual(golive.discordMention('@here <@&555555> 1234567 junk').allowed, { parse: ['everyone'], roles: ['555555', '1234567'], users: [] });
+  test('the share and status caption lists every stream, without a ping', () => {
+    assert.equal(golive.textFor(post, g, 'caption', '<@&1>'), '🔴 Zenitron Gaming is LIVE now!\n\n🎬 GTA 6 IS HERE!!\n\n🔴 YouTube: https://www.youtube.com/watch?v=N1Jz8-GHx_I\n🟣 Twitch: https://www.twitch.tv/zen\n⚫ TikTok: https://www.tiktok.com/@zen/live');
   });
   test('lines with nothing to show are left out', () => {
     assert.equal(golive.render('A {name}\n🎬 {title}\n{link}\n\n\n\n{others}\nB', { name: 'Z', title: '', link: 'L', others: '', mention: '' }), 'A Z\nL\n\nB');
     assert.equal(golive.render('{unknown} stays', { name: '' }), '{unknown} stays');
+  });
+  test('servers, channels and roles are found by name', () => {
+    assert.equal(discord.pick([{ name: '📢┃live-alerts' }, { name: 'general' }], '#Live Alerts').name, '📢┃live-alerts');
+    assert.equal(discord.pick([{ name: 'live-a' }, { name: 'live-b' }], 'live'), null, 'two channels match a part: no guess');
+    const m = discord.mentionFor('@everyone, @Customers, 555555, @Nobody', [{ id: '1', name: '@everyone' }, { id: '77777', name: 'CUSTOMERS' }]);
+    assert.equal(m.text, '@everyone <@&77777> <@&555555>');
+    assert.deepEqual(m.allowed, { parse: ['everyone'], roles: ['77777', '555555'], users: [] });
+    assert.deepEqual(m.missing, ['@Nobody']);
   });
   test('channel links from the chats', () => {
     assert.equal(golive.channelLink({ platform: 'youtube', target: '@zen' }), 'https://www.youtube.com/@zen/live');
@@ -323,49 +331,82 @@ console.log('Go-live post');
     assert.equal(golive.isNew({ keys: [], open: false, platform: '' }, 'twitch', ''), true);
   });
 
-  // the whole way: a stream starts, the post reaches a webhook once, and a second platform doesn't post again
+  // the whole way, against a stand-in Discord: a stream starts, the bot posts once, a second platform doesn't post again
   const http = require('node:http');
-  const got = [];
-  const hook = http.createServer((req, res) => { let b = ''; req.on('data', c => (b += c)); req.on('end', () => { got.push(JSON.parse(b)); res.end('ok'); }); });
-  await new Promise(r => hook.listen(0, '127.0.0.1', r));
+  const posted = [];
+  const fakeDiscord = http.createServer((req, res) => {
+    let b = ''; req.on('data', c => (b += c)); req.on('end', () => {
+      const json = x => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(x)); };
+      if (req.headers.authorization !== `Bot ${FAKE_BOT}`) { res.statusCode = 401; return json({ message: '401: Unauthorized', code: 0 }); }
+      const u = req.url.replace(/^\/api/, '');
+      if (u === '/users/@me') return json({ id: '900', username: 'Mergio Bot' });
+      if (u === '/users/@me/guilds') return json([{ id: '10', name: 'Zenitron Gaming' }]);
+      if (u === '/guilds/10/channels') return json([{ id: '20', name: '📢┃live-alerts', type: 0 }, { id: '21', name: 'general', type: 0 }, { id: '22', name: 'Voice', type: 2 }]);
+      if (u === '/guilds/10/roles') return json([{ id: '10', name: '@everyone' }, { id: '30', name: 'CUSTOMERS' }]);
+      if (u.startsWith('/channels/20/messages') && req.method === 'GET') return json(posted.map(p => ({ author: { id: '900' }, content: p.content })));
+      if (u === '/channels/20/messages' && req.method === 'POST') { posted.push(JSON.parse(b)); return json({ id: String(posted.length) }); }
+      res.statusCode = 404; json({ message: 'Unknown', code: 10003 });
+    });
+  });
+  await new Promise(r => fakeDiscord.listen(0, '127.0.0.1', r));
+  process.env.MERGIO_DISCORD_API = `http://127.0.0.1:${fakeDiscord.address().port}/api`;
   const { EventEmitter } = require('node:events');
   const conn = (info, extra = {}) => ({ liveInfo: () => info.current, channelName: '@zen', ...extra });
   const yt = { current: null }, tt = { current: null };
   const fake = Object.assign(new EventEmitter(), { running: new Map([['s-yt', conn(yt)], ['s-tt', conn(tt)]]) });
   const saved = settings.get().sources;
-  settings.update({ golive: { enabled: true, trigger: 'any', delay: 0, name: 'Zenitron Gaming', webhookUrl: `http://127.0.0.1:${hook.address().port}/hook` } });
-  settings.get().sources = [{ id: 's-yt', platform: 'youtube', target: '@zen', label: '@zen' }, { id: 's-tt', platform: 'tiktok', target: 'zen', label: '@zen' }];
+  settings.update({ golive: { enabled: true, trigger: 'any', delay: 0, name: 'Zenitron Gaming', discordBotToken: FAKE_BOT,
+    discordTargets: [{ server: 'zenitron gaming', channel: 'live-alerts', ping: '@CUSTOMERS' }, { server: 'Other server', channel: 'x', ping: '' }] } });
+  settings.get().sources = [{ id: 's-yt', platform: 'youtube', target: '@zen', label: '@zen' }, { id: 's-tt', platform: 'tiktok', target: 'zen', label: 'zen' }];
   golive.start(fake);
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const atest = async (name, fn) => { try { await fn(); console.log(`  ok  ${name}`); } catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); } };
-  await atest('posts when the stream starts, once', async () => {
+  await atest('the bot finds the channels by name and says what it cannot find', async () => {
+    const c = await discord.check(settings.get().golive.discordBotToken, settings.get().golive.discordTargets);
+    assert.equal(c.bot.name, 'Mergio Bot');
+    assert.ok(c.invite.includes('client_id=900'));
+    assert.equal(c.targets[0].ok, true);
+    assert.equal(c.targets[0].label, 'Zenitron Gaming › #📢┃live-alerts');
+    assert.equal(c.targets[1].ok, false);
+    assert.match(c.targets[1].error, /isn't in a server called “Other server”/);
+    assert.match((await discord.check('MTIz.bad.token-xxxxxxxxxxxxxxxxxxxxxxxx', [])).error, /token is wrong/);
+  });
+  await atest('posts when the stream starts, once, and pings the role by name', async () => {
     golive.check(); await wait(50);
-    assert.equal(got.length, 0, 'nothing is live yet');
+    assert.equal(posted.length, 0, 'nothing is live yet');
     yt.current = { url: 'https://www.youtube.com/watch?v=N1Jz8-GHx_I', title: 'GTA 6', videoId: 'N1Jz8-GHx_I', started: false };
     golive.check(); await wait(50);
-    assert.equal(got.length, 0, 'a scheduled stream that has not started');
+    assert.equal(posted.length, 0, 'a scheduled stream that has not started');
     yt.current = { ...yt.current, started: true };
-    golive.check(); await wait(300);
-    assert.equal(got.length, 1);
-    assert.equal(got[0].event, 'live');
-    assert.equal(got[0].title, 'GTA 6');
-    assert.equal(got[0].url, 'https://www.youtube.com/watch?v=N1Jz8-GHx_I');
-    assert.equal(got[0].links.tiktok, 'https://www.tiktok.com/@zen/live');
-    assert.ok(got[0].text.includes('Zenitron Gaming is now LIVE'));
+    golive.check(); await wait(400);
+    assert.equal(posted.length, 1);
+    assert.ok(posted[0].content.startsWith('<@&30> 🚨'));
+    assert.ok(posted[0].content.includes('🎬 GTA 6\nhttps://www.youtube.com/watch?v=N1Jz8-GHx_I'));
+    assert.ok(posted[0].content.includes('⚫ TikTok: <https://www.tiktok.com/@zen/live>'));
+    assert.deepEqual(posted[0].allowed_mentions, { parse: [], roles: ['30'], users: [] });
     tt.current = { url: 'https://www.tiktok.com/@zen/live', title: '', videoId: '77', started: true };
     golive.check(); golive.check(); await wait(300);
-    assert.equal(got.length, 1, 'TikTok joining the same stream does not post again');
-    assert.equal(golive.view().history.length, 1);
-    assert.equal(golive.view().history[0].results[0].ok, true);
+    assert.equal(posted.length, 1, 'TikTok joining the same stream does not post again');
+    const h = golive.view().history[0];
+    assert.equal(h.results.find(r => r.label.startsWith('Zenitron')).ok, true);
+    assert.equal(h.results.find(r => r.label.startsWith('Other')).ok, false);
   });
-  await atest('a test post says it is a test', async () => {
+  await atest('posting by hand skips a channel that already has this stream (PC and phone)', async () => {
+    const e = await golive.postNow();
+    assert.equal(posted.length, 1);
+    assert.equal(e.results.find(r => r.label.startsWith('Zenitron')).skipped, true);
+  });
+  await atest('a test post says it is a test and pings nobody', async () => {
     await golive.sendTest();
-    assert.equal(got.at(-1).event, 'test');
-    assert.ok(got.at(-1).title.startsWith('[Test]'));
+    assert.equal(posted.length, 2);
+    assert.ok(posted[1].content.includes('[Test]'));
+    assert.deepEqual(posted[1].allowed_mentions, { parse: [] });
+    assert.ok(!posted[1].content.includes('<@&'));
   });
   settings.get().sources = saved;
-  settings.update({ golive: { enabled: false, trigger: 'youtube', delay: 30, name: '', webhookUrl: '' } });
-  hook.close();
+  settings.update({ golive: { enabled: false, trigger: 'youtube', delay: 30, name: '', discordBotToken: '', discordTargets: [] } });
+  delete process.env.MERGIO_DISCORD_API;
+  fakeDiscord.close();
 }
 
 console.log('Local server security');

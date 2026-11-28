@@ -13,6 +13,7 @@ const followers = require('./followers');
 const obsdocks = require('./obsdocks');
 const tts = require('./tts');
 const golive = require('./golive');
+const discord = require('./discord');
 const { checkToken: checkFacebookToken } = require('./connectors/facebook');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
@@ -265,7 +266,15 @@ function createServer(manager, { onQuit }) {
         // go-live post: preview and history, a test post, posting by hand, and stopping the countdown
         if (p === '/api/golive' && req.method === 'GET') return send(res, 200, await golive.viewFull());
         if (p === '/api/golive/test' && req.method === 'POST') {
-          try { return send(res, 200, await golive.sendTest(body.to ? String(body.to) : undefined)); } catch (e) { return send(res, 400, { error: e.message }); }
+          try { return send(res, 200, await golive.sendTest()); } catch (e) { return send(res, 400, { error: e.message }); }
+        }
+        if (p === '/api/golive/discord/check' && req.method === 'POST') {
+          const g = settings.get().golive;
+          return send(res, 200, await discord.check(g.discordBotToken, g.discordTargets));
+        }
+        if (p === '/api/golive/thumb' && req.method === 'GET') {
+          const img = await golive.thumbnail(String(url.searchParams.get('id') || ''));
+          return img ? send(res, 200, img, 'image/jpeg', { 'Cache-Control': 'max-age=300' }) : send(res, 404, { error: 'No thumbnail' });
         }
         if (p === '/api/golive/post' && req.method === 'POST') {
           try { return send(res, 200, await golive.postNow()); } catch (e) { return send(res, 400, { error: e.message }); }

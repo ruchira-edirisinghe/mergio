@@ -7,14 +7,14 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const settings = require('./settings');
-const { DATA_DIR, UA, log, redact } = require('./util');
+const discord = require('./discord');
+const { DATA_DIR, log } = require('./util');
 
 const FILE = path.join(DATA_DIR, 'golive.json');
 const ORDER = ['youtube', 'twitch', 'facebook', 'tiktok', 'kick'];
 const NAMES = { youtube: 'YouTube', twitch: 'Twitch', kick: 'Kick', tiktok: 'TikTok', facebook: 'Facebook' };
 const DOTS = { youtube: '🔴', twitch: '🟣', kick: '🟢', tiktok: '⚫', facebook: '🔵' };
 const LINK_KEY = { youtube: 'linkYoutube', twitch: 'linkTwitch', kick: 'linkKick', tiktok: 'linkTiktok', facebook: 'linkFacebook' };
-const DESTS = ['discord', 'telegram', 'slack', 'webhook'];
 const QUIET_ENDS = 15 * 60e3;  // nothing live for this long: the stream is over, the next one gets a new post
 const LOOK_EVERY = 15e3;       // Twitch and Kick say they're live through their viewer count, which isn't an event
 const RECHECK = 30e3;          // a scheduled YouTube stream: look again this often until it starts
@@ -40,18 +40,6 @@ function channelLink(source, conn) {
   }
 }
 
-/** "@everyone 1234…" -> what Discord pings, and the allowed_mentions that let it ping only those. */
-function discordMention(raw) {
-  const roles = [], users = [], parse = [], out = [];
-  for (const tok of String(raw || '').split(/[\s,]+/).filter(Boolean)) {
-    let m;
-    if (tok === '@everyone' || tok === '@here') { out.push(tok); if (!parse.includes('everyone')) parse.push('everyone'); }
-    else if ((m = /^(?:<@&(\d{5,30})>|(\d{5,30}))$/.exec(tok))) { const id = m[1] || m[2]; roles.push(id); out.push(`<@&${id}>`); }
-    else if ((m = /^<@!?(\d{5,30})>$/.exec(tok))) { users.push(m[1]); out.push(`<@${m[1]}>`); }
-  }
-  return { text: out.join(' '), allowed: { parse, roles, users } };
-}
-
 /**
  * Fills the message template. A line whose placeholders (other than {mention} and {name}) are all empty is left
  * out, so "🎬 {title}" disappears when there is no title and {others} when there are no other channels.
@@ -69,103 +57,41 @@ function render(template, vars) {
 
 /**
  * Everything a post needs: { platform, url, title, name, links: { youtube: url, … } }.
- * dest changes the details: Discord pings and shows a preview of the stream link only.
+ * dest changes the details: on Discord the ping goes in and only the stream link gets a preview card.
  */
-function textFor(post, g, dest) {
+function textFor(post, g, dest, mention = '') {
   const others = ORDER.filter(p => p !== post.platform && post.links[p]);
   // On Discord <link> stops the extra link previews, so only the stream itself gets a big card.
   const wrap = url => (dest === 'discord' ? `<${url}>` : url);
-  // one fill-in per platform; the stream's own link keeps its preview on Discord
   const own = p => (p === post.platform ? post.url : wrap(post.links[p]));
+  const line = p => `${DOTS[p]} ${NAMES[p]}: ${own(p)}`;
+  const all = ORDER.filter(p => post.links[p]);
   const vars = Object.fromEntries([
-    ['mention', dest === 'discord' ? discordMention(g.discordMention).text : ''],
+    ['mention', dest === 'discord' ? mention : ''],
     ['name', post.name], ['title', post.title], ['link', post.url], ['platform', NAMES[post.platform] || ''],
-    ['others', others.length ? ['Also live on:', ...others.map(p => `${DOTS[p]} ${NAMES[p]}: ${wrap(post.links[p])}`)].join('\n') : ''],
+    ['others', others.length ? ['Also live on:', ...others.map(line)].join('\n') : ''],
+    ['all', all.map(line).join('\n')],
     ...ORDER.map(p => [p, post.links[p] ? own(p) : '']),
   ]);
-  return render(g.message, vars);
+  return render(dest === 'caption' ? g.caption : g.message, vars);
 }
 
-/** Which places a post goes to: the ones that are filled in. */
+/** Where posts go by themselves: the Discord channels, once the bot's token and a channel are filled in. */
 function destinations(g) {
-  return {
-    discord: !!g.discordWebhook,
-    telegram: !!(g.telegramBotToken && g.telegramChat),
-    slack: !!g.slackWebhook,
-    webhook: !!g.webhookUrl,
-  };
+  return { discord: !!(g.discordBotToken && g.discordTargets.length) };
 }
 
 /* ---------- sending ---------- */
 
-async function postJson(url, body) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'User-Agent': UA },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(15000),
-  });
-  const text = await res.text().catch(() => '');
-  if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status, body: text, retryAfter: Number(res.headers.get('retry-after')) || 0 });
-  return text;
-}
-
-/** What went wrong, in words the streamer can act on. */
-function explain(dest, e) {
-  let detail = '';
-  try { const j = JSON.parse(e.body); detail = j.description || j.message || ''; } catch { /* not json */ }
-  const s = e.status;
-  if (dest === 'discord') {
-    if (s === 401 || s === 404) return 'Discord says this webhook link was deleted or is wrong. Copy it again from the channel settings.';
-    if (s === 429) return 'Discord asked Mergio to slow down. Try again in a minute.';
-  }
-  if (dest === 'telegram') {
-    if (s === 401 || s === 404) return 'Telegram says the bot token is wrong. Copy it again from @BotFather.';
-    if (/chat not found/i.test(detail)) return "Telegram can't find that chat. Add the bot to the channel or group, then check the @name or number.";
-    if (/not enough rights|administrator|kicked|not a member/i.test(detail)) return 'Make the bot an admin of the channel (with permission to post), then try again.';
-  }
-  if (dest === 'slack' && (s === 403 || s === 404 || s === 410)) return 'Slack says this webhook link was removed or is wrong.';
-  if (e.name === 'TimeoutError') return `${NAMES_DEST[dest]} didn't answer in time.`;
-  if (!s) return `Couldn't reach ${NAMES_DEST[dest]}: ${redact(e.message)}`;
-  return `${NAMES_DEST[dest]} said no (${s}${detail ? ': ' + redact(detail).slice(0, 160) : ''}).`;
-}
-const NAMES_DEST = { discord: 'Discord', telegram: 'Telegram', slack: 'Slack', webhook: 'Your webhook' };
-
-/** Sends one post to one place. */
-function sendTo(dest, post, g) {
-  if (dest === 'discord') {
-    const m = discordMention(g.discordMention);
-    return postJson(g.discordWebhook, { content: textFor(post, g, 'discord'), allowed_mentions: m.allowed });
-  }
-  if (dest === 'telegram') {
-    return postJson(`https://api.telegram.org/bot${g.telegramBotToken}/sendMessage`, {
-      chat_id: g.telegramChat, text: textFor(post, g, 'telegram'),
-      link_preview_options: post.url ? { url: post.url, prefer_large_media: true } : { is_disabled: true },
-    });
-  }
-  if (dest === 'slack') return postJson(g.slackWebhook, { text: textFor(post, g, 'slack') });
-  return postJson(g.webhookUrl, {
-    event: post.test ? 'test' : 'live', name: post.name, title: post.title, platform: post.platform, url: post.url,
-    links: post.links, text: textFor(post, g, 'webhook'), at: new Date().toISOString(),
-  });
-}
-
-const sleep = ms => new Promise(r => setTimeout(r, ms).unref?.());
-
-/** Sends a post everywhere it should go; a place that is busy or down is tried again a few times. */
-async function sendAll(post, g, only) {
-  const on = destinations(g);
-  const list = DESTS.filter(d => on[d] && (!only || d === only));
-  return Promise.all(list.map(async dest => {
-    for (let attempt = 0; ; attempt++) {
-      try { await sendTo(dest, post, g); return { dest, ok: true }; }
-      catch (e) {
-        const retry = attempt < 2 && (!e.status || e.status === 429 || e.status >= 500);
-        if (!retry) { const error = explain(dest, e); log('golive', `${dest}: ${error}`); return { dest, ok: false, error }; }
-        await sleep(Math.min(60e3, (e.retryAfter || 5 * 3 ** attempt) * 1000));
-      }
-    }
-  }));
+/** Posts to every Discord channel in the list. Tests ping nobody. */
+async function sendAll(post, g) {
+  if (!destinations(g).discord) return [];
+  let found;
+  try { found = await discord.resolve(g.discordBotToken, g.discordTargets); }
+  catch (e) { return [{ dest: 'discord', label: 'Discord', ok: false, error: (await discord.check(g.discordBotToken, [])).error || e.message }]; }
+  return Promise.all(found.map(r => (r.ok
+    ? discord.send(g.discordBotToken, r, textFor(post, g, 'discord', post.test ? '' : r.mention.text), { url: post.url, test: post.test })
+    : { dest: 'discord', label: r.label, ok: false, error: r.error })));
 }
 
 /* ---------- when to post ---------- */
@@ -269,8 +195,20 @@ async function buildPost(sourceId, { test = false } = {}) {
     return c?.liveInfo?.()?.url || channelLink(s, c);
   };
   const links = Object.fromEntries(ORDER.map(p => [p, linkOf(p)]).filter(([, u]) => u));
+  // the channel names the status picture shows next to each logo
+  const handleOf = p => {
+    const s = sources.find(x => x.platform === p);
+    if (!s) return '';
+    if (p === 'facebook') return manager?.running.get(s.id)?.page?.name || s.label;
+    return p === 'youtube' || p === 'tiktok' ? (s.label.startsWith('@') ? s.label : `@${s.label}`) : s.label;
+  };
+  const handles = Object.fromEntries(Object.keys(links).map(p => [p, handleOf(p)]));
+  // the YouTube stream's thumbnail, for the status picture
+  const yt = sources.find(x => x.platform === 'youtube');
+  const ytLive = yt && manager?.running.get(yt.id)?.liveInfo?.();
+  const thumb = ytLive?.videoId && ytLive.started ? ytLive.videoId : '';
   const name = g.name || String(conn?.channelName || src?.label || '').replace(/^@/, '');
-  return { platform, url, title: info?.title || (test ? 'Your stream title shows here' : ''), name, links, info, test };
+  return { platform, url, title: info?.title || (test ? 'Your stream title shows here' : ''), name, links, handles, thumb, info, test };
 }
 
 async function fire(sourceId) {
@@ -287,14 +225,14 @@ async function fire(sourceId) {
   await deliver(post);
 }
 
-async function deliver(post, only) {
+async function deliver(post) {
   const g = settings.get().golive;
-  const results = await sendAll(post, g, only);
-  const entry = { at: Date.now(), test: !!post.test, platform: post.platform, title: post.title, url: post.url, text: textFor(post, g, 'share'), results };
+  const results = await sendAll(post, g);
+  const entry = { at: Date.now(), test: !!post.test, platform: post.platform, title: post.title, url: post.url, text: textFor(post, g, 'caption'), results };
   store.history.unshift(entry);
   store.history = store.history.slice(0, HISTORY);
   persist();
-  log('golive', `${post.test ? 'test ' : ''}post: ${results.map(r => `${r.dest} ${r.ok ? 'ok' : 'failed'}`).join(', ') || 'nowhere to send'}`);
+  log('golive', `${post.test ? 'test ' : ''}post: ${results.map(r => `${r.label} ${r.skipped ? 'already posted' : r.ok ? 'ok' : 'failed'}`).join(', ') || 'nowhere to send'}`);
   onChange(view());
   return entry;
 }
@@ -317,20 +255,19 @@ async function postNow() {
   const list = liveNow(g.trigger).filter(x => x.info.started);
   const pick = list[0] || liveNow('any').filter(x => x.info.started)[0];
   if (!pick) throw new Error("You're not live right now, so there's no stream link to post.");
-  if (!Object.values(destinations(g)).some(Boolean)) throw new Error('Add a place to post to first (Discord, Telegram, Slack or a webhook).');
+  if (!destinations(g).discord) throw new Error('Add your Discord bot and a channel first.');
   const post = await buildPost(pick.source.id);
   markPosted(pick.source.platform, list.length ? list : [pick]);
   return deliver(post);
 }
 
 /** A test post with your real links (and the real title when you're live), without pinging anyone. */
-async function sendTest(only) {
+async function sendTest() {
   const g = settings.get().golive;
-  if (only && !DESTS.includes(only)) throw new Error('Unknown place.');
-  if (!Object.values(destinations(g)).some(Boolean)) throw new Error('Add a place to post to first.');
+  if (!destinations(g).discord) throw new Error('Add your Discord bot and a channel first.');
   const post = await buildPost(previewSource(g)?.id, { test: true });
   post.title = `[Test] ${post.title}`;
-  return deliver(post, only);
+  return deliver(post);
 }
 
 function cancel() {
@@ -356,8 +293,14 @@ async function viewFull() {
   const g = settings.get().golive;
   const src = previewSource(g);
   const post = await buildPost(src?.id, { test: true });
-  if (!post.info) post.title = post.title || 'Your stream title shows here';
-  return { ...view(), preview: { discord: textFor(post, g, 'discord'), plain: textFor(post, g, 'share'), url: post.url, live: !!post.info?.started } };
+  const live = !!post.info?.started;
+  const ping = g.discordTargets[0]?.ping ? discord.mentionFor(g.discordTargets[0].ping).text || g.discordTargets[0].ping : '';
+  return { ...view(), preview: {
+    discord: textFor(post, g, 'discord', ping), caption: textFor(post, g, 'caption'), url: post.url, live,
+    // what the status picture shows
+    card: { name: post.name, title: live ? post.title : '', platforms: ORDER.filter(p => post.links[p]).map(p => ({ platform: p, handle: post.handles[p] || '' })),
+      thumb: post.thumb ? `/api/golive/thumb?id=${post.thumb}` : '' },
+  } };
 }
 
 function view() {
@@ -369,4 +312,16 @@ function view() {
   };
 }
 
-module.exports = { start, check, view, viewFull, postNow, sendTest, cancel, render, textFor, discordMention, channelLink, isNew, destinations };
+/** The YouTube stream's thumbnail (biggest there is), for the status picture: fetched here so the page can draw it. */
+async function thumbnail(id) {
+  if (!/^[\w-]{11}$/.test(id)) return null;
+  for (const name of ['maxresdefault_live.jpg', 'maxresdefault.jpg', 'hqdefault_live.jpg', 'hqdefault.jpg']) {
+    try {
+      const res = await fetch(`https://i.ytimg.com/vi/${id}/${name}`, { signal: AbortSignal.timeout(10000) });
+      if (res.ok) return Buffer.from(await res.arrayBuffer());
+    } catch { /* try the next size */ }
+  }
+  return null;
+}
+
+module.exports = { start, check, view, viewFull, postNow, sendTest, cancel, thumbnail, render, textFor, channelLink, isNew, destinations };
