@@ -1,6 +1,7 @@
 /* Mergio for Android: the phone's screens (Chat, Alerts, Viewers, Chats, Settings). Mergio's own server runs on
    the phone and connects to the chats; this page talks to it like the OBS docks do. No user text is set as HTML.
-   window.MergioAndroid (from the app) keeps the screen on, reads aloud, vibrates and opens links. */
+   window.MergioAndroid (from the app) keeps the screen on, reads aloud, vibrates, opens links and shares the
+   "I'm live" status picture (straight to WhatsApp status). */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -316,6 +317,9 @@
     scr.append(h('div', { class: 'big' },
       h('div', { class: 'bn' }, h('span', { class: `dot ${live ? 'live' : ''}` }), h('b', { text: fmt(stats.totalViewers || 0) }), h('small', { text: 'watching' })),
       h('div', { class: 'pk' }, h('small', { text: 'Peak' }), h('b', { text: fmt(stats.peakViewers || 0) }))));
+    scr.append(h('button', { class: `st-cta ${live ? 'on' : ''}`, type: 'button', onclick: liveSheet }, icon('whatsapp'),
+      h('div', {}, h('b', { text: 'Add to status' }), h('span', { text: live ? 'Put your live picture and stream links on your WhatsApp status' : 'Your live picture and stream links, for your WhatsApp status and chats' })),
+      icon('chevron')));
     const sp = spark(stats.history); if (sp) scr.append(h('div', { class: 'sparkbox' }, sp, h('small', { text: 'Last hour' })));
     const plats = PLATFORMS.filter(p => per.has(p));
     const total = plats.reduce((n, p) => n + (per.get(p) || 0), 0);
@@ -426,6 +430,9 @@
       sound,
       setRow('bolt', 'Vibrate for alerts', null, sw(prefs.vibrate, v => { prefs.vibrate = v; savePrefs(); }, 'Vibrate for alerts'))));
 
+    scr.append(h('div', { class: 'h', text: 'Going live' }), h('div', { class: 'card' },
+      setRow('image', 'Status picture', 'Your live picture and links for WhatsApp status, Telegram and more', h('button', { class: 'btn sm', type: 'button', onclick: liveSheet }, 'Open'))));
+
     scr.append(h('div', { class: 'h', text: 'Platform keys' }), h('div', { class: 'card' },
       colRow('key', 'TikTok sign key', 'Optional. Helps when TikTok is busy (eulerstream.com).', secretSetting('tiktokSignApiKey', 'Paste your key')),
       colRow('key', 'Facebook Page token', 'Needed for Facebook chat. Make it on the desktop app (Settings > Facebook) and paste it here.', secretSetting('facebookAccessToken', 'Paste the Page token'))));
@@ -450,12 +457,118 @@
   /* ---------- updates: the app can't install itself, so it links to the download ---------- */
   function showUpdate() {
     const b = $('banner'); b.textContent = '';
+    if (nudge) b.append(h('div', { class: 'banner live' }, h('span', { class: 'dot live' }), h('span', { text: 'You’re live! Tell everyone.' }),
+      h('button', { class: 'btn sm primary', type: 'button', onclick: liveSheet }, 'Add to status'),
+      h('button', { class: 'btn sm ghost', type: 'button', onclick: () => { nudge = false; showUpdate(); } }, 'Not now')));
     if (!update?.available) return;
     b.append(h('div', { class: 'banner' }, icon('download'), h('span', { text: `Mergio ${update.latest} is out.` }), h('button', { class: 'btn sm primary', type: 'button', onclick: () => open(update.url) }, 'Download')));
   }
   async function checkUpdate() {
     try { update = await api('POST', '/api/update/check', {}); showUpdate(); toast(update.available ? `Mergio ${update.latest} is out.` : 'You have the newest version.'); }
     catch (e) { toast(e.message, true); }
+  }
+
+  /* ======================= I'm live: the status picture and sharing ======================= */
+  // The same picture and caption as the control panel's Share & status (Mergio's go-live settings).
+  const THEMES = [['thumb', 'Stream'], ['neon', 'Neon'], ['sunset', 'Sunset'], ['ocean', 'Ocean'], ['mono', 'Mono']];
+  let nudge = false;      // just went live: the banner offers the status picture
+  let wasLive = null;
+  const goLive = () => panel?.settings?.golive || {};
+  const jpeg = canvas => canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+  const copyText = async text => { try { await navigator.clipboard.writeText(text); } catch { A?.copy?.(text); } };
+  function download(blob) {
+    const a = h('a', { href: URL.createObjectURL(blob), download: 'mergio-live.png' });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+  /** Going live shows the banner once (not when the app opens in the middle of a stream). */
+  function watchLive() {
+    const live = isLive();
+    if (wasLive === false && live) { nudge = true; showUpdate(); }
+    else if (!live && nudge) { nudge = false; showUpdate(); }
+    wasLive = live;
+  }
+  async function liveSheet() {
+    if (nudge) { nudge = false; showUpdate(); }
+    if (!panel) await loadPanel();
+    let data = null, drawing = Promise.resolve();
+    const g = goLive();
+    const canvas = h('canvas', { class: 'st-card', role: 'img', 'aria-label': 'Your status picture' });
+    const cap = h('div', { class: 'st-cap' });
+    const note = h('p', { class: 'st-note', hidden: true });
+    const caption = () => data?.preview?.caption || '';
+    const redraw = () => (drawing = (async () => {
+      const o = goLive();
+      if (data && window.MergioStatusCard) await MergioStatusCard.draw(canvas, data.preview.card, { theme: o.statusTheme, headline: o.statusHeadline, showTitle: o.statusTitle !== false, showHandles: o.statusHandles !== false });
+    })().catch(() => {}));
+    const load = async () => {
+      try { data = await api('GET', '/api/golive'); } catch (e) { toast(e.message, true); return; }
+      cap.textContent = caption();
+      note.hidden = !!data.preview.live;
+      note.textContent = 'You’re not live yet. Your stream’s title, thumbnail and links fill in when you go live.';
+      await redraw();
+    };
+    const set = async (key, v) => { await save({ golive: { [key]: v } }); await load(); };
+    const busy = async (btn, fn) => { btn.disabled = true; try { await drawing; if (data) await fn(); } finally { btn.disabled = false; } };
+    const share = target => async e => busy(e.currentTarget, async () => {
+      const text = caption();
+      await copyText(text);
+      if (A?.shareImage) {
+        const r = A.shareImage(jpeg(canvas), text, target);
+        if (r === 'missing') toast(target === 'telegram' ? 'Telegram isn’t on this phone.' : 'WhatsApp isn’t on this phone.', true);
+        else if (r !== 'ok') toast('Couldn’t share the picture.', true);
+        else if (target === 'status') toast('The caption is copied too. Paste it if WhatsApp leaves it out.');
+        return;
+      }
+      // opened in a browser: its share menu, else save the picture
+      const blob = await MergioStatusCard.blob(canvas);
+      const file = new File([blob], 'mergio-live.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) { try { await navigator.share({ files: [file], text }); } catch { /* closed */ } return; }
+      download(blob); toast('Picture saved and caption copied');
+    });
+    const savePic = e => busy(e.currentTarget, async () => {
+      if (A?.savePicture) { if (A.savePicture(jpeg(canvas))) toast('Saved in Pictures › Mergio'); else toast('Couldn’t save it on this phone. Use More apps instead.', true); return; }
+      download(await MergioStatusCard.blob(canvas)); toast('Picture saved');
+    });
+    const copyCap = async () => { await copyText(caption()); toast('Caption copied'); };
+
+    // what you can change (saved in Mergio's settings, the same as on the PC)
+    const field = (label, control) => h('label', { class: 'st-f' }, h('span', { text: label }), control);
+    const name = h('input', { type: 'text', placeholder: 'Like Zenitron Gaming', maxlength: '60', autocapitalize: 'words', 'aria-label': 'Your name' });
+    name.value = g.name || '';
+    name.addEventListener('change', () => set('name', name.value.trim()));
+    const head = h('input', { type: 'text', placeholder: 'LIVE NOW', maxlength: '30', autocapitalize: 'characters', 'aria-label': 'Headline' });
+    head.value = g.statusHeadline || 'LIVE NOW';
+    head.addEventListener('change', () => set('statusHeadline', head.value.trim()));
+    const capEdit = h('textarea', { rows: '5', spellcheck: 'false', 'aria-label': 'Caption' });
+    capEdit.value = g.caption || '';
+    capEdit.addEventListener('change', () => set('caption', capEdit.value));
+    const tog = (label, key) => h('div', { class: 'st-tog' }, h('span', { text: label }), sw(g[key] !== false, v => set(key, v), label));
+
+    sheet(() => [
+      h('div', { class: 'st-top' },
+        h('div', { class: 'st-prev' }, canvas),
+        h('div', { class: 'st-acts' },
+          h('h3', { text: 'Tell everyone you’re live' }),
+          h('button', { class: 'btn primary', type: 'button', onclick: share('status') }, icon('whatsapp'), 'Add to status'),
+          h('button', { class: 'btn', type: 'button', onclick: share('whatsapp') }, icon('whatsapp', 'wa'), 'WhatsApp chats'),
+          h('button', { class: 'btn', type: 'button', onclick: share('telegram') }, icon('telegram', 'tg'), 'Telegram'),
+          h('button', { class: 'btn', type: 'button', onclick: share('') }, icon('share'), 'More apps'))),
+      note,
+      cap,
+      h('div', { class: 'st-row' },
+        h('button', { class: 'btn sm', type: 'button', onclick: copyCap }, icon('copy'), 'Copy caption'),
+        h('button', { class: 'btn sm', type: 'button', onclick: savePic }, icon('download'), 'Save picture')),
+      h('details', { class: 'st-edit' }, h('summary', {}, icon('image'), 'Change the picture and caption'),
+        field('Your name', name),
+        field('Background', seg(THEMES, g.statusTheme || 'thumb', v => set('statusTheme', v))),
+        field('Headline', head),
+        tog('Show the stream title', 'statusTitle'),
+        tog('Show your channel names', 'statusHandles'),
+        field('Caption', capEdit),
+        h('p', { class: 'st-hint', text: 'Fill-ins: {name} your name, {title} the stream title, {all} every stream’s link, {link} the main link, {others} the other links. A line with nothing to fill in is left out.' })),
+    ]);
+    load();
   }
 
   /* ======================= tabs and wiring ======================= */
@@ -513,11 +626,11 @@
         S = d.settings; sources = d.sources || []; stats = d.stats || stats;
         feed = d.recent || []; events = d.events || [];
         if (first) { first = false; loadPanel(); }
-        render();
+        render(); watchLive();
       } else if (d.op === 'msg') onMessage(d.msg);
       else if (d.op === 'settings') { S = d.settings; if (tab !== 'settings') render(true); }
-      else if (d.op === 'sources') { sources = d.sources; if (tab === 'chats') render(true); else { tabs(); liveChip(); } }
-      else if (d.op === 'stats') { stats = d.stats; liveChip(); if (tab === 'viewers') render(true); }
+      else if (d.op === 'sources') { sources = d.sources; if (tab === 'chats') render(true); else { tabs(); liveChip(); } watchLive(); }
+      else if (d.op === 'stats') { stats = d.stats; liveChip(); if (tab === 'viewers') render(true); watchLive(); }
       else if (d.op === 'update') { update = d.update; showUpdate(); }
       else if (d.op === 'delete' && Array.isArray(d.ids)) {
         for (const id of d.ids) { hidden.add(id); const el = feedEl?.querySelector(`[data-id="${CSS.escape(id)}"]`); if (el) el.classList.add('hid'); }
