@@ -338,7 +338,7 @@
       h('div', { class: 'bn' }, h('span', { class: `dot ${live ? 'live' : ''}` }), h('b', { text: fmt(stats.totalViewers || 0) }), h('small', { text: 'watching' })),
       h('div', { class: 'pk' }, h('small', { text: 'Peak' }), h('b', { text: fmt(stats.peakViewers || 0) }))));
     scr.append(h('button', { class: `st-cta ${live ? 'on' : ''}`, type: 'button', onclick: () => go('live') }, icon('megaphone'),
-      h('div', {}, h('b', { text: live ? 'Tell everyone you’re live' : 'Go live tools' }), h('span', { text: 'Your status picture and stream links, for WhatsApp, Telegram and more' })),
+      h('div', {}, h('b', { text: live ? 'Tell everyone you’re live' : 'Go live tools' }), h('span', { text: 'Your Discord post and status picture, with every stream link' })),
       icon('chevron')));
     const sp = spark(stats.history); if (sp) scr.append(h('div', { class: 'sparkbox' }, sp, h('small', { text: 'Last hour' })));
     const plats = PLATFORMS.filter(p => per.has(p));
@@ -509,6 +509,105 @@
     wasLive = live;
   }
   let liveRefresh = null; // the Go live screen's own redraw, while it is open
+  /* ---------- Go live: the Discord post (Mergio's own bot posts it when the stream starts) ---------- */
+  const DISCORD_LINK = /^(?:https?:\/\/)?(?:(?:www|ptb|canary)\.)?discord(?:app)?\.com\/channels\/\d{15,25}\/\d{15,25}(?:[/?#]|$)/i;
+  const TRIGGER = { youtube: 'YouTube', twitch: 'Twitch', kick: 'Kick', tiktok: 'TikTok', facebook: 'Facebook', any: 'any platform' };
+  /** A channel row is complete with a channel and its server; a channel link already says which server it's in. */
+  const completeTarget = t => !!String(t.channel || '').trim() && (!!String(t.server || '').trim() || DISCORD_LINK.test(String(t.channel).trim()));
+  /** reload() fetches the post again; draw(data) shows it. Open parts stay open across redraws. */
+  function discordBox(reload) {
+    const el = h('div', { class: 'box dc' });
+    let data = null, editing = false, checked = null;
+    const g = () => goLive();
+    const saveG = async patch => { await save({ golive: patch }); await reload(); };
+    const said = r => {
+      const all = r?.results || [];
+      const bad = all.filter(x => !x.ok);
+      if (!all.length) toast('Nowhere to post yet. Add a Discord channel first.', true);
+      else if (bad.length) toast(`${bad.length} of ${all.length} didn’t post: ${bad[0].error || 'something went wrong'}`, true);
+      else if (all.every(x => x.skipped)) toast('Already posted for this stream');
+      else toast(`Posted in ${all.length} channel${all.length === 1 ? '' : 's'}`);
+    };
+    const run = (path, done) => async e => {
+      const b = e.currentTarget; b.disabled = true;
+      try { const r = await api('POST', path, {}); (done || said)(r); await reload(); } catch (err) { toast(err.message, true); } finally { b.disabled = false; }
+    };
+    const when = t => new Date(t).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit', hour12: S?.appearance?.timeFormat !== '24' });
+
+    function channels() {
+      const o = g(), rows = (o.discordTargets || []).map(t => ({ ...t }));
+      const keep = () => saveG({ discordTargets: rows.filter(completeTarget) });
+      const field = (t, key, ph, label) => {
+        const i = h('input', { type: 'text', value: t[key] || '', placeholder: ph, 'aria-label': label, maxlength: key === 'ping' ? '200' : '100', autocapitalize: 'off', autocorrect: 'off', spellcheck: 'false' });
+        i.addEventListener('change', () => { t[key] = i.value.trim(); if (completeTarget(t)) keep(); });
+        return i;
+      };
+      const list = rows.map((t, i) => h('div', { class: 'dc-row' },
+        h('div', { class: 'dc-fields' }, field(t, 'server', 'Server name or ID', 'Server'), field(t, 'channel', '#channel, ID or link', 'Channel'), field(t, 'ping', '@everyone, @Role (optional)', 'Who to ping')),
+        h('button', { class: 'dc-del', type: 'button', 'aria-label': `Remove ${t.channel || 'this channel'}`, onclick: () => { rows.splice(i, 1); keep(); } }, icon('trash'))));
+      // a new channel is saved only with Add, so a half-typed one isn't lost when the screen redraws
+      const blank = (ph, label, max = '100') => h('input', { type: 'text', placeholder: ph, 'aria-label': label, maxlength: max, autocapitalize: 'off', autocorrect: 'off', spellcheck: 'false' });
+      const inputs = [blank('Server name or ID', 'New server'), blank('#channel, ID or link', 'New channel'), blank('@everyone, @Role (optional)', 'Who to ping in the new channel', '200')];
+      const addBtn = h('button', { class: 'btn primary', type: 'button', onclick: async () => {
+        const add = { server: inputs[0].value.trim(), channel: inputs[1].value.trim().replace(/^#+/, ''), ping: inputs[2].value.trim() };
+        if (!completeTarget(add)) return toast('Type the server and the channel (a name or an ID), or paste a channel link', true);
+        if (rows.length >= 10) return toast('Up to 10 channels', true);
+        rows.push({ ...add }); await keep(); toast('Channel added');
+      } }, icon('plus'), 'Add channel');
+      const saved = !!o.discordBotToken;
+      const token = h('input', { type: 'password', placeholder: saved ? 'Saved. Paste a new one to replace it.' : 'Paste your bot’s token', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Bot token' });
+      const tokenBtn = h('button', { class: 'btn sm', type: 'button', onclick: async () => {
+        const v = token.value.trim(); if (!v) return token.focus();
+        if (!/^[\w-]{20,40}\.[\w-]{4,12}\.[\w-]{20,80}$/.test(v)) return toast('That isn’t a bot token. Copy it from Bot › Reset Token in the Discord Developer Portal.', true);
+        token.value = ''; await saveG({ discordBotToken: v }); toast('Bot token saved');
+      } }, 'Save');
+      const check = h('button', { class: 'btn', type: 'button', onclick: run('/api/golive/discord/check', r => {
+        checked = r;
+        toast(r.ok ? 'The bot can post in every channel' : (r.error || 'Some channels need a look'), !r.ok);
+      }) }, icon('check'), 'Check the bot');
+      const report = checked ? h('div', { class: 'dc-check' },
+        checked.bot ? h('p', {}, h('b', { text: checked.bot.name }), ` is in ${checked.servers?.length || 0} server${checked.servers?.length === 1 ? '' : 's'}`) : null,
+        ...(checked.targets || []).map(t => h('div', { class: `dc-res ${t.ok ? 'ok' : 'bad'}` }, icon(t.ok ? 'check' : 'info'), h('div', {}, h('b', { text: t.label }), t.error || t.warning ? h('span', { text: t.error || t.warning }) : null))),
+        !checked.bot && checked.error ? h('p', { class: 'bad', text: checked.error }) : null) : null;
+      return [
+        h('div', { class: 'dc-sub', text: 'Channels' }),
+        rows.length ? h('div', { class: 'dc-list' }, ...list) : h('p', { class: 'st-hint', text: 'No channels yet.' }),
+        h('div', { class: 'dc-row dc-new' }, h('div', { class: 'dc-fields' }, ...inputs)), addBtn,
+        h('p', { class: 'st-hint', text: 'Type names as you see them in Discord, or paste IDs or a channel link (long-press the channel › Copy Link). Ping roles by name, like @CUSTOMERS.' }),
+        h('div', { class: 'dc-sub', text: 'Your bot' }),
+        h('div', { class: 'add' }, token, tokenBtn),
+        h('p', { class: 'st-hint', text: 'Make the bot once on the PC (Go-live post › Discord shows how), or at discord.com/developers. Discord doesn’t let apps post as you.' }),
+        check, report,
+      ];
+    }
+
+    function draw(d) {
+      if (d) data = d;
+      const o = g(), n = (o.discordTargets || []).length, ready = !!(o.discordBotToken && n);
+      const live = !!data?.preview?.live;
+      const last = (data?.history || [])[0];
+      const auto = sw(!!o.enabled, v => saveG({ enabled: v }), 'Post by itself when I go live');
+      const details = h('details', { class: 'st-edit dc-edit', open: editing || !ready },
+        h('summary', {}, icon('settings'), `Channels and bot${n ? ` (${n} channel${n === 1 ? '' : 's'})` : ''}`), ...channels());
+      details.addEventListener('toggle', () => { editing = details.open; });
+      el.replaceChildren(...[
+        h('div', { class: 'dc-head' }, h('span', { class: 'dc-ic' }, icon('discord')),
+          h('div', { class: 'dc-tx' }, h('b', { text: 'Post on Discord' }),
+            h('span', { text: !ready ? 'Add your bot and a channel to start.' : o.enabled ? `Posts by itself when you go live on ${TRIGGER[o.trigger] || 'YouTube'}${o.delay ? `, after ${o.delay}s` : ''}.` : 'Automatic posts are off. Post by hand below.' })),
+          ready ? auto : null),
+        data ? MergioDiscordPost.render(data.preview.discord, data.preview.discordCard, { links: false }) : h('div', { class: 'dp' }, '…'),
+        h('div', { class: 'st-row' },
+          h('button', { class: 'btn primary', type: 'button', disabled: !ready || !live, onclick: run('/api/golive/post') }, icon('megaphone'), 'Post now'),
+          h('button', { class: 'btn', type: 'button', disabled: !ready, onclick: run('/api/golive/test') }, icon('play'), 'Send a test')),
+        h('p', { class: 'st-hint', text: !live ? 'Post now works once you’re live. A test post says [Test] and pings nobody.' : 'A test post says [Test] and pings nobody.' }),
+        last ? h('div', { class: 'dc-last' }, h('small', { text: `${last.test ? 'Last test' : 'Last post'} · ${when(last.at)}` }),
+          ...(last.results || []).map(r => h('div', { class: `dc-res ${r.ok ? 'ok' : 'bad'}` }, icon(r.ok ? 'check' : 'info'), h('div', {}, h('b', { text: r.label }), r.ok ? (r.skipped ? h('span', { text: 'Already posted' }) : null) : h('span', { text: r.error || 'Didn’t post' }))))) : null,
+        details,
+      ].filter(Boolean));
+    }
+    return { el, draw };
+  }
+
   async function liveScreen(main) {
     if (nudge) { nudge = false; showUpdate(); }
     const scr = h('div', { class: 'screen hub-screen' });
@@ -526,6 +625,7 @@
       if (data && window.MergioStatusCard) await MergioStatusCard.draw(canvas, data.preview.card, { theme: o.statusTheme, headline: o.statusHeadline, showTitle: o.statusTitle !== false, showHandles: o.statusHandles !== false });
     })().catch(() => {}));
     const hub = h('div', { class: 'hub' });
+    const dc = discordBox(() => load());
     const drawHub = () => {
       const live = isLive();
       hub.className = `hub ${live ? 'on' : ''}`;
@@ -540,6 +640,7 @@
       cap.textContent = caption();
       note.hidden = !!data.preview.live;
       note.textContent = 'You’re not live yet. Your stream’s title, thumbnail and links fill in when you go live.';
+      dc.draw(data);
       await redraw();
     };
     liveRefresh = load;
@@ -581,6 +682,7 @@
     const tog = (label, key) => h('div', { class: 'st-tog' }, h('span', { text: label }), sw(g[key] !== false, v => set(key, v), label));
 
     scr.append(hub,
+      h('div', { class: 'h', text: 'Discord' }), dc.el,
       h('div', { class: 'h', text: 'Status picture' }),
       h('div', { class: 'box' },
       h('div', { class: 'st-top' },
