@@ -19,7 +19,10 @@ const LIBNODE = join(APP, 'libnode');
 const win = process.platform === 'win32';
 const args = process.argv.slice(2);
 const debug = args.includes('--debug');
-const abis = (args.find(a => a.startsWith('--abis='))?.slice(7)) || 'arm64-v8a,armeabi-v7a';
+// only the ABIs nodejs-mobile ships; anything else on the command line is ignored
+const ABIS = ['arm64-v8a', 'armeabi-v7a', 'x86_64'];
+const asked = (args.find(a => a.startsWith('--abis='))?.slice(7) || 'arm64-v8a,armeabi-v7a').split(',');
+const abis = ABIS.filter(a => asked.includes(a)).join(',') || 'arm64-v8a,armeabi-v7a';
 const step = s => console.log(`\n> ${s}`);
 
 // Node.js for Android: a pinned release, checked against its SHA-256 before it is used
@@ -31,7 +34,9 @@ const NODE_MOBILE = {
 
 async function nodeMobile() {
   const stamp = join(LIBNODE, 'version.txt');
-  if (existsSync(stamp) && readFileSync(stamp, 'utf8').trim() === NODE_MOBILE.version) return console.log(`  nodejs-mobile ${NODE_MOBILE.version} is there`);
+  let have = '';
+  try { have = readFileSync(stamp, 'utf8').trim(); } catch { /* not downloaded yet */ }
+  if (have === NODE_MOBILE.version) return console.log(`  nodejs-mobile ${NODE_MOBILE.version} is there`);
   step(`Downloading Node.js for Android (nodejs-mobile ${NODE_MOBILE.version})`);
   const res = await fetch(NODE_MOBILE.url);
   if (!res.ok) throw new Error(`download failed: ${res.status}`);
