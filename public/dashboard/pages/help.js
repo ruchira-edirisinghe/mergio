@@ -26,7 +26,7 @@
         h('li', {}, 'Follower goals: counts are looked up every minute or two while the overlay or the ', goto('followers', 'Follower goals'), ' page is open. Press Refresh to look them up now.'),
         h('li', { text: 'TikTok and Facebook counts are read from your public profile in a hidden copy of Microsoft Edge or Google Chrome, so one of them must be installed. A Facebook video link has no follower count: add your Page instead.' }),
         h('li', {}, 'YouTube rounds big subscriber counts. For the exact number, add a free YouTube Data API key in ', goto('settings', 'Settings → Accounts & keys'), '.'))),
-      qa('How do I tell my Discord or Telegram that I am live?', h('p', {}, 'Turn on the ', goto('golive', 'Go-live post'), '. When your stream starts, Mergio posts your title and link (plus your other channels) to Discord, Telegram, Slack or any app with a webhook, once per stream. WhatsApp doesn’t let apps post to groups, so that page has a one-tap WhatsApp button instead.')),
+      qa('How do I tell my Discord and WhatsApp that I am live?', h('p', {}, 'Open ', goto('golive', 'Go-live post'), '. Your own Discord bot (made once, about 3 minutes) posts your title and link in the channels you name, once per stream. For your WhatsApp status there is a status picture with every stream: tap Add to status in the Mergio phone app. Share buttons send the links to WhatsApp, Telegram, Facebook and X.')),
       qa('Does Mergio slow down my stream?', h('p', { text: 'No. It is a tiny background app (about 50 to 80 MB of memory) and the overlay only uses smooth, GPU-friendly animations.' }))));
 
     c.append(MG.card('Still stuck?', null,
