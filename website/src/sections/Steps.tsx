@@ -144,7 +144,7 @@ export function Steps() {
           <h2 className="text-4xl md:text-5xl/none font-medium leading-tight" style={{ letterSpacing: '-0.03em' }}>Live in three steps.</h2>
         </Reveal>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Step n={1} delay={0} title="Download" text="Free for Windows, macOS and Linux.">
+          <Step n={1} delay={0} title="Download" text="Free for Windows, macOS and Linux, with an Android app for your phone.">
             <Install active={inView} />
           </Step>
           <Step n={2} delay={120} title="Add your chats" text="Type your username or paste a link.">

@@ -3,6 +3,7 @@ import { Hero } from './sections/Hero';
 import { Info } from './sections/Info';
 import { WorksWith } from './sections/WorksWith';
 import { Local } from './sections/Local';
+import { Phone } from './sections/Phone';
 import { Modes } from './sections/Modes';
 import { Steps } from './sections/Steps';
 import { Faq, Features } from './sections/More';
@@ -20,6 +21,7 @@ export default function App() {
         <Info />
         <WorksWith />
         <Local />
+        <Phone />
         <Modes />
         <Steps />
         <Features />

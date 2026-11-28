@@ -6,7 +6,7 @@ import { REPO } from '../lib/links';
 
 export type LegalDoc = 'privacy' | 'terms';
 
-const UPDATED = '22 November 2026';
+const UPDATED = '28 November 2026';
 const CREATOR = { name: 'Ruchira Edirisinghe', url: 'https://ruchiraedirisinghe.vercel.app' };
 const ISSUES = `${REPO}/issues/new/choose`;
 const LICENSE = `${REPO}/blob/main/LICENSE`;
@@ -73,8 +73,9 @@ const PRIVACY: Doc = {
           <LI><B>A browser profile</B> (<Code>browser-profile</Code>): used only by the hidden Edge or Chrome window that reads TikTok and Facebook follower counts. It holds that window's cookies and cache, never your own browser's.</LI>
         </UL>
         <P>Chat messages, gifts, alerts, viewer counts and follower counts are kept in memory while Mergio runs and shown on your overlays. They are not saved to disk. Delete the data folder and everything Mergio stored is gone.</P>
-        <P>If you press <B>Install the docks in OBS</B>, Mergio adds its three docks (Mergio Chat, Mergio Gifts and Mergio Viewers) to OBS Studio's own settings file (<Code>user.ini</Code>, or <Code>global.ini</Code> in older versions) while OBS is closed. It keeps a copy of that file the first time, named <Code>.mergio-backup</Code>, and leaves any docks you added yourself alone. Nothing else in OBS is changed, and you can remove the docks in OBS at any time.</P>
+        <P>If you press <B>Install the docks in OBS</B>, Mergio adds its three docks (Mergio Chat, Mergio Gifts and Mergio Viewers) to OBS Studio's own settings file (<Code>user.ini</Code>, or <Code>global.ini</Code> in older versions) while OBS is closed. If OBS is open when you press it, Mergio waits and adds them as soon as OBS closes, unless you press Cancel. It keeps a copy of that file the first time, named <Code>.mergio-backup</Code>, and leaves any docks you added yourself alone. Nothing else in OBS is changed, and you can remove the docks in OBS at any time.</P>
         <P>If you switch on <B>Read messages aloud</B>, the voice comes from your own computer (Windows speech, <Code>say</Code> on macOS, <Code>espeak-ng</Code> on Linux). It works offline: the audio is made on your PC, kept in memory only while it plays and never sent anywhere.</P>
+        <P>The <B>Android app</B> works the same way on your phone: Mergio runs inside the app and connects to each platform itself. Your settings stay in the app's own storage on the phone, read aloud uses the phone's own voice, and nothing goes through a Mergio server. Uninstalling the app deletes everything it saved.</P>
       </>,
     },
     {

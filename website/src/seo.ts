@@ -48,7 +48,7 @@ export function jsonLd(page: PageMeta) {
     screenshot: `${SITE}/og.png`,
     applicationCategory: 'MultimediaApplication',
     applicationSubCategory: 'Live streaming chat overlay',
-    operatingSystem: 'Windows, macOS, Linux',
+    operatingSystem: 'Windows, macOS, Linux, Android',
     softwareVersion: latestVersion(),
     downloadUrl: DOWNLOADS.map(d => d.href),
     installUrl: `${REPO}/releases/latest`,
