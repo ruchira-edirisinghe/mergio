@@ -288,6 +288,86 @@ test('a follower error goes away when the lookup works again', () => {
   stats.off('change', on);
 });
 
+console.log('Go-live post');
+{
+  const golive = require(join(root, 'src/golive.js'));
+  const g = { ...settings.get().golive, discordMention: '@everyone 123456789012345678' };
+  const post = { platform: 'youtube', url: 'https://www.youtube.com/watch?v=N1Jz8-GHx_I', title: 'GTA 6 IS HERE!!', name: 'Zenitron Gaming',
+    links: { youtube: 'https://www.youtube.com/watch?v=N1Jz8-GHx_I', twitch: 'https://www.twitch.tv/zen', tiktok: 'https://www.tiktok.com/@zen/live' } };
+  test('the post has the title, the stream link and the other channels', () => {
+    const t = golive.textFor(post, g, 'telegram');
+    assert.equal(t, '🚨\n\n🔴 Zenitron Gaming is now LIVE!\n\n🎬 GTA 6 IS HERE!!\nhttps://www.youtube.com/watch?v=N1Jz8-GHx_I\n\nAlso live on:\n🟣 Twitch: https://www.twitch.tv/zen\n⚫ TikTok: https://www.tiktok.com/@zen/live');
+  });
+  test('Discord pings, and only the stream link gets a preview', () => {
+    const t = golive.textFor(post, g, 'discord');
+    assert.ok(t.startsWith('@everyone <@&123456789012345678> 🚨'));
+    assert.ok(t.includes('\nhttps://www.youtube.com/watch?v=N1Jz8-GHx_I\n'));
+    assert.ok(t.includes('Twitch: <https://www.twitch.tv/zen>'));
+    assert.deepEqual(golive.discordMention('@here <@&555555> 1234567 junk').allowed, { parse: ['everyone'], roles: ['555555', '1234567'], users: [] });
+  });
+  test('lines with nothing to show are left out', () => {
+    assert.equal(golive.render('A {name}\n🎬 {title}\n{link}\n\n\n\n{others}\nB', { name: 'Z', title: '', link: 'L', others: '', mention: '' }), 'A Z\nL\n\nB');
+    assert.equal(golive.render('{unknown} stays', { name: '' }), '{unknown} stays');
+  });
+  test('channel links from the chats', () => {
+    assert.equal(golive.channelLink({ platform: 'youtube', target: '@zen' }), 'https://www.youtube.com/@zen/live');
+    assert.equal(golive.channelLink({ platform: 'facebook', target: 'page:zenitrongaming' }), 'https://www.facebook.com/zenitrongaming');
+    assert.equal(golive.channelLink({ platform: 'tiktok', target: 'zen' }), 'https://www.tiktok.com/@zen/live');
+  });
+  test('one post per stream', () => {
+    const st = { keys: ['youtube:abc'], open: true, platform: 'youtube' };
+    assert.equal(golive.isNew(st, 'youtube', 'youtube:abc'), false, 'same stream after a restart');
+    assert.equal(golive.isNew(st, 'youtube', 'youtube:def'), true, 'a new stream link');
+    assert.equal(golive.isNew(st, 'tiktok', 'tiktok:1'), false, 'another platform joining the same stream');
+    assert.equal(golive.isNew({ keys: [], open: true, platform: 'twitch' }, 'twitch', ''), false);
+    assert.equal(golive.isNew({ keys: [], open: false, platform: '' }, 'twitch', ''), true);
+  });
+
+  // the whole way: a stream starts, the post reaches a webhook once, and a second platform doesn't post again
+  const http = require('node:http');
+  const got = [];
+  const hook = http.createServer((req, res) => { let b = ''; req.on('data', c => (b += c)); req.on('end', () => { got.push(JSON.parse(b)); res.end('ok'); }); });
+  await new Promise(r => hook.listen(0, '127.0.0.1', r));
+  const { EventEmitter } = require('node:events');
+  const conn = (info, extra = {}) => ({ liveInfo: () => info.current, channelName: '@zen', ...extra });
+  const yt = { current: null }, tt = { current: null };
+  const fake = Object.assign(new EventEmitter(), { running: new Map([['s-yt', conn(yt)], ['s-tt', conn(tt)]]) });
+  const saved = settings.get().sources;
+  settings.update({ golive: { enabled: true, trigger: 'any', delay: 0, name: 'Zenitron Gaming', webhookUrl: `http://127.0.0.1:${hook.address().port}/hook` } });
+  settings.get().sources = [{ id: 's-yt', platform: 'youtube', target: '@zen', label: '@zen' }, { id: 's-tt', platform: 'tiktok', target: 'zen', label: '@zen' }];
+  golive.start(fake);
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const atest = async (name, fn) => { try { await fn(); console.log(`  ok  ${name}`); } catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); } };
+  await atest('posts when the stream starts, once', async () => {
+    golive.check(); await wait(50);
+    assert.equal(got.length, 0, 'nothing is live yet');
+    yt.current = { url: 'https://www.youtube.com/watch?v=N1Jz8-GHx_I', title: 'GTA 6', videoId: 'N1Jz8-GHx_I', started: false };
+    golive.check(); await wait(50);
+    assert.equal(got.length, 0, 'a scheduled stream that has not started');
+    yt.current = { ...yt.current, started: true };
+    golive.check(); await wait(300);
+    assert.equal(got.length, 1);
+    assert.equal(got[0].event, 'live');
+    assert.equal(got[0].title, 'GTA 6');
+    assert.equal(got[0].url, 'https://www.youtube.com/watch?v=N1Jz8-GHx_I');
+    assert.equal(got[0].links.tiktok, 'https://www.tiktok.com/@zen/live');
+    assert.ok(got[0].text.includes('Zenitron Gaming is now LIVE'));
+    tt.current = { url: 'https://www.tiktok.com/@zen/live', title: '', videoId: '77', started: true };
+    golive.check(); golive.check(); await wait(300);
+    assert.equal(got.length, 1, 'TikTok joining the same stream does not post again');
+    assert.equal(golive.view().history.length, 1);
+    assert.equal(golive.view().history[0].results[0].ok, true);
+  });
+  await atest('a test post says it is a test', async () => {
+    await golive.sendTest();
+    assert.equal(got.at(-1).event, 'test');
+    assert.ok(got.at(-1).title.startsWith('[Test]'));
+  });
+  settings.get().sources = saved;
+  settings.update({ golive: { enabled: false, trigger: 'youtube', delay: 30, name: '', webhookUrl: '' } });
+  hook.close();
+}
+
 console.log('Local server security');
 {
   const http = require('node:http');

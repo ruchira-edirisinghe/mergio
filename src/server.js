@@ -12,6 +12,7 @@ const stats = require('./stats');
 const followers = require('./followers');
 const obsdocks = require('./obsdocks');
 const tts = require('./tts');
+const golive = require('./golive');
 const { checkToken: checkFacebookToken } = require('./connectors/facebook');
 const { isSea, fetchJson, log, DATA_DIR } = require('./util');
 const pkg = require('../package.json');
@@ -261,6 +262,15 @@ function createServer(manager, { onQuit }) {
           try { await autostart.setEnabled(!!body.enabled); } catch (e) { return send(res, 400, { error: e.message }); }
           return send(res, 200, state());
         }
+        // go-live post: preview and history, a test post, posting by hand, and stopping the countdown
+        if (p === '/api/golive' && req.method === 'GET') return send(res, 200, await golive.viewFull());
+        if (p === '/api/golive/test' && req.method === 'POST') {
+          try { return send(res, 200, await golive.sendTest(body.to ? String(body.to) : undefined)); } catch (e) { return send(res, 400, { error: e.message }); }
+        }
+        if (p === '/api/golive/post' && req.method === 'POST') {
+          try { return send(res, 200, await golive.postNow()); } catch (e) { return send(res, 400, { error: e.message }); }
+        }
+        if (p === '/api/golive/cancel' && req.method === 'POST') return send(res, 200, golive.cancel());
         if (p === '/api/followers/refresh' && req.method === 'POST') { followers.refresh(body.force !== false); return send(res, 200, { ok: true }); }
         if (p === '/api/clear' && req.method === 'POST') {
           // keep: messages that stay on the overlay while everything else is cleared
@@ -408,6 +418,8 @@ function createServer(manager, { onQuit }) {
   stats.on('change', view => broadcast({ op: 'stats', stats: view }));
   // follower counts are looked up only while an overlay or the Follower goals page shows them
   followers.start(() => overlayStatus().followers.count > 0);
+  // the go-live post watches the chats; the control panel hears about countdowns and posts
+  golive.start(manager, { onChange: view => broadcast({ op: 'golive', golive: view }) });
 
   return server;
 }
