@@ -35,12 +35,19 @@ function settingsFile() {
   return fs.existsSync(user) ? user : fs.existsSync(path.join(dir, 'global.ini')) ? path.join(dir, 'global.ini') : null;
 }
 
-/** True while OBS Studio is open. */
+/** True while OBS Studio is open. When the check itself fails (tasklist timed out on a busy PC, for example)
+    it also says true: writing the file while OBS is open would be undone when OBS closes. */
 function obsRunning() {
   return new Promise(resolve => {
     if (process.platform === 'win32') {
-      execFile('tasklist', ['/FO', 'CSV', '/NH'], { windowsHide: true, timeout: 8000 }, (err, out) => resolve(!err && /^"obs(64|32)?\.exe"/im.test(out || '')));
-    } else execFile('pgrep', ['-x', process.platform === 'darwin' ? 'OBS' : 'obs'], { timeout: 8000 }, err => resolve(!err));
+      execFile('tasklist', ['/FI', 'IMAGENAME eq obs*', '/FO', 'CSV', '/NH'], { windowsHide: true, timeout: 15000 }, (err, out) => {
+        if (err) return resolve(true);
+        resolve(/^"obs(64|32)?\.exe"/im.test(out));
+      });
+    } else {
+      // pgrep: exit 1 = no such process, anything else is an error
+      execFile('pgrep', ['-x', process.platform === 'darwin' ? 'OBS' : 'obs'], { timeout: 15000 }, err => resolve(!err || err.code !== 1));
+    }
   });
 }
 
@@ -112,8 +119,8 @@ async function installWhenClosed(port, done = () => {}) {
     if (waiter !== w) return;
     if (Date.now() - started > WAIT_MAX) { waiter = null; return done(new Error('Stopped waiting for OBS to close. Press Install again when you are ready.')); }
     if (await obsRunning()) { w.timer = setTimeout(tick, WAIT_EVERY); return; }
-    // OBS saves its settings while it shuts down: give it a moment after the process is gone
-    await new Promise(r => setTimeout(r, 1500));
+    // OBS saves its settings while it shuts down: give it a moment after the process is gone, and check again
+    await new Promise(r => setTimeout(r, 2000));
     if (waiter !== w) return;
     if (await obsRunning()) { w.timer = setTimeout(tick, WAIT_EVERY); return; }
     waiter = null;
