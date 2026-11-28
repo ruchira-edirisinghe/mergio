@@ -91,8 +91,11 @@ const LOG_FILE = path.join(DATA_DIR, 'mergio.log');
 /* ---------- keeping tokens out of logs and error messages ---------- */
 const SECRET_PARAM = /([?&](?:access_token|input_token|client_secret|api_key|apikey|key|token|sign_?api_?key)=)[^&#\s"']+/gi;
 const SECRET_VALUE = /\bEA[A-Za-z0-9]{30,}\b/g; // Facebook tokens
+// go-live post: Discord and Slack webhook links, Telegram bot tokens (in /bot<token>/ and on their own)
+const SECRET_LINK = /(\/api\/(?:v\d+\/)?webhooks\/|hooks\.slack\.com\/[a-z]+\/|\/bot)[\w:/-]{10,}/gi;
+const BOT_TOKEN = /\b\d{5,15}:[\w-]{30,}/g;
 /** Hides tokens in URLs and text: "...?access_token=EAAB..." -> "...?access_token=[hidden]". */
-const redact = text => String(text).replace(SECRET_PARAM, '$1[hidden]').replace(SECRET_VALUE, '[hidden]');
+const redact = text => String(text).replace(SECRET_PARAM, '$1[hidden]').replace(SECRET_VALUE, '[hidden]').replace(SECRET_LINK, '$1[hidden]').replace(BOT_TOKEN, '[hidden]');
 
 /* ---------- tiny logger (file + console, file is trimmed at 1 MB) ---------- */
 function log(scope, ...args) {
