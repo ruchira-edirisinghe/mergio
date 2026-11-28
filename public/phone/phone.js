@@ -309,7 +309,10 @@
     for (const v of stats.viewers || []) { if (v.count == null) { if (!per.has(v.platform)) per.set(v.platform, null); continue; } per.set(v.platform, (per.get(v.platform) || 0) + v.count); }
     return per;
   };
-  const isLive = () => (stats.viewers || []).some(v => v.count != null) || sources.some(s => s.state === 'live');
+  // Twitch and Kick chats connect when you're offline too, so only a viewer count (or a chat that only opens
+  // during a stream: YouTube, TikTok, Facebook) means you're live.
+  const ON_AIR = ['youtube', 'tiktok', 'facebook'];
+  const isLive = () => (stats.viewers || []).some(v => v.count != null) || sources.some(s => s.state === 'live' && ON_AIR.includes(s.platform));
   function viewersScreen(main) {
     const scr = h('div', { class: 'screen' });
     const per = perPlatform();
