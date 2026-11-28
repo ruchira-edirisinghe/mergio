@@ -295,7 +295,14 @@ function createServer(manager, { onQuit }) {
         }
         if (p === '/api/obs/docks' && req.method === 'GET') return send(res, 200, await obsdocks.status(settings.get().advanced.port));
         if (p === '/api/obs/docks' && req.method === 'POST') {
-          try { return send(res, 200, await obsdocks.install(settings.get().advanced.port)); } catch (e) { return send(res, e.running ? 409 : 400, { error: e.message, running: !!e.running }); }
+          // OBS open: Mergio waits and adds the docks the moment it closes, then tells the panel
+          const port = settings.get().advanced.port;
+          const done = (err, st) => broadcast(err ? { op: 'obsdocks', error: err.message } : { op: 'obsdocks', added: true, docks: st });
+          try { return send(res, 200, await obsdocks.installWhenClosed(port, done)); } catch (e) { return send(res, 400, { error: e.message }); }
+        }
+        if (p === '/api/obs/docks' && req.method === 'DELETE') {
+          obsdocks.stopWaiting();
+          return send(res, 200, await obsdocks.status(settings.get().advanced.port));
         }
         if (p === '/api/hide' && req.method === 'POST') {
           const ids = messageIds(body.ids);
