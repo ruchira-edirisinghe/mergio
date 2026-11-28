@@ -220,7 +220,24 @@
   /** A panel that slides up from the bottom. build(close) returns its contents; Back closes it. */
   function sheet(build) {
     const close = () => scrim.remove();
-    const scrim = h('div', { class: 'scrim', onclick: e => { if (e.target === scrim) { close(); if (history.state?.sheet) history.back(); } } }, h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true' }, h('div', { class: 'grab' }), ...build(close)));
+    const dismiss = () => { close(); if (history.state?.sheet) history.back(); };
+    const panelEl = h('div', { class: 'sheet', role: 'dialog', 'aria-modal': 'true' }, h('div', { class: 'grab' }), ...build(close));
+    const scrim = h('div', { class: 'scrim', onclick: e => { if (e.target === scrim) dismiss(); } }, panelEl);
+    // pull it down to close (from the top of its contents)
+    let y0 = null, dy = 0;
+    panelEl.addEventListener('touchstart', e => { y0 = panelEl.scrollTop <= 0 ? e.touches[0].clientY : null; dy = 0; }, { passive: true });
+    panelEl.addEventListener('touchmove', e => {
+      if (y0 == null) return;
+      dy = Math.max(0, e.touches[0].clientY - y0);
+      panelEl.style.transition = 'none';
+      panelEl.style.transform = dy ? `translateY(${dy}px)` : '';
+    }, { passive: true });
+    panelEl.addEventListener('touchend', () => {
+      if (y0 == null) return;
+      y0 = null;
+      panelEl.style.transition = 'transform .22s cubic-bezier(.22, 1, .36, 1)';
+      if (dy > 90) { panelEl.style.transform = 'translateY(100%)'; setTimeout(dismiss, 180); } else panelEl.style.transform = '';
+    });
     document.body.append(scrim);
     history.pushState({ sheet: 1 }, '');
     const back = () => { close(); window.removeEventListener('popstate', back); };
