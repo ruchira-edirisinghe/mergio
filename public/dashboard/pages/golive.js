@@ -8,6 +8,7 @@
   const DEFAULT = '{mention} 🚨\n\n🔴 {name} is now LIVE!\n\n🎬 {title}\n{link}\n\n{others}';
   const DEFAULT_CAPTION = '🔴 {name} is LIVE now!\n\n🎬 {title}\n\n{all}';
   const BOT_TOKEN = /^[\w-]{20,40}\.[\w-]{4,12}\.[\w-]{20,80}$/;
+  const CHANNEL_LINK = /discord(?:app)?\.com\/channels\/\d{15,25}\/\d{15,25}/i;
 
   let data = null;   // GET /api/golive: { destinations, pending, history, preview }
   let checked = null; // the last Discord check
@@ -97,24 +98,26 @@
   function targets() {
     const list = h('div', { class: 'gl-targets' });
     const save = rows => { MG.save('golive', 'discordTargets', rows); };
+    // a channel link (right-click → Copy Link) already says which server it's in
+    const complete = (server, channel) => !!channel.trim() && (!!server.trim() || CHANNEL_LINK.test(channel.trim()));
     const draw = () => {
       const rows = g().discordTargets.map(t => ({ ...t }));
       list.replaceChildren(...rows.map((t, i) => {
         const input = (key, ph, label) => h('input', { type: 'text', value: t[key] || '', placeholder: ph, 'aria-label': label, maxlength: key === 'ping' ? 200 : 100,
-          onchange: e => { rows[i][key] = e.target.value; if (rows[i].server.trim() && rows[i].channel.trim()) save(rows); } });
+          onchange: e => { rows[i][key] = e.target.value; if (complete(rows[i].server, rows[i].channel)) save(rows); } });
         return h('div', { class: 'gl-trow' },
-          input('server', 'Server name', 'Server'), input('channel', '#channel', 'Channel'), input('ping', '@everyone, @Role', 'Who to ping'),
+          input('server', 'Server name or ID', 'Server'), input('channel', '#channel, ID or link', 'Channel'), input('ping', '@everyone, @Role', 'Who to ping'),
           h('button', { class: 'icon-btn', title: 'Remove', 'aria-label': 'Remove this channel', onclick: () => { rows.splice(i, 1); save(rows); draw(); } }, icon('trash')));
       }));
       if (!rows.length) list.append(h('p', { class: 'hint', text: 'No channels yet.' }));
     };
     draw();
     const add = h('div', { class: 'gl-trow add' });
-    const s = h('input', { type: 'text', placeholder: 'Server name', 'aria-label': 'Server', maxlength: 100 });
-    const ch = h('input', { type: 'text', placeholder: '#channel', 'aria-label': 'Channel', maxlength: 100 });
+    const s = h('input', { type: 'text', placeholder: 'Server name or ID', 'aria-label': 'Server', maxlength: 100 });
+    const ch = h('input', { type: 'text', placeholder: '#channel, ID or link', 'aria-label': 'Channel', maxlength: 100 });
     const pg = h('input', { type: 'text', placeholder: '@everyone, @Role (optional)', 'aria-label': 'Who to ping', maxlength: 200 });
     const doAdd = () => {
-      if (!s.value.trim() || !ch.value.trim()) return MG.toast('Type the server name and the channel name', true);
+      if (!complete(s.value, ch.value)) return MG.toast('Type the server and the channel (a name or an ID), or paste a channel link', true);
       if (g().discordTargets.length >= 10) return MG.toast('Up to 10 channels', true);
       save([...g().discordTargets, { server: s.value.trim(), channel: ch.value.trim().replace(/^#+/, ''), ping: pg.value.trim() }]);
       s.value = ch.value = pg.value = ''; draw();
@@ -189,7 +192,7 @@
 
     // ----- Discord -----
     const checkBox = h('div', {}, checkResult());
-    c.append(MG.card('Discord', 'Your own Discord bot posts for you (Discord doesn’t let apps post as you). Make it once, invite it to your servers, then just type the server and channel names.',
+    c.append(MG.card('Discord', 'Your own Discord bot posts for you (Discord doesn’t let apps post as you). Make it once, invite it to your servers, then just type the server and channel names (or IDs).',
       h('details', { class: 'gl-guide', open: !s.discordBotToken },
         h('summary', { text: 'Make your bot (about 3 minutes, free)' }),
         h('ol', {},
@@ -202,7 +205,7 @@
           check: v => BOT_TOKEN.test(v) || 'That is not a bot token. Copy it from Bot → Reset Token in the Discord Developer Portal.' })),
       h('div', { class: 'btn-row' }, h('button', { class: 'btn', onclick: () => checkBot(checkBox) }, icon('check'), 'Check'), h('span', { class: 'hint', text: 'Shows the bot’s servers and whether it can find each channel.' })),
       checkBox,
-      MG.subhead('Channels', 'Type the names as you see them in Discord. Ping roles by name, like @CUSTOMERS'),
+      MG.subhead('Channels', 'Type the names as you see them in Discord, or paste IDs or a channel link (right-click the channel → Copy Link). Ping roles by name, like @CUSTOMERS'),
       targets()));
 
     // ----- the Discord post -----
