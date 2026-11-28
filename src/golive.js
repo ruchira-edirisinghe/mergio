@@ -20,6 +20,9 @@ const LOOK_EVERY = 15e3;       // Twitch and Kick say they're live through their
 const RECHECK = 30e3;          // a scheduled YouTube stream: look again this often until it starts
 const HISTORY = 10;
 const MAX_POST = 2000;         // Discord's limit per message
+// MERGIO_YTIMG: a stand-in for YouTube's thumbnail server in the self-test (npm run check)
+const ytimg = () => process.env.MERGIO_YTIMG || 'https://i.ytimg.com';
+const THUMBS = ['maxresdefault_live.jpg', 'maxresdefault.jpg', 'hqdefault_live.jpg', 'hqdefault.jpg']; // biggest first
 
 /* ---------- the post ---------- */
 
@@ -57,23 +60,41 @@ function render(template, vars) {
 
 /**
  * Everything a post needs: { platform, url, title, name, links: { youtube: url, … } }.
- * dest changes the details: on Discord the ping goes in and only the stream link gets a preview card.
+ * dest changes the details: on Discord the ping goes in and only the stream gets a preview card.
  */
 function textFor(post, g, dest, mention = '') {
   const others = ORDER.filter(p => p !== post.platform && post.links[p]);
-  // On Discord <link> stops the extra link previews, so only the stream itself gets a big card.
+  // On Discord <link> stops the extra link previews, so only the stream itself gets a big card. A YouTube stream
+  // gets Mergio's own card (see cardFor), so its link is kept plain too, or Discord would add a second one.
   const wrap = url => (dest === 'discord' ? `<${url}>` : url);
-  const own = p => (p === post.platform ? post.url : wrap(post.links[p]));
+  const link = dest === 'discord' && hasCard(post) ? wrap(post.url) : post.url;
+  const own = p => (p === post.platform ? link : wrap(post.links[p]));
   const line = p => `${DOTS[p]} ${NAMES[p]}: ${own(p)}`;
   const all = ORDER.filter(p => post.links[p]);
   const vars = Object.fromEntries([
     ['mention', dest === 'discord' ? mention : ''],
-    ['name', post.name], ['title', post.title], ['link', post.url], ['platform', NAMES[post.platform] || ''],
+    ['name', post.name], ['title', post.title], ['link', link], ['platform', NAMES[post.platform] || ''],
     ['others', others.length ? ['Also live on:', ...others.map(line)].join('\n') : ''],
     ['all', all.map(line).join('\n')],
     ...ORDER.map(p => [p, post.links[p] ? own(p) : '']),
   ]);
   return render(dest === 'caption' ? g.caption : g.message, vars);
+}
+
+/** A YouTube stream that has started gets a card with its thumbnail; Discord's own preview of a live link often has none. */
+const hasCard = post => post.platform === 'youtube' && !!post.thumb && !!post.url;
+
+/** The Discord card for a YouTube stream: the title linking to the stream, the stream's thumbnail, YouTube red. */
+async function cardFor(post) {
+  if (!hasCard(post)) return null;
+  return {
+    color: 0xff0000,
+    author: { name: (post.name ? `${post.name} is live on YouTube` : 'Live on YouTube').slice(0, 256) },
+    title: (post.title || 'Watch the stream').slice(0, 256),
+    url: post.url,
+    image: { url: await thumbUrl(post.thumb) },
+    timestamp: new Date().toISOString(),
+  };
 }
 
 /** Where posts go by themselves: the Discord channels, once the bot's token and a channel are filled in. */
@@ -89,8 +110,9 @@ async function sendAll(post, g) {
   let found;
   try { found = await discord.resolve(g.discordBotToken, g.discordTargets); }
   catch (e) { return [{ dest: 'discord', label: 'Discord', ok: false, error: (await discord.check(g.discordBotToken, [])).error || e.message }]; }
+  const card = found.some(r => r.ok) ? await cardFor(post) : null;
   return Promise.all(found.map(r => (r.ok
-    ? discord.send(g.discordBotToken, r, textFor(post, g, 'discord', post.test ? '' : r.mention.text), { url: post.url, test: post.test })
+    ? discord.send(g.discordBotToken, r, textFor(post, g, 'discord', post.test ? '' : r.mention.text), { url: post.url, test: post.test, embeds: card ? [card] : [] })
     : { dest: 'discord', label: r.label, ok: false, error: r.error })));
 }
 
@@ -312,16 +334,31 @@ function view() {
   };
 }
 
-/** The YouTube stream's thumbnail (biggest there is), for the status picture: fetched here so the page can draw it. */
-async function thumbnail(id) {
+/** The biggest thumbnail YouTube has for a video: { url, res } with the answer still unread, or null. */
+async function findThumb(id) {
   if (!/^[\w-]{11}$/.test(id)) return null;
-  for (const name of ['maxresdefault_live.jpg', 'maxresdefault.jpg', 'hqdefault_live.jpg', 'hqdefault.jpg']) {
+  for (const name of THUMBS) {
+    const url = `${ytimg()}/vi/${id}/${name}`;
     try {
-      const res = await fetch(`https://i.ytimg.com/vi/${id}/${name}`, { signal: AbortSignal.timeout(10000) });
-      if (res.ok) return Buffer.from(await res.arrayBuffer());
+      const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      if (res.ok) return { url, res };
+      res.body?.cancel().catch(() => {});
     } catch { /* try the next size */ }
   }
   return null;
 }
 
-module.exports = { start, check, view, viewFull, postNow, sendTest, cancel, thumbnail, render, textFor, channelLink, isNew, destinations };
+/** The YouTube stream's thumbnail, for the status picture: fetched here so the page can draw it. */
+async function thumbnail(id) {
+  const t = await findThumb(id);
+  return t ? Buffer.from(await t.res.arrayBuffer()) : null;
+}
+
+/** The link to the stream's biggest thumbnail, for the Discord card (every video has the small one). */
+async function thumbUrl(id) {
+  const t = await findThumb(id);
+  t?.res.body?.cancel().catch(() => {});
+  return t ? t.url : `${ytimg()}/vi/${id}/hqdefault.jpg`;
+}
+
+module.exports = { start, check, view, viewFull, postNow, sendTest, cancel, thumbnail, render, textFor, cardFor, channelLink, isNew, destinations };
