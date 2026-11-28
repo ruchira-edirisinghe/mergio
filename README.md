@@ -43,6 +43,7 @@ Multistreaming means your viewers chat in five places. Mergio reads all of them 
 - 💾 **Saved looks:** keep three looks for each overlay (chat, alerts, viewer count, follower goals), switch with one click, or give a scene its own look with `?slot=2`.
 - 🌍 **Any language:** names and messages in Sinhala, Tamil, Hindi, Arabic, Hebrew, Japanese, Chinese, Korean, Thai and more show correctly, right-to-left included.
 - 💬 **Live chat page:** read every chat in one list and filter it by platform or by chat and alerts. **Pin** a message to the top of your overlay, **hide** single messages, or pick several and keep only those when you clear the chat.
+- 📣 **Go-live post:** when your stream starts, Mergio posts your title and link (plus your other channels) to Discord, Telegram, Slack or any app with a webhook, once per stream. A Discord post can ping @everyone or a role. WhatsApp gets a one-tap share button.
 - 🧩 **OBS docks:** three small panels inside OBS (the full chat, the gifts and alerts you received with your top supporters, and your live viewer count with the peak and the last hour), added with one button.
 - 👋 **Joins and likes your way:** switch "joined the chat" and TikTok likes on or off for the chat overlay.
 - 🛡️ **Clean chat:** moderation sync, filters for bots, `!commands` and words, and a minimum TikTok gift value.
@@ -161,6 +162,20 @@ To keep all of this inside OBS, open **Add to OBS → OBS docks** and press **In
 
 <div align="center"><img src="docs/guide/06-live-chat.png" alt="The Live chat page with platform filters" width="820"></div>
 
+### Step 8 · Tell everyone you're live (optional)
+
+Open **Go-live post** and turn on **Post when I go live**. When your stream starts, Mergio waits a moment (30 seconds by default, so your other streams are up too) and posts the stream's title and link, with your other channels under **Also live on**. It posts once per stream: restarting Mergio or another platform going live a minute later doesn't post again.
+
+Fill in the places you use:
+
+- **Discord:** in your server, **Edit channel → Integrations → Webhooks → New Webhook → Copy Webhook URL** and paste it. To ping a role, turn on **Developer Mode** (User Settings → Advanced), right-click the role and **Copy Role ID**, then paste the number under **Ping**. `@everyone` and `@here` work too.
+- **Telegram:** message **@BotFather**, send `/newbot`, paste the token, add the bot to your channel or group as an admin, and type the channel's `@name` (or the chat number for a private one).
+- **Slack:** paste an **Incoming Webhook** link.
+- **Other apps:** Zapier, Make, n8n, IFTTT or your own bot get the post as JSON (`event`, `name`, `title`, `platform`, `url`, `links`, `text`).
+- **WhatsApp** doesn't let apps post to groups or channels, so press **WhatsApp** when you go live: the post opens ready to send and you pick the chat.
+
+Write the message your way with fill-ins like `{name}`, `{title}`, `{link}`, `{others}` and `{mention}` (the Discord ping). A line with nothing to fill in is left out. **Send a test post** shows how it looks (it says [Test] and pings nobody), and **Post now** posts a stream that already started.
+
 🎉 **You're all set.** Turn on **Settings → Start Mergio with Windows** so it's always ready.
 
 ## Mergio on your phone (Android)
@@ -250,9 +265,9 @@ Still stuck? [Open an issue](https://github.com/ruchira-edirisinghe/mergio/issue
 ## Privacy & security
 
 - Mergio listens on **127.0.0.1 only**, so nothing on your network can reach it, and websites in your browser can't use it.
-- No telemetry and no analytics. The only request it makes on its own is the update check to GitHub. Follower goals look counts up only while they're on screen (TikTok and Facebook in a hidden browser that can only open their pages).
-- Keys and tokens stay in your local settings file. They never reach the overlays and are kept out of the log.
-- Updates only install when their checksum matches the one GitHub publishes. Mergio only **reads** chat: it never posts or logs in as you.
+- No telemetry and no analytics. The only request it makes on its own is the update check to GitHub (plus your go-live post, if you turn it on). Follower goals look counts up only while they're on screen (TikTok and Facebook in a hidden browser that can only open their pages).
+- Keys, tokens and webhook links stay in your local settings file. They never reach the overlays or style files and are kept out of the log.
+- Updates only install when their checksum matches the one GitHub publishes. Mergio only **reads** chat: it never posts in a chat or logs in as you. The go-live post only goes to the webhooks and bot you fill in.
 
 Found a security problem? See [SECURITY.md](SECURITY.md).
 
