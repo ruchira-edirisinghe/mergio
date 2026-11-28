@@ -1,0 +1,12 @@
+/* The go-live post as Discord shows it (public/shared/discordpost.js), in Discord's dark colours. */
+.dp { background: #313338; color: #dbdee1; border: 1px solid #1e1f22; border-radius: 12px; padding: 14px 16px; font: 14px/1.5 Inter, 'Segoe UI', Roboto, system-ui, sans-serif; text-align: left; }
+.dp-text, .dp-desc { white-space: pre-wrap; overflow-wrap: anywhere; }
+.dp .dp-link, .dp a.dp-title { color: #00a8fc; text-decoration: none; }
+.dp a.dp-link:hover, .dp a.dp-title:hover { text-decoration: underline; }
+.dp-card { display: grid; gap: 6px; max-width: 440px; margin-top: 8px; padding: 10px 14px 12px 12px; border-left: 4px solid #ff0000; border-radius: 4px; background: #2b2d31; }
+.dp-author { font-size: 13px; font-weight: 600; color: #f2f3f5; }
+.dp-title { display: block; font-size: 15px; font-weight: 700; color: #00a8fc; overflow-wrap: anywhere; }
+.dp-desc { font-size: 13.5px; }
+.dp-img { display: block; width: 100%; aspect-ratio: 16 / 9; margin-top: 4px; object-fit: cover; border-radius: 4px; background: #1e1f22; }
+.dp-empty { display: grid; place-items: center; padding: 0 16px; color: #949ba4; font-size: 13px; text-align: center; }
+.dp-foot { font-size: 12px; color: #b5bac1; overflow-wrap: anywhere; }

@@ -16,6 +16,8 @@
   // Discord shows <link> as a plain link (the brackets only stop its preview card)
   const shown = t => String(t || '').replace(/<(https?:\/\/[^>\s]+)>/g, '$1');
   const g = () => MG.st.settings.golive;
+  /** The post as Discord shows it, with the YouTube card. */
+  const discordPost = () => MergioDiscordPost.render(data?.preview?.discord, data?.preview?.discordCard);
 
   async function load() {
     try { data = await MG.api('GET', '/api/golive'); } catch (e) { MG.toast(e.message, true); }
@@ -28,7 +30,7 @@
     swap('gl-status', statusLine());
     swap('gl-hist', history());
     const pre = document.getElementById('gl-preview');
-    if (pre) pre.textContent = shown(data?.preview?.discord);
+    if (pre) pre.replaceChildren(discordPost());
     const cap = document.getElementById('gl-caption');
     if (cap) cap.textContent = data?.preview?.caption || '';
     drawCard();
@@ -215,8 +217,8 @@
           h('button', { class: 'link', onclick: () => { MG.save('golive', 'message', DEFAULT); MG.render(); } }, 'Use the standard message')),
         h('div', {},
           h('div', { class: 'gl-prev-h' }, h('b', { text: 'Preview' })),
-          h('pre', { class: 'gl-preview', id: 'gl-preview', text: shown(data?.preview?.discord) || '…' }),
-          h('p', { class: 'hint', text: 'Live on YouTube? The post also gets a card with your stream’s title and thumbnail, linking to the stream.' }))),
+          h('div', { id: 'gl-preview' }, discordPost()),
+          h('p', { class: 'hint', text: 'Live on YouTube? The post gets a card with your stream’s title, every live link, the stream’s thumbnail and your channel names.' }))),
       MG.subhead('Also live on', 'Your other channels, in the post, the caption and the status picture'),
       h('div', { class: 'fields' }, ...PLATS.filter(([p]) => have.has(p)).map(([p, name]) =>
         MG.field('golive', { key: LINK_KEY[p], icon: p, label: name, hint: MG.st.sources.find(x => x.platform === p)?.label || '', type: 'toggle' }))),
