@@ -177,7 +177,7 @@ Turn on **Post to Discord when I go live**. When your stream starts, Mergio wait
 
 **Everywhere else, by hand.** **Share & status** makes a 9:16 picture (your stream's thumbnail, LIVE NOW, your name, the title and every channel you're live on) and a caption with every stream's link. Pick the background, headline and what shows. Then:
 
-- **Add to status:** in the Mergio phone app it opens WhatsApp's status screen with the picture and caption ready. On the PC it opens Windows' share window, or saves the picture and copies the caption.
+- **Add to status:** in the Mergio phone app (**Viewers › Add to status**, or the banner when you go live) it opens WhatsApp's status screen with the picture and caption ready. On the PC it opens Windows' share window, or saves the picture and copies the caption.
 - **WhatsApp**, **Telegram**, **Facebook**, **X** and **Copy** share the caption with your links, and **Save picture** keeps the picture.
 
 Write the Discord post and the caption your way with fill-ins like `{name}`, `{title}`, `{link}`, `{others}`, `{all}` and `{mention}` (the ping). A line with nothing to fill in is left out.
@@ -198,6 +198,7 @@ What it has:
 - **Alerts**: gifts, subs, Super Chats, follows and raids with totals and your top supporters. **Viewers**: your live viewer count per platform, the peak and the last hour.
 - **Settings**: show or hide joins and TikTok likes, hide `!commands`, highlight your name, muted people and blocked words, text size, and the TikTok sign key and Facebook Page token.
 - **Phone extras**: keep the screen on, **read aloud** (alerts only, or every message) with the phone's own voice, and a sound or a buzz for alerts.
+- **Add to status**: when you go live, Mergio offers your status picture (your stream's thumbnail, title and every channel you're live on). One tap opens WhatsApp's status screen with the picture and a caption with all your links. It can also go to WhatsApp chats, Telegram or any other app, or be saved in Pictures. It's under **Viewers** and **Settings › Going live** any time, where you can change the background, headline and caption.
 
 Mergio keeps the chats connected while it's in the background (you see a "connected to your chats" notification; **Stop** there closes it). Its settings are separate from the desktop app's. Kick doesn't work on the phone yet: Kick blocks apps that aren't a browser (the desktop app gets around this with `curl`). The app is only on GitHub, not in the Play Store, and updates the same way: when a new version is out, Mergio shows a **Download** button.
 
