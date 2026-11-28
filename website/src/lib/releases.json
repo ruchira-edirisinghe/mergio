@@ -41,6 +41,29 @@
  },
  "releases": [
   {
+   "tag": "v1.7.1",
+   "date": "2026-11-28T09:07:18Z",
+   "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.7.1",
+   "notes": [
+    {
+     "title": "Mergio on your phone",
+     "text": "A new Android app runs Mergio on the phone itself, so you can read your live chat anywhere without your PC. It brings the chat from YouTube, Twitch, TikTok and Facebook together with the same filters as the desktop app, plus your alerts, viewer counts and channels, and can read messages aloud, buzz for gifts and keep the screen on. It keeps the chats connected in the background. Download `Mergio-android-arm64.apk` below (older phones: `Mergio-android-armv7.apk`). Kick doesn't work on the phone yet."
+    },
+    {
+     "title": "OBS docks while OBS is open",
+     "text": "Press *Install the docks in OBS* any time: if OBS is open, Mergio adds the Chat, Gifts and Viewers docks the moment you close it, and you'll find them in OBS's Docks menu the next time it starts."
+    },
+    {
+     "title": "A tidier page bar in small windows",
+     "text": "In narrow windows and on phones the pages sit in one neat row of icons, with the counts as small badges, and the highlight stays on the open page when you resize."
+    },
+    {
+     "title": "Fixes",
+     "text": "The Bounty poster badge no longer covers the picture."
+    }
+   ]
+  },
+  {
    "tag": "v1.7.0",
    "date": "2026-11-22T08:51:01Z",
    "url": "https://github.com/ruchira-edirisinghe/mergio/releases/tag/v1.7.0",
