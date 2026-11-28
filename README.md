@@ -156,7 +156,7 @@ Open **Live chat** to read every chat in one list. Click a platform to see only 
 - **Hide** one message (the eye) or press **Select**, pick messages (Shift+click picks a range) and choose **Hide from overlay** or **Keep only these**.
 - **Pause** holds new alerts until you resume, so none are lost. **Skip** ends the one on screen.
 
-To keep all of this inside OBS, open **Add to OBS → OBS docks** and press **Install the docks in OBS** while OBS is closed. You get three docks: **Mergio Chat** (`/dock/chat`), **Mergio Gifts** (`/dock/gifts`, with a ▶ to replay any alert) and **Mergio Viewers** (`/dock/viewers`). Mergio keeps any docks you added yourself. To add them by hand, use **Docks → Custom Browser Docks…** in OBS with those links.
+To keep all of this inside OBS, open **Add to OBS → OBS docks** and press **Install the docks in OBS**. If OBS is open, close it when Mergio asks: Mergio adds the docks the moment OBS closes (OBS saves its own settings when it closes, so they can't be added while it runs). You get three docks: **Mergio Chat** (`/dock/chat`), **Mergio Gifts** (`/dock/gifts`, with a ▶ to replay any alert) and **Mergio Viewers** (`/dock/viewers`). Mergio keeps any docks you added yourself. To add them by hand, use **Docks → Custom Browser Docks…** in OBS with those links.
 
 <div align="center"><img src="docs/guide/06-live-chat.png" alt="The Live chat page with platform filters" width="820"></div>
 
