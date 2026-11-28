@@ -29,6 +29,11 @@ class TikTokConnector extends Connector {
     try { this.conn?.disconnect(); } catch { /* ignore */ }
   }
 
+  /** Mergio only connects while you're LIVE on TikTok. */
+  liveInfo() {
+    return this.state === 'live' ? { url: `https://www.tiktok.com/@${this.source.target}/live`, title: this.liveTitle || '', videoId: this.roomId || undefined, started: true } : null;
+  }
+
   later(ms, why, state = 'waiting') {
     if (this.stopped) return;
     clearTimeout(this.retryTimer);
@@ -65,8 +70,10 @@ class TikTokConnector extends Connector {
       const state = await conn.connect();
       this.attempt = 0;
       this.channelName = '@' + this.source.target;
-      this.setState('live', `Connected to LIVE (room ${state?.roomId || '?'})`);
       const info = state?.roomInfo || conn.roomInfo || {};
+      this.roomId = state?.roomId ? String(state.roomId) : '';
+      this.liveTitle = String(info.title ?? info.data?.title ?? '');
+      this.setState('live', `Connected to LIVE (room ${state?.roomId || '?'})`);
       const owner = info.owner || info.data?.owner || {};
       this.setFollowers(owner.follow_info?.follower_count ?? owner.followInfo?.followerCount);
       const watching = Number(info.user_count ?? info.data?.user_count);

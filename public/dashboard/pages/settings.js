@@ -35,7 +35,7 @@
     // ----- backup -----
     const file = h('input', { type: 'file', accept: '.json,application/json', hidden: true, onchange: async e => {
       const f = e.target.files[0]; if (!f) return;
-      try { const data = JSON.parse(await f.text()); delete data.sources; delete data.advanced; await MG.update('PUT', '/api/settings', data); MG.render(); MG.toast('Style imported'); }
+      try { const data = JSON.parse(await f.text()); delete data.sources; delete data.advanced; delete data.golive; await MG.update('PUT', '/api/settings', data); MG.render(); MG.toast('Style imported'); }
       catch (err) { MG.toast(`That file could not be imported: ${err.message}`, true); }
     } });
     c.append(MG.card('Back up your style', 'Save your look to a file to keep it safe, move it to another PC or share it with friends.',
@@ -68,7 +68,7 @@
   }
 
   function exportStyle() {
-    const { sources, advanced, ...style } = MG.st.settings;
+    const { sources, advanced, golive, ...style } = MG.st.settings; // a style file never carries your chats, keys or post links
     const blob = new Blob([JSON.stringify(style, null, 2)], { type: 'application/json' });
     const a = h('a', { href: URL.createObjectURL(blob), download: 'mergio-style.json' });
     document.body.append(a); a.click(); a.remove();

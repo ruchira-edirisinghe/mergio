@@ -4,9 +4,17 @@ const path = require('node:path');
 const { DATA_DIR, log } = require('./util');
 
 const FILE = path.join(DATA_DIR, 'config.json');
-// Tokens and keys: the control panel only ever gets MASK back, never the saved value.
-const SECRETS = ['tiktokSignApiKey', 'facebookAccessToken', 'youtubeApiKey'];
+// Tokens, keys and private links, by section: the control panel only ever gets MASK back, never the saved value.
+const SECRETS = {
+  advanced: ['tiktokSignApiKey', 'facebookAccessToken', 'youtubeApiKey'],
+  golive: ['discordBotToken'],
+};
 const MASK = '•'.repeat(12);
+
+// The go-live post. {others} is the "Also live on" list; a line whose placeholders are all empty is left out.
+const GOLIVE_MESSAGE = '{mention} 🚨\n\n🔴 {name} is now LIVE!\n\n🎬 {title}\n{link}\n\n{others}';
+// The caption under a status picture (and the text the share buttons send): every stream's link, no ping.
+const GOLIVE_CAPTION = '🔴 {name} is LIVE now!\n\n🎬 {title}\n\n{all}';
 
 /** Every overlay/app option with its default. The dashboard renders its form from SCHEMA (public/dashboard). */
 const DEFAULTS = {
@@ -149,6 +157,21 @@ const DEFAULTS = {
   kick: { messages: true, subs: true, giftSubs: true, hosts: true, rewards: true, kicksGifts: true, follows: true },
   tiktok: { messages: true, joins: true, gifts: true, likes: true, follows: true, shares: false, subs: true, minGiftDiamonds: 0 },
   facebook: { messages: true },
+  golive: {
+    enabled: false,             // post a "going live" message when the stream starts
+    trigger: 'youtube',         // youtube | twitch | kick | tiktok | facebook | any: which going live starts the post
+    delay: 30,                  // seconds to wait first, so the other platforms (and Facebook's link) are up too
+    name: '',                   // the name in the post ('' = the channel's name)
+    message: GOLIVE_MESSAGE,
+    linkYoutube: true, linkTwitch: true, linkKick: true, linkTiktok: true, linkFacebook: true, // listed under "Also live on"
+    discordBotToken: '',        // your own Discord bot (it posts; Discord doesn't let apps post as you)
+    discordTargets: [],         // where it posts: [{ server, channel, ping }] by name, ping = '@everyone, @Role'
+    caption: GOLIVE_CAPTION,    // the text the share buttons and the status picture use
+    statusTheme: 'thumb',       // the status picture's background: thumb (the stream's thumbnail) | neon | sunset | ocean | mono
+    statusHeadline: 'LIVE NOW',
+    statusTitle: true,          // the stream title on the status picture
+    statusHandles: true,        // each platform's channel name next to its logo
+  },
   advanced: { configVersion: 3, port: 8787, openDashboardOnStart: true, tiktokSignApiKey: '', facebookAccessToken: '', youtubeApiKey: '', welcomeSeen: false, overlaySeen: false, styleSeen: false },
   sources: [],
   templates: { chat: [null, null, null], alerts: [null, null, null], viewers: [null, null, null], followers: [null, null, null] },
@@ -200,6 +223,7 @@ const RANGES = {
   followers: { fontSize: [16, 90], goalStep: [1, 1e6, true], goalYoutube: [0, 1e9, true], goalTwitch: [0, 1e9, true], goalKick: [0, 1e9, true],
     goalTiktok: [0, 1e9, true], goalFacebook: [0, 1e9, true], goalTotal: [0, 1e9, true] },
   tiktok: { minGiftDiamonds: [0, 100000, true] },
+  golive: { delay: [0, 600, true] },
 };
 const SOUND_TYPES = ['chime', 'coin', 'levelup', 'arcade', 'soft', 'fanfare', 'sparkle'];
 const CHOICES = {
@@ -213,8 +237,15 @@ const CHOICES = {
   viewers: { style: ['pill', 'glass', 'neon', 'broadcast', 'minimal'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'], numberFormat: ['full', 'short'] },
   followers: { style: ['panel', 'line', 'cards', 'neon', 'bars'], layout: ['line', 'row', 'column'], align: ['left', 'center', 'right'] },
   twitch: { sharedChat: ['show', 'highlight', 'hide'] },
+  golive: { trigger: ['youtube', 'twitch', 'kick', 'tiktok', 'facebook', 'any'], statusTheme: ['thumb', 'neon', 'sunset', 'ocean', 'mono'] },
 };
 const COLOR = /^#[\da-f]{6}$/i;
+// A Discord bot token is three dot-separated parts. One that doesn't look right keeps the one saved before.
+const BOT_TOKEN = /^[\w-]{20,40}\.[\w-]{4,12}\.[\w-]{20,80}$/;
+const GOLIVE_MAX = 1800; // Discord takes 2000 letters per message; leave room for the links
+const MAX_TARGETS = 10;
+/** A name typed by the user: no control characters, trimmed, not too long. */
+const plain = (v, max) => String(v ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 const FONT = /^[\p{L}\p{N} _.-]{0,80}$/u; // a font name: letters, numbers, spaces (it ends up in CSS and a Google Fonts link)
 
 /** Keeps every setting of s valid; prev holds the values to fall back to (the ones saved before). */
@@ -235,6 +266,21 @@ function validate(s, prev = DEFAULTS) {
     }
     if (!FONT.test(s[sec].font)) s[sec].font = FONT.test(prev[sec].font) ? prev[sec].font : DEFAULTS[sec].font;
   }
+  const g = s.golive;
+  g.discordBotToken = String(g.discordBotToken).trim();
+  if (g.discordBotToken && !BOT_TOKEN.test(g.discordBotToken)) g.discordBotToken = BOT_TOKEN.test(prev.golive.discordBotToken) ? prev.golive.discordBotToken : '';
+  // Discord channels by name; rows without a server or channel are dropped
+  g.discordTargets = (Array.isArray(g.discordTargets) ? g.discordTargets : [])
+    .filter(t => t && typeof t === 'object')
+    .map(t => ({ server: plain(t.server, 100), channel: plain(t.channel, 100).replace(/^#+\s*/, ''), ping: plain(t.ping, 200) }))
+    .filter(t => t.server && t.channel)
+    .slice(0, MAX_TARGETS);
+  g.name = plain(g.name, 80);
+  g.statusHeadline = plain(g.statusHeadline, 30) || 'LIVE NOW';
+  g.message = g.message.replace(/\r\n?/g, '\n').slice(0, GOLIVE_MAX);
+  if (!g.message.trim()) g.message = GOLIVE_MESSAGE;
+  g.caption = g.caption.replace(/\r\n?/g, '\n').slice(0, GOLIVE_MAX);
+  if (!g.caption.trim()) g.caption = GOLIVE_CAPTION;
   return s;
 }
 
@@ -317,14 +363,15 @@ function update(patch) {
   // The panel sends the mask back when a token field wasn't really changed: keep the saved token then.
   // A key typed or pasted after the mask ("••••NEWKEY") is the new key. Real tokens and keys are plain ASCII,
   // so anything else is ignored.
-  const adv = patch?.advanced;
-  if (adv && typeof adv === 'object') {
-    for (const k of SECRETS) {
-      if (typeof adv[k] !== 'string') continue;
-      const typed = adv[k].replaceAll(MASK[0], '').trim();
-      if (!typed && adv[k].includes(MASK[0])) delete adv[k];
-      else if (/[^\x20-\x7e]/.test(typed)) delete adv[k];
-      else adv[k] = typed;
+  for (const [sec, keys] of Object.entries(SECRETS)) {
+    const part = patch?.[sec];
+    if (!part || typeof part !== 'object') continue;
+    for (const k of keys) {
+      if (typeof part[k] !== 'string') continue;
+      const typed = part[k].replaceAll(MASK[0], '').trim();
+      if (!typed && part[k].includes(MASK[0])) delete part[k];
+      else if (/[^\x20-\x7e]/.test(typed)) delete part[k];
+      else part[k] = typed;
     }
   }
   const templates = current.templates; // saved looks only change through template()
@@ -362,22 +409,26 @@ function template(action, type, slot, name) {
 
 function reset(section) {
   if (section && Object.hasOwn(DEFAULTS, section) && section !== 'sources' && section !== 'templates') current[section] = structuredClone(DEFAULTS[section]);
-  else current = { ...structuredClone(DEFAULTS), sources: current.sources, advanced: current.advanced, templates: current.templates };
+  // a full reset is about the look: chats, keys, saved looks and the go-live post (with its links) stay
+  else current = { ...structuredClone(DEFAULTS), sources: current.sources, advanced: current.advanced, templates: current.templates, golive: current.golive };
   save();
   return current;
 }
 
 /** Overlay-facing view: never leaks tokens to browser sources. */
 function publicView(s = current) {
-  const { advanced, sources, ...rest } = s;
+  const { advanced, sources, golive, ...rest } = s;
   return rest;
 }
 
 /** Control-panel view: everything, but a saved token shows as MASK (so the panel knows one is set). */
 function panelView(s = current) {
-  const advanced = { ...s.advanced };
-  for (const k of SECRETS) if (advanced[k]) advanced[k] = MASK;
-  return { ...s, advanced };
+  const out = { ...s };
+  for (const [sec, keys] of Object.entries(SECRETS)) {
+    out[sec] = { ...s[sec] };
+    for (const k of keys) if (out[sec][k]) out[sec][k] = MASK;
+  }
+  return out;
 }
 
-module.exports = { DEFAULTS, FILE, MASK, get, update, reset, save, template, publicView, panelView };
+module.exports = { DEFAULTS, FILE, MASK, GOLIVE_MESSAGE, GOLIVE_CAPTION, get, update, reset, save, template, publicView, panelView };

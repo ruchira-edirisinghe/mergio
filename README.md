@@ -43,6 +43,7 @@ Multistreaming means your viewers chat in five places. Mergio reads all of them 
 - 💾 **Saved looks:** keep three looks for each overlay (chat, alerts, viewer count, follower goals), switch with one click, or give a scene its own look with `?slot=2`.
 - 🌍 **Any language:** names and messages in Sinhala, Tamil, Hindi, Arabic, Hebrew, Japanese, Chinese, Korean, Thai and more show correctly, right-to-left included.
 - 💬 **Live chat page:** read every chat in one list and filter it by platform or by chat and alerts. **Pin** a message to the top of your overlay, **hide** single messages, or pick several and keep only those when you clear the chat.
+- 📣 **Go-live post:** when your stream starts, your own Discord bot posts your title and link (plus your other channels) in the channels you name, once per stream, and pings roles by name. For everything else there's a status picture with all your streams for your WhatsApp status (one tap in the phone app) and share buttons for WhatsApp, Telegram, Facebook and X.
 - 🧩 **OBS docks:** three small panels inside OBS (the full chat, the gifts and alerts you received with your top supporters, and your live viewer count with the peak and the last hour), added with one button.
 - 👋 **Joins and likes your way:** switch "joined the chat" and TikTok likes on or off for the chat overlay.
 - 🛡️ **Clean chat:** moderation sync, filters for bots, `!commands` and words, and a minimum TikTok gift value.
@@ -161,6 +162,26 @@ To keep all of this inside OBS, open **Add to OBS → OBS docks** and press **In
 
 <div align="center"><img src="docs/guide/06-live-chat.png" alt="The Live chat page with platform filters" width="820"></div>
 
+### Step 8 · Tell everyone you're live (optional)
+
+Open **Go-live post**.
+
+**Discord, by itself.** Discord only lets bots post for you, so you make your own bot once (free, about 3 minutes):
+
+1. Open [discord.com/developers/applications](https://discord.com/developers/applications), press **New Application** and name it (viewers see this name).
+2. Open **Bot**, press **Reset Token**, copy it and paste it into **Bot token**.
+3. Press **Check**, then **Invite the bot to a server** and pick your server (once per server).
+4. Add your channels by name, for example `Zenitron Gaming` / `live-alerts` / `@CUSTOMERS`. Emoji and separators in channel names don't matter, and roles are pinged by name.
+
+Turn on **Post to Discord when I go live**. When your stream starts, Mergio waits a moment (30 seconds by default, so your other streams are up too) and posts the title and link with your other channels under **Also live on**. It posts once per stream: restarting Mergio, another platform going live a minute later, or Mergio on your phone doesn't post again. **Send a test post** says [Test] and pings nobody, and **Post now** posts a stream that already started.
+
+**Everywhere else, by hand.** **Share & status** makes a 9:16 picture (your stream's thumbnail, LIVE NOW, your name, the title and every channel you're live on) and a caption with every stream's link. Pick the background, headline and what shows. Then:
+
+- **Add to status:** in the Mergio phone app it opens WhatsApp's status screen with the picture and caption ready. On the PC it opens Windows' share window, or saves the picture and copies the caption.
+- **WhatsApp**, **Telegram**, **Facebook**, **X** and **Copy** share the caption with your links, and **Save picture** keeps the picture.
+
+Write the Discord post and the caption your way with fill-ins like `{name}`, `{title}`, `{link}`, `{others}`, `{all}` and `{mention}` (the ping). A line with nothing to fill in is left out.
+
 🎉 **You're all set.** Turn on **Settings → Start Mergio with Windows** so it's always ready.
 
 ## Mergio on your phone (Android)
@@ -250,9 +271,9 @@ Still stuck? [Open an issue](https://github.com/ruchira-edirisinghe/mergio/issue
 ## Privacy & security
 
 - Mergio listens on **127.0.0.1 only**, so nothing on your network can reach it, and websites in your browser can't use it.
-- No telemetry and no analytics. The only request it makes on its own is the update check to GitHub. Follower goals look counts up only while they're on screen (TikTok and Facebook in a hidden browser that can only open their pages).
-- Keys and tokens stay in your local settings file. They never reach the overlays and are kept out of the log.
-- Updates only install when their checksum matches the one GitHub publishes. Mergio only **reads** chat: it never posts or logs in as you.
+- No telemetry and no analytics. The only request it makes on its own is the update check to GitHub (plus your Discord go-live post, if you turn it on). Follower goals look counts up only while they're on screen (TikTok and Facebook in a hidden browser that can only open their pages).
+- Keys and tokens (your Discord bot's too) stay in your local settings file. They never reach the overlays or style files and are kept out of the log.
+- Updates only install when their checksum matches the one GitHub publishes. Mergio only **reads** chat: it never posts in a chat or logs in as you. The go-live post is sent by your own Discord bot, only to the channels you name.
 
 Found a security problem? See [SECURITY.md](SECURITY.md).
 

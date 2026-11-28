@@ -71,6 +71,9 @@ class Connector extends EventEmitter {
     this.everyTimer.unref?.();
   }
 
+  /** The live stream's { url, title, videoId, started } for the go-live alert, when the platform tells us. */
+  liveInfo() { return null; }
+
   start() {}
   stop() { this.stopped = true; clearInterval(this.everyTimer); this.setViewers(null); this.setState('stopped'); }
 }
