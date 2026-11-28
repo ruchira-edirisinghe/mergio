@@ -90,9 +90,15 @@
     const c = checked;
     if (!c) return h('span');
     if (c.error) return h('div', { class: 'note warn' }, icon('info'), h('span', { text: c.error }));
+    const ready = c.targets.filter(t => t.ok).length;
+    // one row per channel: its icon, then the channel and what's up with it underneath
+    const row = (cls, ic, title, text) => h('div', { class: `gl-res ${cls}` }, icon(ic), h('div', {}, h('b', { text: title }), text ? h('span', { text }) : null));
     return h('div', { class: 'gl-check' },
-      h('p', {}, icon('check'), ' Signed in as ', h('b', { text: c.bot.name }), c.servers.length ? ` · in ${c.servers.length} server${c.servers.length > 1 ? 's' : ''}: ${c.servers.join(', ')}` : ' · not in any server yet'),
-      ...c.targets.map(t => h('p', { class: t.ok ? (t.warning ? 'warn' : 'ok') : 'bad' }, icon(t.ok ? 'check' : 'info'), ' ', h('b', { text: t.label }), t.error || t.warning ? ` · ${t.error || t.warning}` : '')),
+      h('div', { class: 'gl-bot' }, icon('check'),
+        h('div', {}, h('b', {}, 'Signed in as ', c.bot.name), h('span', { text: c.servers.length ? `In ${c.servers.length} server${c.servers.length > 1 ? 's' : ''}` : 'Not in any server yet: invite it below' })),
+        c.targets.length ? h('span', { class: `gl-sum ${ready === c.targets.length ? 'ok' : 'bad'}`, text: `${ready} of ${c.targets.length} channel${c.targets.length > 1 ? 's' : ''} ready` }) : null),
+      c.servers.length ? h('div', { class: 'gl-servers' }, ...c.servers.map(s => h('span', { class: 'gl-srv', text: s }))) : null,
+      ...c.targets.map(t => row(t.ok ? (t.warning ? 'warn' : 'ok') : 'bad', t.ok && !t.warning ? 'check' : 'info', t.label, t.error || t.warning || (t.ok ? 'Ready to post' : ''))),
       h('div', { class: 'btn-row' }, h('a', { class: 'btn sm', href: c.invite, target: '_blank', rel: 'noopener' }, icon('plus'), 'Invite the bot to a server')));
   }
 
