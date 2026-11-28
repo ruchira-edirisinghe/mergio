@@ -49,6 +49,6 @@
     "esbuild": "^0.28.2",
     "postject": "^1.0.0-alpha.6",
     "rcedit": "^5.0.2",
-    "simple-icons": "^16.38.0"
+    "simple-icons": "^16.38.1"
   }
 }
