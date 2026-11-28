@@ -236,6 +236,9 @@ test('go-live post: the bot token is checked and kept secret, channels are clean
   let s = settings.update({ golive: { discordBotToken: token, discordTargets: [{ server: ' Zenitron  Gaming ', channel: '#live-alerts', ping: '@CUSTOMERS' }, { server: 'x' }, 'bad'], trigger: 'nope', delay: 9999, statusTheme: 'nope', statusHeadline: '' } });
   assert.equal(s.golive.discordBotToken, token);
   assert.deepEqual(s.golive.discordTargets, [{ server: 'Zenitron Gaming', channel: 'live-alerts', ping: '@CUSTOMERS' }]);
+  s = settings.update({ golive: { discordTargets: [{ server: '', channel: 'https://discord.com/channels/111111111111111111/222222222222222222' }, { server: '', channel: '222222222222222222' }] } });
+  assert.deepEqual(s.golive.discordTargets, [{ server: '111111111111111111', channel: 'https://discord.com/channels/111111111111111111/222222222222222222', ping: '' }],
+    'a channel link fills in its server; a bare channel ID still needs one');
   assert.equal(s.golive.trigger, 'youtube');
   assert.equal(s.golive.delay, 600);
   assert.equal(s.golive.statusTheme, 'thumb');
@@ -317,6 +320,20 @@ console.log('Go-live post');
     assert.deepEqual(m.allowed, { parse: ['everyone'], roles: ['77777', '555555'], users: [] });
     assert.deepEqual(m.missing, ['@Nobody']);
   });
+  test('servers and channels can also be Discord IDs, channel mentions or channel links', () => {
+    const S = '111111111111111111', C = '222222222222222222';
+    assert.deepEqual(discord.channelRef(C), { id: C, server: null });
+    assert.deepEqual(discord.channelRef(`#${C}`), { id: C, server: null });
+    assert.deepEqual(discord.channelRef(`<#${C}>`), { id: C, server: null });
+    assert.deepEqual(discord.channelRef(`https://discord.com/channels/${S}/${C}`), { id: C, server: S });
+    assert.deepEqual(discord.channelRef(`ptb.discordapp.com/channels/${S}/${C}/`), { id: C, server: S });
+    assert.equal(discord.channelRef('live-alerts'), null, 'a name');
+    assert.equal(discord.channelRef('2024'), null, 'a short number is a name, not an ID');
+    assert.equal(discord.channelRef(`https://example.com/channels/${S}/${C}`), null);
+    assert.equal(discord.serverRef(S), S);
+    assert.equal(discord.serverRef(`https://discord.com/channels/${S}`), S);
+    assert.equal(discord.serverRef('Zenitron Gaming'), null);
+  });
   test('channel links from the chats', () => {
     assert.equal(golive.channelLink({ platform: 'youtube', target: '@zen' }), 'https://www.youtube.com/@zen/live');
     assert.equal(golive.channelLink({ platform: 'facebook', target: 'page:zenitrongaming' }), 'https://www.facebook.com/zenitrongaming');
@@ -340,7 +357,8 @@ console.log('Go-live post');
       if (req.headers.authorization !== `Bot ${FAKE_BOT}`) { res.statusCode = 401; return json({ message: '401: Unauthorized', code: 0 }); }
       const u = req.url.replace(/^\/api/, '');
       if (u === '/users/@me') return json({ id: '900', username: 'Mergio Bot' });
-      if (u === '/users/@me/guilds') return json([{ id: '10', name: 'Zenitron Gaming' }]);
+      if (u === '/users/@me/guilds') return json([{ id: '10', name: 'Zenitron Gaming' }, { id: '111111111111111111', name: 'Night Owls' }]);
+      if (u === '/guilds/111111111111111111/channels') return json([{ id: '222222222222222222', name: 'alerts', type: 0 }, { id: '333333333333333333', name: 'Lounge', type: 2 }]);
       if (u === '/guilds/10/channels') return json([{ id: '20', name: '📢┃live-alerts', type: 0 }, { id: '21', name: 'general', type: 0 }, { id: '22', name: 'Voice', type: 2 }]);
       if (u === '/guilds/10/roles') return json([{ id: '10', name: '@everyone' }, { id: '30', name: 'CUSTOMERS' }]);
       if (u.startsWith('/channels/20/messages') && req.method === 'GET') return json(posted.map(p => ({ author: { id: '900' }, content: p.content })));
@@ -370,6 +388,17 @@ console.log('Go-live post');
     assert.equal(c.targets[1].ok, false);
     assert.match(c.targets[1].error, /isn't in a server called “Other server”/);
     assert.match((await discord.check('MTIz.bad.token-xxxxxxxxxxxxxxxxxxxxxxxx', [])).error, /token is wrong/);
+  });
+  await atest('the bot also finds servers and channels by ID or channel link', async () => {
+    const S = '111111111111111111', C = '222222222222222222';
+    const c = await discord.check(FAKE_BOT, [
+      { server: S, channel: C }, { server: 'Night Owls', channel: `<#${C}>` }, { server: '', channel: `https://discord.com/channels/${S}/${C}` },
+      { server: S, channel: '333333333333333333' }, { server: '999999999999999999', channel: C }, { server: '', channel: `https://discord.com/channels/999999999999999999/${C}` },
+    ]);
+    assert.deepEqual(c.targets.slice(0, 3).map(t => [t.ok, t.label]), [[true, 'Night Owls › #alerts'], [true, 'Night Owls › #alerts'], [true, 'Night Owls › #alerts']]);
+    assert.match(c.targets[3].error, /no text channel with ID 333333333333333333 in Night Owls/, 'a voice channel');
+    assert.match(c.targets[4].error, /isn't in the server with ID 999999999999999999/);
+    assert.match(c.targets[5].error, /isn't in the server with ID 999999999999999999/);
   });
   await atest('posts when the stream starts, once, and pings the role by name', async () => {
     golive.check(); await wait(50);

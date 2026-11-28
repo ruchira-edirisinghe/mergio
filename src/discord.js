@@ -38,6 +38,24 @@ async function call(token, path, { method = 'GET', body } = {}, retried = false)
 /** "📢┃Live-Alerts" and "live alerts" are the same name: letters and numbers only, any case. */
 const core = s => String(s || '').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
 
+/**
+ * What the streamer typed for a channel or server, read as a Discord ID when it is one: the ID itself
+ * ("Copy Channel ID"), a channel mention like <#123…>, or a channel link (discord.com/channels/<server>/<channel>,
+ * which "Copy Link" gives). Anything else is a name. A link also says which server the channel is in.
+ */
+const SNOWFLAKE = /^\d{15,25}$/;
+const LINK = /^(?:https?:\/\/)?(?:(?:www|ptb|canary)\.)?discord(?:app)?\.com\/channels\/(\d{15,25})(?:\/(\d{15,25}))?\/?(?:[?#].*)?$/i;
+function ref(text) {
+  const s = String(text || '').trim();
+  let m;
+  if ((m = LINK.exec(s))) return { server: m[1], channel: m[2] || null };
+  if ((m = /^<#(\d{15,25})>$/.exec(s))) return { channel: m[1] };
+  if (SNOWFLAKE.test(s.replace(/^#/, ''))) return { id: s.replace(/^#/, '') };
+  return null;
+}
+const channelRef = text => { const r = ref(text); return r ? { id: r.channel || r.id || null, server: r.server || null } : null; };
+const serverRef = text => { const r = ref(text); return r ? r.server || r.id || null : null; };
+
 /** The item whose name matches: exactly, or else the only one that contains the name. */
 function pick(list, name, nameOf = x => x.name) {
   const want = core(name);
@@ -97,11 +115,25 @@ async function resolve(token, targets, fresh = false) {
   for (const t of targets) {
     const r = { target: t, label: label(t), ok: false };
     out.push(r);
-    const guild = pick(c.guilds, t.server);
-    if (!guild) { r.error = `The bot isn't in a server called “${t.server}”. Invite it with the link on this page.`; continue; }
+    // a server and a channel can each be a name or an ID; a channel link also names its server
+    const cref = channelRef(t.channel);
+    const sid = serverRef(t.server) || cref?.server;
+    const guild = (sid && c.guilds.find(g => g.id === sid)) || (!serverRef(t.server) && pick(c.guilds, t.server)) || null;
+    if (!guild) {
+      r.error = serverRef(t.server) || (!t.server && sid)
+        ? `The bot isn't in the server with ID ${sid}. Invite it with the link on this page.`
+        : `The bot isn't in a server called “${t.server}”. Invite it with the link on this page.`;
+      continue;
+    }
     try {
-      const channel = pick((await channelsOf(token, c, guild.id)).filter(ch => ch.type === TEXT || ch.type === NEWS), t.channel);
-      if (!channel) { r.error = `There's no text channel called “#${t.channel}” in ${guild.name}.`; continue; }
+      const textChannels = (await channelsOf(token, c, guild.id)).filter(ch => ch.type === TEXT || ch.type === NEWS);
+      const channel = cref?.id ? textChannels.find(ch => ch.id === cref.id) : pick(textChannels, t.channel);
+      if (!channel) {
+        r.error = cref?.id
+          ? `There's no text channel with ID ${cref.id} in ${guild.name}, or the bot can't see it.`
+          : `There's no text channel called “#${t.channel}” in ${guild.name}.`;
+        continue;
+      }
       const mention = mentionFor(t.ping, needsRoles(t.ping) ? await rolesOf(token, c, guild.id) : []);
       Object.assign(r, { ok: true, guild, channel, mention, label: `${guild.name} › #${channel.name}` });
       if (mention.missing.length) r.warning = `No role called ${mention.missing.join(', ')} in ${guild.name}, so it posts without that ping.`;
@@ -156,4 +188,4 @@ async function check(token, targets) {
   } catch (e) { return { ok: false, error: explain(e) }; }
 }
 
-module.exports = { resolve, send, check, mentionFor, pick, core, invite, PERMS };
+module.exports = { resolve, send, check, mentionFor, pick, core, invite, PERMS, channelRef, serverRef };

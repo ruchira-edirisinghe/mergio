@@ -165,7 +165,7 @@ const DEFAULTS = {
     message: GOLIVE_MESSAGE,
     linkYoutube: true, linkTwitch: true, linkKick: true, linkTiktok: true, linkFacebook: true, // listed under "Also live on"
     discordBotToken: '',        // your own Discord bot (it posts; Discord doesn't let apps post as you)
-    discordTargets: [],         // where it posts: [{ server, channel, ping }] by name, ping = '@everyone, @Role'
+    discordTargets: [],         // where it posts: [{ server, channel, ping }] by name or ID, ping = '@everyone, @Role'
     caption: GOLIVE_CAPTION,    // the text the share buttons and the status picture use
     statusTheme: 'thumb',       // the status picture's background: thumb (the stream's thumbnail) | neon | sunset | ocean | mono
     statusHeadline: 'LIVE NOW',
@@ -245,6 +245,7 @@ const BOT_TOKEN = /^[\w-]{20,40}\.[\w-]{4,12}\.[\w-]{20,80}$/;
 const GOLIVE_MAX = 1800; // Discord takes 2000 letters per message; leave room for the links
 const MAX_TARGETS = 10;
 /** A name typed by the user: no control characters, trimmed, not too long. */
+const CHANNEL_LINK = /^(?:https?:\/\/)?(?:(?:www|ptb|canary)\.)?discord(?:app)?\.com\/channels\/(\d{15,25})\/\d{15,25}/i; // "Copy Link" on a channel
 const plain = (v, max) => String(v ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 const FONT = /^[\p{L}\p{N} _.-]{0,80}$/u; // a font name: letters, numbers, spaces (it ends up in CSS and a Google Fonts link)
 
@@ -269,10 +270,11 @@ function validate(s, prev = DEFAULTS) {
   const g = s.golive;
   g.discordBotToken = String(g.discordBotToken).trim();
   if (g.discordBotToken && !BOT_TOKEN.test(g.discordBotToken)) g.discordBotToken = BOT_TOKEN.test(prev.golive.discordBotToken) ? prev.golive.discordBotToken : '';
-  // Discord channels by name; rows without a server or channel are dropped
+  // Discord channels by name or ID; a pasted channel link fills in its server; rows without a server or channel are dropped
   g.discordTargets = (Array.isArray(g.discordTargets) ? g.discordTargets : [])
     .filter(t => t && typeof t === 'object')
     .map(t => ({ server: plain(t.server, 100), channel: plain(t.channel, 100).replace(/^#+\s*/, ''), ping: plain(t.ping, 200) }))
+    .map(t => ({ ...t, server: t.server || (CHANNEL_LINK.exec(t.channel) || [])[1] || '' }))
     .filter(t => t.server && t.channel)
     .slice(0, MAX_TARGETS);
   g.name = plain(g.name, 80);

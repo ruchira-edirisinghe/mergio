@@ -171,7 +171,7 @@ Open **Go-live post**.
 1. Open [discord.com/developers/applications](https://discord.com/developers/applications), press **New Application** and name it (viewers see this name).
 2. Open **Bot**, press **Reset Token**, copy it and paste it into **Bot token**.
 3. Press **Check**, then **Invite the bot to a server** and pick your server (once per server).
-4. Add your channels by name, for example `Zenitron Gaming` / `live-alerts` / `@CUSTOMERS`. Emoji and separators in channel names don't matter, and roles are pinged by name.
+4. Add your channels by name, for example `Zenitron Gaming` / `live-alerts` / `@CUSTOMERS`. Emoji and separators in channel names don't matter, and roles are pinged by name. You can also use IDs (turn on Developer Mode, then right-click → **Copy Server ID** / **Copy Channel ID**), or paste a channel link (right-click the channel → **Copy Link**), which fills in the server too.
 
 Turn on **Post to Discord when I go live**. When your stream starts, Mergio waits a moment (30 seconds by default, so your other streams are up too) and posts the title and link with your other channels under **Also live on**. It posts once per stream: restarting Mergio, another platform going live a minute later, or Mergio on your phone doesn't post again. **Send a test post** says [Test] and pings nobody, and **Post now** posts a stream that already started.
 
