@@ -17,6 +17,7 @@ const APPS: [ReactNode, string][] = [
   [<Logo id="windows" />, 'Windows'],
   [<Logo id="apple" />, 'macOS'],
   [<Logo id="linux" />, 'Linux'],
+  [<Logo id="android" />, 'Android'],
 ];
 
 export function WorksWith() {
