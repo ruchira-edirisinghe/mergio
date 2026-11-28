@@ -152,6 +152,34 @@
     placeIndicator(nav);
     // on a phone the page bar scrolls sideways: keep the current page in view
     if (nav.scrollWidth > nav.clientWidth) nav.querySelector('.on')?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+    navEdges(nav);
+    watchNav(nav);
+  }
+  /** Fades an edge of the sideways page bar only while there are more pages to scroll to that way. */
+  function navEdges(nav) {
+    const more = nav.scrollWidth - nav.clientWidth > 2;
+    nav.classList.toggle('more-l', more && nav.scrollLeft > 2);
+    nav.classList.toggle('more-r', more && nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 2);
+  }
+  /** When the window changes size the bar can switch between the sidebar and the top bar: the
+      highlight jumps to the open page's new place (no glide) instead of keeping the old shape. */
+  function watchNav(nav) {
+    if (nav.dataset.watched) return;
+    nav.dataset.watched = '1';
+    nav.addEventListener('scroll', () => navEdges(nav), { passive: true });
+    const sync = () => {
+      const on = nav.querySelector('button.on'), ind = nav.querySelector('.nav-ind');
+      if (on && ind) {
+        const to = { x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, hh: on.offsetHeight };
+        if (!navAt || to.x !== navAt.x || to.y !== navAt.y || to.w !== navAt.w || to.hh !== navAt.hh) {
+          ind.classList.remove('move');
+          ind.style.transform = `translate(${to.x}px, ${to.y}px)`; ind.style.width = `${to.w}px`; ind.style.height = `${to.hh}px`;
+          navAt = to;
+        }
+      }
+      navEdges(nav);
+    };
+    if (window.ResizeObserver) new ResizeObserver(sync).observe(nav); else window.addEventListener('resize', sync);
   }
   MG.renderNav = renderNav;
   const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
