@@ -75,13 +75,14 @@ function textFor(post, g, dest) {
   const others = ORDER.filter(p => p !== post.platform && post.links[p]);
   // On Discord <link> stops the extra link previews, so only the stream itself gets a big card.
   const wrap = url => (dest === 'discord' ? `<${url}>` : url);
-  const vars = {
-    mention: dest === 'discord' ? discordMention(g.discordMention).text : '',
-    name: post.name, title: post.title, link: post.url, platform: NAMES[post.platform] || '',
-    others: others.length ? ['Also live on:', ...others.map(p => `${DOTS[p]} ${NAMES[p]}: ${wrap(post.links[p])}`)].join('\n') : '',
-  };
-  for (const p of ORDER) vars[p] = post.links[p] ? wrap(post.links[p]) : '';
-  if (dest === 'discord' && post.links[post.platform]) vars[post.platform] = post.url; // the stream link keeps its preview
+  // one fill-in per platform; the stream's own link keeps its preview on Discord
+  const own = p => (p === post.platform ? post.url : wrap(post.links[p]));
+  const vars = Object.fromEntries([
+    ['mention', dest === 'discord' ? discordMention(g.discordMention).text : ''],
+    ['name', post.name], ['title', post.title], ['link', post.url], ['platform', NAMES[post.platform] || ''],
+    ['others', others.length ? ['Also live on:', ...others.map(p => `${DOTS[p]} ${NAMES[p]}: ${wrap(post.links[p])}`)].join('\n') : ''],
+    ...ORDER.map(p => [p, post.links[p] ? own(p) : '']),
+  ]);
   return render(g.message, vars);
 }
 
@@ -257,15 +258,17 @@ async function buildPost(sourceId, { test = false } = {}) {
   let info = conn?.liveInfo?.() || null;
   // the newest title (it is often changed right after going live), and a last check that YouTube really is live
   if (info && conn.refreshLive) info = await conn.refreshLive().catch(() => info);
-  const links = {};
-  for (const s of sources) {
-    if (!g[LINK_KEY[s.platform]] || links[s.platform]) continue;
-    const c = manager?.running.get(s.id);
-    links[s.platform] = c?.liveInfo?.()?.url || channelLink(s, c);
-  }
   const platform = src?.platform || '';
   const url = info?.url || (src ? channelLink(src, conn) : '');
-  if (platform && url) links[platform] = url;
+  // each platform's link (the first chat of that platform), built from the fixed platform list only
+  const linkOf = p => {
+    if (p === platform && url) return url;
+    const s = sources.find(x => x.platform === p);
+    if (!s || !g[LINK_KEY[p]]) return '';
+    const c = manager?.running.get(s.id);
+    return c?.liveInfo?.()?.url || channelLink(s, c);
+  };
+  const links = Object.fromEntries(ORDER.map(p => [p, linkOf(p)]).filter(([, u]) => u));
   const name = g.name || String(conn?.channelName || src?.label || '').replace(/^@/, '');
   return { platform, url, title: info?.title || (test ? 'Your stream title shows here' : ''), name, links, info, test };
 }
