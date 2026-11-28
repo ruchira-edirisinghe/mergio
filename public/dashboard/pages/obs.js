@@ -67,27 +67,39 @@
   let dockState = null;
   async function loadDocks() {
     try { dockState = await MG.api('GET', '/api/obs/docks'); } catch { dockState = { supported: false }; }
-    const el = document.getElementById('dockStatus'); if (el) el.replaceWith(dockStatus());
+    redrawDocks();
   }
   function dockStatus() {
     const d = dockState;
     const box = (cls, ic, title, text) => h('div', { class: `banner ${cls}`, id: 'dockStatus' }, icon(ic), h('div', {}, h('b', { text: title }), h('span', { text })));
     if (!d) return box('', 'monitor', 'Looking for OBS…', '');
     if (!d.found) return box('', 'monitor', 'OBS Studio not found on this computer', 'Use the links below in your streaming app instead, or start OBS once and come back.');
+    if (d.waiting) {
+      const b = box('warn', 'clock', 'Now close OBS', 'Mergio adds the three docks the moment OBS closes. Then start OBS again and they are there.');
+      b.append(h('button', { class: 'btn sm ghost', style: 'margin-left:auto;flex:none', onclick: async () => { dockState = await MG.api('DELETE', '/api/obs/docks').catch(() => dockState); redrawDocks(); } }, 'Cancel'));
+      return b;
+    }
     if (d.installed?.length === 3) return box('ok', 'check', 'The docks are in OBS', d.running ? 'Open them from the Docks menu in OBS if you closed them.' : 'Start OBS: they open as Mergio Chat, Mergio Gifts and Mergio Viewers. Drag them where you like.');
-    if (d.running) return box('warn', 'info', 'Close OBS to add the docks', 'OBS saves its own settings when it closes, so Mergio adds the docks while it is closed. Close OBS, then press Install.');
+    if (d.running) return box('', 'info', 'OBS is open', 'Press Install, then close OBS. OBS saves its own settings when it closes, so Mergio adds the docks right after that.');
     return box('', 'monitor', d.installed?.length ? 'Some docks are missing' : 'Not added yet', 'Press Install and Mergio adds all three to OBS for you.');
   }
+  const redrawDocks = () => { const el = document.getElementById('dockStatus'); if (el) el.replaceWith(dockStatus()); };
+  // the docks were waiting for OBS to close: tell the user wherever they are in the panel
+  MG.on('obsdocks', d => {
+    if (d.error) MG.toast(d.error, true);
+    else { dockState = d.docks; MG.toast('The docks are in OBS. Start OBS to see them.'); }
+    redrawDocks();
+  });
   function docksCard(dash) {
     const base = MG.st.overlayUrl.replace(/\/overlay$/, '');
     const install = h('button', { class: 'btn primary', onclick: async () => {
       install.disabled = true;
       try {
         dockState = await MG.api('POST', '/api/obs/docks', {});
-        MG.toast('Docks added. Start OBS to see them.');
+        MG.toast(dockState.waiting ? 'Now close OBS: Mergio adds the docks as soon as it does.' : 'Docks added. Start OBS to see them.');
       } catch (e) { MG.toast(e.message, true); await loadDocks(); }
       install.disabled = false;
-      const el = document.getElementById('dockStatus'); if (el) el.replaceWith(dockStatus());
+      redrawDocks();
     } }, icon('plus'), 'Install the docks in OBS');
     const card = h('section', { class: 'card docks-card' }, h('h2', { text: 'OBS docks' }),
       h('p', { class: 'sub', text: 'Three small panels inside OBS itself: the full chat, a list of gifts and alerts, and your live viewer count. No browser window needed while you stream.' }),

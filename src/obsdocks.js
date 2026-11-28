@@ -2,7 +2,8 @@
 /* Adds Mergio's three OBS docks (chat, gifts, viewers) to OBS Studio as Custom Browser Docks.
    OBS keeps them in its settings file (user.ini since OBS 31, global.ini before) under [BasicWindow]
    ExtraBrowserDocks=[{"title","url","uuid"}]. OBS writes that file again when it closes, so Mergio only
-   changes it while OBS is closed, and keeps a backup of the file the first time. */
+   changes it while OBS is closed, and keeps a backup of the file the first time. When OBS is open, Mergio
+   waits and adds the docks the moment OBS closes (installWhenClosed). */
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -34,12 +35,19 @@ function settingsFile() {
   return fs.existsSync(user) ? user : fs.existsSync(path.join(dir, 'global.ini')) ? path.join(dir, 'global.ini') : null;
 }
 
-/** True while OBS Studio is open. */
+/** True while OBS Studio is open. When the check itself fails (tasklist timed out on a busy PC, for example)
+    it also says true: writing the file while OBS is open would be undone when OBS closes. */
 function obsRunning() {
   return new Promise(resolve => {
     if (process.platform === 'win32') {
-      execFile('tasklist', ['/FO', 'CSV', '/NH'], { windowsHide: true, timeout: 8000 }, (err, out) => resolve(!err && /^"obs(64|32)?\.exe"/im.test(out || '')));
-    } else execFile('pgrep', ['-x', process.platform === 'darwin' ? 'OBS' : 'obs'], { timeout: 8000 }, err => resolve(!err));
+      execFile('tasklist', ['/FI', 'IMAGENAME eq obs*', '/FO', 'CSV', '/NH'], { windowsHide: true, timeout: 15000 }, (err, out) => {
+        if (err) return resolve(true);
+        resolve(/^"obs(64|32)?\.exe"/im.test(out));
+      });
+    } else {
+      // pgrep: exit 1 = no such process, anything else is an error
+      execFile('pgrep', ['-x', process.platform === 'darwin' ? 'OBS' : 'obs'], { timeout: 15000 }, err => resolve(!err || err.code !== 1));
+    }
   });
 }
 
@@ -66,7 +74,7 @@ const ours = (d, port) => typeof d?.url === 'string' && /^http:\/\/(localhost|12
 /** What OBS has right now. */
 async function status(port) {
   const file = settingsFile();
-  const base = { supported: !!configDir(), found: !!file, running: await obsRunning(), installed: [] };
+  const base = { supported: !!configDir(), found: !!file, running: await obsRunning(), installed: [], waiting: !!waiter };
   if (!file) return base;
   try {
     const list = readDocks(fs.readFileSync(file, 'utf8'));
@@ -93,6 +101,42 @@ async function install(port, ids = DOCKS.map(d => d.id)) {
   return status(port);
 }
 
+/* ---------- waiting for OBS to close ---------- */
+let waiter = null; // { timer, port, done }
+const WAIT_EVERY = 3000, WAIT_MAX = 6 * 60 * 60 * 1000;
+
+/** Adds the docks now when OBS is closed (returns the new status), else waits and adds them as soon as it
+    closes (checked every few seconds, for up to 6 hours; returns the status with waiting: true). done(err,
+    status) runs only for a wait, once the docks are added or it failed. */
+async function installWhenClosed(port, done = () => {}) {
+  if (!(await obsRunning())) {
+    try { stopWaiting(); return await install(port); } catch (e) { if (!e.running) throw e; }
+  }
+  stopWaiting();
+  const started = Date.now();
+  const w = waiter = { port, done, timer: null };
+  const tick = async () => {
+    if (waiter !== w) return;
+    if (Date.now() - started > WAIT_MAX) { waiter = null; return done(new Error('Stopped waiting for OBS to close. Press Install again when you are ready.')); }
+    if (await obsRunning()) { w.timer = setTimeout(tick, WAIT_EVERY); return; }
+    // OBS saves its settings while it shuts down: give it a moment after the process is gone, and check again
+    await new Promise(r => setTimeout(r, 2000));
+    if (waiter !== w) return;
+    if (await obsRunning()) { w.timer = setTimeout(tick, WAIT_EVERY); return; }
+    waiter = null;
+    try { done(null, await install(port)); } catch (e) { if (e.running) { waiter = w; w.timer = setTimeout(tick, WAIT_EVERY); } else done(e); }
+  };
+  w.timer = setTimeout(tick, WAIT_EVERY);
+  log('obs', 'OBS is open: the Mergio docks are added as soon as it closes');
+  return status(port);
+}
+
+/** Stops waiting for OBS to close (Cancel). */
+function stopWaiting() {
+  if (waiter) clearTimeout(waiter.timer);
+  waiter = null;
+}
+
 /** The settings text with Mergio's docks added: old Mergio docks are replaced, everything else stays as it was. */
 function withDocks(text, port, ids = DOCKS.map(d => d.id)) {
   const eol = text.includes('\r\n') ? '\r\n' : '\n';
@@ -106,4 +150,4 @@ function withDocks(text, port, ids = DOCKS.map(d => d.id)) {
   return lines.join(eol);
 }
 
-module.exports = { DOCKS, status, install, withDocks, readDocks };
+module.exports = { DOCKS, status, install, installWhenClosed, stopWaiting, withDocks, readDocks };
