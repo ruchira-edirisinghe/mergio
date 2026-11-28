@@ -8,7 +8,7 @@
   const DEFAULT = '{mention} 🚨\n\n🔴 {name} is now LIVE!\n\n🎬 {title}\n{link}\n\n{others}';
   const DEFAULT_CAPTION = '🔴 {name} is LIVE now!\n\n🎬 {title}\n\n{all}';
   const BOT_TOKEN = /^[\w-]{20,40}\.[\w-]{4,12}\.[\w-]{20,80}$/;
-  const CHANNEL_LINK = /discord(?:app)?\.com\/channels\/\d{15,25}\/\d{15,25}/i;
+  const CHANNEL_LINK = /^(?:https?:\/\/)?(?:(?:www|ptb|canary)\.)?discord(?:app)?\.com\/channels\/\d{15,25}\/\d{15,25}(?:[/?#]|$)/i;
 
   let data = null;   // GET /api/golive: { destinations, pending, history, preview }
   let checked = null; // the last Discord check
