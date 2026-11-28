@@ -307,7 +307,7 @@ console.log('Go-live post');
   });
   test('a live YouTube stream gets its own card, so its link stays plain and Discord adds no second card', () => {
     const live = { ...post, thumb: 'N1Jz8-GHx_I' };
-    assert.ok(golive.textFor(live, g, 'discord', '').includes('🎬 GTA 6 IS HERE!!\n<https://www.youtube.com/watch?v=N1Jz8-GHx_I>'));
+    assert.equal(golive.textFor(live, g, 'discord', ''), '🚨\n\n🔴 Zenitron Gaming is now LIVE!\n\n🎬 GTA 6 IS HERE!!\n<https://www.youtube.com/watch?v=N1Jz8-GHx_I>', 'the card lists the other links');
     assert.ok(golive.textFor(live, g, 'caption').includes('🔴 YouTube: https://www.youtube.com/watch?v=N1Jz8-GHx_I'), 'the caption is for other apps: plain links');
   });
   test('lines with nothing to show are left out', () => {
@@ -394,10 +394,12 @@ console.log('Go-live post');
     assert.equal(card?.url, 'https://www.youtube.com/watch?v=N1Jz8-GHx_I', 'the card opens the stream itself, not the channel');
     assert.equal(card.title, 'GTA 6');
     assert.equal(card.author.name, 'Zenitron Gaming is live on YouTube');
+    assert.equal(card.description, '🔴 YouTube: https://www.youtube.com/watch?v=N1Jz8-GHx_I\n⚫ TikTok: https://www.tiktok.com/@zen/live', 'every live link');
+    assert.equal(card.footer.text, '🔴 @zen  ·  ⚫ @zen', 'the channel names, under the thumbnail');
+    assert.ok(!posted[0].content.includes('Also live on'), 'the card lists the other links');
     assert.equal(card.image.url, `${process.env.MERGIO_YTIMG}/vi/N1Jz8-GHx_I/maxresdefault.jpg`, 'the biggest thumbnail there is');
     assert.equal(await golive.cardFor({ ...post, thumb: '' }), null, 'not started yet: no card');
     assert.equal(await golive.cardFor({ ...post, platform: 'twitch', thumb: 'N1Jz8-GHx_I' }), null, 'only YouTube gets one');
-    assert.ok(posted[0].content.includes('⚫ TikTok: <https://www.tiktok.com/@zen/live>'));
     assert.deepEqual(posted[0].allowed_mentions, { parse: [], roles: ['30'], users: [] });
     tt.current = { url: 'https://www.tiktok.com/@zen/live', title: '', videoId: '77', started: true };
     golive.check(); golive.check(); await wait(300);
